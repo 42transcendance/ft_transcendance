@@ -31,7 +31,7 @@ services:
     depends_on:
       - wordpress
     ports:
-      - "443:443"
+      - "8443:443"
   wordpress:
     build:
       context: requirements/wordpress
@@ -71,20 +71,12 @@ services:
     ports:
       - "8080:8080"
 
-  adminer:
-    build:
-      context: requirements/bonus/adminer
-      dockerfile: Dockerfile
-    container_name: adminer
-    networks:
-      - ft_transcendance
-    restart: on-failure
-    depends_on:
-      - mariadb
-
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
+    privileged: true
+    group_add:
+      - "999"
     networks:
       - ft_transcendance
     restart: on-failure
@@ -92,9 +84,16 @@ services:
       - "8081:8080"
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /sys:/sys:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /dev/disk/:/dev/disk:ro
       - /var/lib/docker/:/var/lib/docker:ro
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=10s
+      - --max_housekeeping_interval=15s
+      - --disable_metrics=percpu,sched,tcp,udp,disk,diskIO,hugetlb,referenced_memory,cpu_topology,resctrl
 
   prometheus:
     image: prom/prometheus:v2.47.0
@@ -106,23 +105,6 @@ services:
       - "9090:9090"
     volumes:
       - ./requirements/bonus/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-
-  grafana:
-    image: grafana/grafana:10.1.5
-    container_name: grafana
-    networks:
-      - ft_transcendance
-    restart: on-failure
-    ports:
-      - "3000:3000"
-    depends_on:
-      - prometheus
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - ./requirements/bonus/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./requirements/bonus/grafana/dashboards:/var/lib/grafana/dashboards:ro
 
 networks:
   ft_transcendance:
