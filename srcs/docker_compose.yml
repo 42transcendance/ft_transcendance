@@ -95,6 +95,20 @@ services:
       - --max_housekeeping_interval=15s
       - --disable_metrics=percpu,sched,tcp,udp,disk,diskIO,hugetlb,referenced_memory,cpu_topology,resctrl
 
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: alertmanager
+    networks:
+      - ft_transcendance
+    restart: on-failure
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./requirements/bonus/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+
   prometheus:
     image: prom/prometheus:v2.47.0
     container_name: prometheus
