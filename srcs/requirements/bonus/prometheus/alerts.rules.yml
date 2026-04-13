@@ -1,0 +1,66 @@
+groups:
+  - name: container_alerts
+    rules:
+
+      # Container est down (n'a pas été vu par cAdvisor depuis > 30s)
+      - alert: ContainerDown
+        expr: time() - max by (name) (container_last_seen{name=~"mariadb|wordpress|nginx|redis|cadvisor|prometheus"}) > 30
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Un container est down"
+          description: "Le container {{ $labels.name }} n'a pas été détecté par cAdvisor depuis plus de 30 secondes."
+
+      # CPU > 80% sur 2 minutes
+      - alert: ContainerHighCPU
+        expr: >
+          rate(container_cpu_usage_seconds_total{
+            name=~"mariadb|wordpress|nginx|redis",
+            image!=""
+          }[2m]) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Utilisation CPU élevée"
+          description: "Le container {{ $labels.name }} consomme plus de 80% du CPU depuis 2 minutes."
+
+      # Mémoire > 80% de la limite du container
+      - alert: ContainerHighMemory
+        expr: >
+          (container_memory_usage_bytes{name=~"mariadb|wordpress|nginx|redis", image!=""}
+          / container_spec_memory_limit_bytes{name=~"mariadb|wordpress|nginx|redis", image!=""}
+          ) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Utilisation mémoire élevée"
+          description: "Le container {{ $labels.name }} utilise plus de 80% de sa limite mémoire depuis 2 minutes."
+
+      # Container a redémarré récemment (OOM, crash...)
+      - alert: ContainerRestarted
+        expr: >
+          increase(container_start_time_seconds{
+            name=~"mariadb|wordpress|nginx|redis",
+            image!=""
+          }[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Un container a redémarré"
+          description: "Le container {{ $labels.name }} a redémarré au cours des 5 dernières minutes (crash ou OOM possible)."
+
+  - name: prometheus_alerts
+    rules:
+
+      # Prometheus lui-même ne peut plus scraper une cible
+      - alert: TargetDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus ne peut plus scraper une cible"
+          description: "La cible {{ $labels.instance }} du job {{ $labels.job }} est inaccessible depuis plus d'1 minute."

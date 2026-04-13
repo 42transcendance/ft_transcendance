@@ -105,6 +105,7 @@ services:
       - "9090:9090"
     volumes:
       - ./requirements/bonus/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./requirements/bonus/prometheus/alerts.rules.yml:/etc/prometheus/alerts.rules.yml:ro
 
 networks:
   ft_transcendance:
