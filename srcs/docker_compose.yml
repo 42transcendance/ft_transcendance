@@ -75,8 +75,6 @@ services:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
     privileged: true
-    group_add:
-      - "999"
     networks:
       - ft_transcendance
     restart: on-failure
@@ -84,16 +82,23 @@ services:
       - "8081:8080"
     volumes:
       - /:/rootfs:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run:/var/run:rw
       - /sys:/sys:ro
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - /dev/disk/:/dev/disk:ro
-      - /var/lib/docker/:/var/lib/docker:ro
     command:
       - --docker_only=true
       - --housekeeping_interval=10s
       - --max_housekeeping_interval=15s
       - --disable_metrics=percpu,sched,tcp,udp,disk,diskIO,hugetlb,referenced_memory,cpu_topology,resctrl
+
+  discord-alertmanager:
+    image: benjojo/alertmanager-discord
+    container_name: discord-alertmanager
+    networks:
+      - ft_transcendance
+    restart: on-failure
+    env_file:
+      - ../secrets/discord.env
 
   alertmanager:
     image: prom/alertmanager:v0.26.0
@@ -108,6 +113,8 @@ services:
     command:
       - --config.file=/etc/alertmanager/alertmanager.yml
       - --storage.path=/alertmanager
+    depends_on:
+      - discord-alertmanager
 
   prometheus:
     image: prom/prometheus:v2.47.0
@@ -148,3 +155,4 @@ secrets:
     file: ../secrets/wp_admin_password.txt
   wp_user_password:
     file: ../secrets/wp_user_password.txt
+
