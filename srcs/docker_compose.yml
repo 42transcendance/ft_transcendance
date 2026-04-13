@@ -8,7 +8,7 @@ services:
     image: mariadb
     container_name: mariadb
     networks:
-      - inception
+      - ft_transcendance
     restart: on-failure
     env_file: .env
     secrets:
@@ -23,7 +23,7 @@ services:
     image: nginx
     container_name: nginx
     networks:
-      - inception
+      - ft_transcendance
     restart: on-failure
     env_file: .env
     volumes:
@@ -39,7 +39,7 @@ services:
     image: wordpress
     container_name: wordpress
     networks:
-      - inception
+      - ft_transcendance
     restart: on-failure
     env_file: .env
     volumes:
@@ -57,7 +57,7 @@ services:
     image: redis
     container_name: redis
     networks:
-      - inception
+      - ft_transcendance
     restart: on-failure
 
   static-site:
@@ -66,7 +66,7 @@ services:
       dockerfile: Dockerfile
     container_name: static-site
     networks:
-      - inception
+      - ft_transcendance
     restart: on-failure
     ports:
       - "8080:8080"
@@ -77,19 +77,16 @@ services:
       dockerfile: Dockerfile
     container_name: adminer
     networks:
-      - inception
+      - ft_transcendance
     restart: on-failure
     depends_on:
       - mariadb
 
   cadvisor:
-    build:
-      context: requirements/bonus/cadvisor
-      dockerfile: Dockerfile
-    image: cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
     container_name: cadvisor
     networks:
-      - inception
+      - ft_transcendance
     restart: on-failure
     ports:
       - "8081:8080"
@@ -99,8 +96,36 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
 
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: prometheus
+    networks:
+      - ft_transcendance
+    restart: on-failure
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./requirements/bonus/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:10.1.5
+    container_name: grafana
+    networks:
+      - ft_transcendance
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./requirements/bonus/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./requirements/bonus/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
 networks:
-  inception:
+  ft_transcendance:
     driver: bridge
 
 volumes:

@@ -6,7 +6,7 @@ RUN apt-get update -y \
  && apt-get install nginx -y \
  && apt-get install openssl -y \
  && mkdir -p /etc/nginx/ssl \
- && openssl req -x509 -nodes -out /etc/nginx/ssl/inception.crt -keyout /etc/nginx/ssl/inception.key -subj "/C=FR/ST=IDF/L=Paris/O=42/OU=42/CN=login.42.fr/UID=login" \
+ && openssl req -x509 -nodes -out /etc/nginx/ssl/ft_transcendance.crt -keyout /etc/nginx/ssl/ft_transcendance.key -subj "/C=FR/ST=IDF/L=Paris/O=42/OU=42/CN=login.42.fr/UID=login" \
  && mkdir -p /var/run/nginx \
  && rm -rf /var/lib/apt/lists/*
 
