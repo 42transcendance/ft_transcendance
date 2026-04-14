@@ -129,6 +129,26 @@ services:
       - ./requirements/bonus/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./requirements/bonus/prometheus/alerts.rules.yml:/etc/prometheus/alerts.rules.yml:ro
 
+  grafana:
+    build:
+      context: requirements/bonus/grafana
+      dockerfile: Dockerfile
+    image: grafana
+    container_name: grafana
+    networks:
+      - ft_transcendance
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana:/var/lib/grafana
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+
 networks:
   ft_transcendance:
     driver: bridge
@@ -146,6 +166,12 @@ volumes:
       type: none
       o: bind
       device: /home/dbhujoo/data/wordpress
+  grafana:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/dbhujoo/data/grafana
 
 secrets:
   db_password:
