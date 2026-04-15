@@ -3,17 +3,20 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dbhujoo <dbhujoo@student.42.fr>            +#+  +:+       +#+         #
+#    By: ebenoist <ebenoist@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/01/28 13:30:24 by dbhujoo           #+#    #+#              #
-#    Updated: 2026/04/13 13:48:21 by dbhujoo          ###   ########.fr        #
+#    Created: 2026/01/28 13:30:24 by emmab           #+#    #+#              #
+#    Updated: 2026/04/14 21:01:36 by ebenoist         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 all: up
 
+LOGIN		:= $(shell whoami)
+DATA_PATH	:= /home/$(LOGIN)/data
+
 up:
-	mkdir -p /home/dbhujoo/data/mariadb /home/dbhujoo/data/wordpress /home/dbhujoo/data/grafana
+	mkdir -p $(DATA_PATH)/mariadb $(DATA_PATH)/wordpress $(DATA_PATH)/grafana
 	docker compose -f ./srcs/docker_compose.yml up -d --build
 
 down:
@@ -31,9 +34,9 @@ clean: down
 	docker system prune -af
 
 fclean: clean
-	sudo rm -rf /home/dbhujoo/data/mariadb/*
-	sudo rm -rf /home/dbhujoo/data/wordpress/*
-	sudo rm -rf /home/dbhujoo/data/grafana/*
+	sudo rm -rf $(DATA_PATH)/mariadb/*
+	sudo rm -rf $(DATA_PATH)/wordpress/*
+	sudo rm -rf $(DATA_PATH)/grafana/*
 
 status:
 	docker ps

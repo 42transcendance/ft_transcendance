@@ -187,19 +187,19 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /home/dbhujoo/data/mariadb
+      device: /home/emmab/data/mariadb
   wordpress:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/dbhujoo/data/wordpress
+      device: /home/emmab/data/wordpress
   grafana:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/dbhujoo/data/grafana
+      device: /home/emmab/data/grafana
 
 secrets:
   db_password:
