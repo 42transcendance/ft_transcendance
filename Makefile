@@ -6,14 +6,14 @@
 #    By: dbhujoo <dbhujoo@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/28 13:30:24 by dbhujoo           #+#    #+#              #
-#    Updated: 2026/04/13 13:48:21 by dbhujoo          ###   ########.fr        #
+#    Updated: 2026/04/16 15:20:26 by dbhujoo          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 all: up
 
 up:
-	mkdir -p /home/dbhujoo/data/mariadb /home/dbhujoo/data/wordpress /home/dbhujoo/data/grafana /home/dbhujoo/data/elasticsearch
+	mkdir -p /home/${USER}/data/grafana /home/${USER}/data/elasticsearch
 	docker compose -f ./srcs/docker_compose.yml up -d --build
 
 down:
@@ -31,10 +31,8 @@ clean: down
 	docker system prune -af
 
 fclean: clean
-	sudo rm -rf /home/dbhujoo/data/mariadb/*
-	sudo rm -rf /home/dbhujoo/data/wordpress/*
-	sudo rm -rf /home/dbhujoo/data/grafana/*
-	sudo rm -rf /home/dbhujoo/data/elasticsearch/*
+	rm -rf /home/${USER}/data/grafana/*
+	rm -rf /home/${USER}/data/elasticsearch/*
 
 status:
 	docker ps

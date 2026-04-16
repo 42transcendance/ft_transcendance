@@ -68,7 +68,7 @@
     driver_opts:
       type: none
       o: bind
-      device: /home/dbhujoo/data/backups
+      device: /home/${USER}/data/backups
   ```
 
 ## 5. Makefile — ajouter les targets
@@ -82,12 +82,12 @@
   ```
 - [ ] Créer les dossiers backup dans la target de setup :
   ```
-  mkdir -p /home/dbhujoo/data/backups/db
-  mkdir -p /home/dbhujoo/data/backups/data
+  mkdir -p /home/${USER}/data/backups/db
+  mkdir -p /home/${USER}/data/backups/data
   ```
 
 ## 6. Test disaster recovery
-- [ ] Vérifier que les backups se créent (`ls /home/dbhujoo/data/backups/`)
+- [ ] Vérifier que les backups se créent (`ls /home/${USER}/data/backups/`)
 - [ ] `make fclean` → tout détruire
 - [ ] `make re` → tout remonter from scratch
 - [ ] `make restore` → restaurer les données depuis le backup

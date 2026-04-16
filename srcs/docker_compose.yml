@@ -1,65 +1,6 @@
 version: '3.8'
 
 services:
-  mariadb:
-    build:
-      context: requirements/mariadb
-      dockerfile: Dockerfile
-    image: mariadb
-    container_name: mariadb
-    networks:
-      - ft_transcendance
-    restart: on-failure
-    env_file: .env
-    secrets:
-      - db_password
-      - db_root_password
-    volumes:
-      - mariadb:/var/lib/mysql
-  nginx:
-    build:
-      context: requirements/nginx
-      dockerfile: Dockerfile
-    image: nginx
-    container_name: nginx
-    networks:
-      - ft_transcendance
-    restart: on-failure
-    env_file: .env
-    volumes:
-      - wordpress:/var/www/wordpress
-    depends_on:
-      - wordpress
-    ports:
-      - "8443:443"
-  wordpress:
-    build:
-      context: requirements/wordpress
-      dockerfile: Dockerfile
-    image: wordpress
-    container_name: wordpress
-    networks:
-      - ft_transcendance
-    restart: on-failure
-    env_file: .env
-    volumes:
-      - wordpress:/var/www/wordpress
-    depends_on:
-      - mariadb
-    secrets:
-      - db_password
-      - wp_admin_password
-      - wp_user_password
-  redis:
-    build:
-      context: requirements/bonus/redis
-      dockerfile: Dockerfile
-    image: redis
-    container_name: redis
-    networks:
-      - ft_transcendance
-    restart: on-failure
-
   static-site:
     build:
       context: requirements/bonus/static-site
@@ -212,40 +153,20 @@ networks:
     driver: bridge
 
 volumes:
-  mariadb:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /home/dbhujoo/data/mariadb
-  wordpress:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /home/dbhujoo/data/wordpress
   grafana:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/dbhujoo/data/grafana
+      device: /home/${USER}/data/grafana
   elasticsearch_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/dbhujoo/data/elasticsearch
+      device: /home/${USER}/data/elasticsearch
 
 secrets:
-  db_password:
-    file: ../secrets/db_password.txt
-  db_root_password:
-    file: ../secrets/db_root_password.txt
-  wp_admin_password:
-    file: ../secrets/wp_admin_password.txt
-  wp_user_password:
-    file: ../secrets/wp_user_password.txt
   grafana_admin_password:
     file: ../secrets/grafana_admin_password.txt
 
