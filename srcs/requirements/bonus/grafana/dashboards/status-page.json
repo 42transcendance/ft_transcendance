@@ -434,6 +434,46 @@
       ]
     },
     {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 1, "text": "DOWN" } }, "type": "value" },
+            { "options": { "from": 1, "to": 999999999999, "result": { "color": "green", "index": 0, "text": "UP" } }, "type": "range" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "noValue": "DOWN"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 9 },
+      "id": 11,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Elasticsearch",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(container_last_seen{name=\"elasticsearch\"})",
+          "legendFormat": "elasticsearch",
+          "refId": "A"
+        }
+      ]
+    },
+    {
       "gridPos": { "h": 2, "w": 24, "x": 0, "y": 13 },
       "id": 51,
       "options": {
@@ -476,7 +516,7 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "time() - container_start_time_seconds{name=~\"nginx|wordpress|mariadb|redis|static-site|cadvisor|prometheus|alertmanager|discord-alertmanager|grafana\"}",
+          "expr": "time() - container_start_time_seconds{name=~\"nginx|wordpress|mariadb|redis|static-site|cadvisor|prometheus|alertmanager|discord-alertmanager|grafana|elasticsearch\"}",
           "legendFormat": "{{name}}",
           "refId": "A"
         }

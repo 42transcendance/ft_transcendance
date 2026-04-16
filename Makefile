@@ -13,7 +13,7 @@
 all: up
 
 up:
-	mkdir -p /home/dbhujoo/data/mariadb /home/dbhujoo/data/wordpress /home/dbhujoo/data/grafana
+	mkdir -p /home/dbhujoo/data/mariadb /home/dbhujoo/data/wordpress /home/dbhujoo/data/grafana /home/dbhujoo/data/elasticsearch
 	docker compose -f ./srcs/docker_compose.yml up -d --build
 
 down:
@@ -34,6 +34,7 @@ fclean: clean
 	sudo rm -rf /home/dbhujoo/data/mariadb/*
 	sudo rm -rf /home/dbhujoo/data/wordpress/*
 	sudo rm -rf /home/dbhujoo/data/grafana/*
+	sudo rm -rf /home/dbhujoo/data/elasticsearch/*
 
 status:
 	docker ps
