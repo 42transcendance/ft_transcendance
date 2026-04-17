@@ -4,7 +4,7 @@ groups:
 
       # Container est down (n'a pas été vu par cAdvisor depuis > 30s)
       - alert: ContainerDown
-        expr: time() - max by (name) (last_over_time(container_last_seen{name=~"mariadb|wordpress|nginx|redis|cadvisor|prometheus|grafana|elasticsearch"}[5m])) > 60
+        expr: time() - max by (name) (last_over_time(container_last_seen{name=~"cadvisor|prometheus|grafana|elasticsearch|logstash|kibana|filebeat|static-site|discord-alertmanager|alertmanager"}[5m])) > 60
         for: 0s
         labels:
           severity: critical
@@ -16,7 +16,7 @@ groups:
       - alert: ContainerHighCPU
         expr: >
           rate(container_cpu_usage_seconds_total{
-            name=~"mariadb|wordpress|nginx|redis|grafana|elasticsearch",
+            name=~"grafana|elasticsearch|logstash|kibana|filebeat|static-site|discord-alertmanager|alertmanager",
             image!=""
           }[2m]) * 100 > 80
         for: 2m
@@ -29,8 +29,8 @@ groups:
       # Mémoire > 80% de la limite du container
       - alert: ContainerHighMemory
         expr: >
-          (container_memory_usage_bytes{name=~"mariadb|wordpress|nginx|redis|grafana|elasticsearch", image!=""}
-          / container_spec_memory_limit_bytes{name=~"mariadb|wordpress|nginx|redis|grafana|elasticsearch", image!=""}
+          (container_memory_usage_bytes{name=~"grafana|elasticsearch|logstash|kibana|filebeat|static-site|discord-alertmanager|alertmanager", image!=""}
+          / container_spec_memory_limit_bytes{name=~"grafana|elasticsearch|logstash|kibana|filebeat|static-site|discord-alertmanager|alertmanager", image!=""}
           ) * 100 > 80
         for: 2m
         labels:
@@ -43,7 +43,7 @@ groups:
       - alert: ContainerRestarted
         expr: >
           increase(container_start_time_seconds{
-            name=~"mariadb|wordpress|nginx|redis|grafana|elasticsearch",
+            name=~"grafana|elasticsearch|logstash|kibana|filebeat|static-site|discord-alertmanager|alertmanager",
             image!=""
           }[5m]) > 0
         labels:

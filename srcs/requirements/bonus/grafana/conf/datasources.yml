@@ -8,3 +8,14 @@ datasources:
     url: http://prometheus:9090
     isDefault: true
     editable: false
+
+  - name: Elasticsearch
+    type: elasticsearch
+    access: proxy
+    url: http://elasticsearch:9200
+    jsonData:
+      timeField: "@timestamp"
+      esVersion: 8
+      interval: "Daily"
+    editable: true
+

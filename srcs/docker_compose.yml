@@ -176,6 +176,23 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.13.0
+    container_name: filebeat
+    user: root
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./requirements/bonus/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./requirements/bonus/filebeat/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    networks:
+      - ft_transcendance
+    depends_on:
+      logstash:
+        condition: service_started
+    restart: on-failure
+
 networks:
   ft_transcendance:
     driver: bridge
