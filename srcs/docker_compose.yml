@@ -147,6 +147,34 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - ft_transcendance
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: on-failure
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.0
+    container_name: logstash
+    volumes:
+      - ./requirements/bonus/logstash/pipeline:/usr/share/logstash/pipeline
+    ports:
+      - "5044:5044"
+      - "5000:5000"
+    networks:
+      - ft_transcendance
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: on-failure
 
 networks:
   ft_transcendance:
