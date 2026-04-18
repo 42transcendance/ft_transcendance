@@ -16,7 +16,7 @@ LOGIN		:= $(shell whoami)
 DATA_PATH	:= /home/$(LOGIN)/data
 
 up:
-	mkdir -p $(DATA_PATH)/mariadb $(DATA_PATH)/wordpress $(DATA_PATH)/grafana
+	mkdir -p /home/${USER}/data/mariadb /home/${USER}/data/wordpress /home/${USER}/data/grafana /home/${USER}/data/vault
 	docker compose -f ./srcs/docker_compose.yml up -d --build
 
 down:
@@ -34,9 +34,10 @@ clean: down
 	docker system prune -af
 
 fclean: clean
-	sudo rm -rf $(DATA_PATH)/mariadb/*
-	sudo rm -rf $(DATA_PATH)/wordpress/*
-	sudo rm -rf $(DATA_PATH)/grafana/*
+	sudo rm -rf /home/${USER}/data/mariadb/*
+	sudo rm -rf /home/${USER}/data/wordpress/*
+	sudo rm -rf /home/${USER}/data/grafana/*
+	sudo rm -rf /home/${USER}/data/vault/*
 
 status:
 	docker ps
