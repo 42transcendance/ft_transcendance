@@ -14,16 +14,16 @@ all: up
 
 up:
 	mkdir -p /home/${USER}/data/grafana /home/${USER}/data/elasticsearch
-	docker compose -f ./srcs/docker_compose.yml up -d --build
+	docker compose -f ./docker_compose.yml up -d --build
 
 down:
-	docker compose -f ./srcs/docker_compose.yml down
+	docker compose -f ./docker_compose.yml down
 
 stop:
-	docker compose -f ./srcs/docker_compose.yml stop
+	docker compose -f ./docker_compose.yml stop
 
 start:
-	docker compose -f ./srcs/docker_compose.yml start
+	docker compose -f ./docker_compose.yml start
 
 re: down up
 
@@ -38,6 +38,6 @@ status:
 	docker ps
 
 logs:
-	docker compose -f ./srcs/docker_compose.yml logs -f
+	docker compose -f ./docker_compose.yml logs -f
 
 .PHONY: all up down stop start re clean fclean status logs

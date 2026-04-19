@@ -3,7 +3,7 @@ version: '3.8'
 services:
   static-site:
     build:
-      context: requirements/bonus/static-site
+      context: devops/static-site
       dockerfile: Dockerfile
     container_name: static-site
     networks:
@@ -49,7 +49,7 @@ services:
       - ft_transcendance
     restart: on-failure
     env_file:
-      - ../secrets/discord.env
+      - ./secrets/discord.env
 
   alertmanager:
     image: prom/alertmanager:v0.26.0
@@ -60,7 +60,7 @@ services:
     ports:
       - "9093:9093"
     volumes:
-      - ./requirements/bonus/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./devops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     command:
       - --config.file=/etc/alertmanager/alertmanager.yml
       - --storage.path=/alertmanager
@@ -82,8 +82,8 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./requirements/bonus/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./requirements/bonus/prometheus/alerts.rules.yml:/etc/prometheus/alerts.rules.yml:ro
+      - ./devops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./devops/prometheus/alerts.rules.yml:/etc/prometheus/alerts.rules.yml:ro
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/ready"]
       interval: 30s
@@ -104,10 +104,10 @@ services:
       - "3000:3000"
     volumes:
       - grafana:/var/lib/grafana
-      - ./requirements/bonus/grafana/conf/grafana.ini:/etc/grafana/grafana.ini:ro
-      - ./requirements/bonus/grafana/conf/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
-      - ./requirements/bonus/grafana/conf/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
-      - ./requirements/bonus/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./devops/grafana/conf/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./devops/grafana/conf/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./devops/grafana/conf/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./devops/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       prometheus:
         condition: service_healthy
@@ -165,7 +165,7 @@ services:
     image: docker.elastic.co/logstash/logstash:8.13.0
     container_name: logstash
     volumes:
-      - ./requirements/bonus/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./devops/logstash/pipeline:/usr/share/logstash/pipeline
     ports:
       - "5044:5044"
       - "5000:5000"
@@ -183,8 +183,8 @@ services:
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./requirements/bonus/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ./requirements/bonus/filebeat/entrypoint.sh:/entrypoint.sh:ro
+      - ./devops/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./devops/filebeat/entrypoint.sh:/entrypoint.sh:ro
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
     networks:
       - ft_transcendance
@@ -213,5 +213,5 @@ volumes:
 
 secrets:
   grafana_admin_password:
-    file: ../secrets/grafana_admin_password.txt
+    file: ./secrets/grafana_admin_password.txt
 
