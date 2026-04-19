@@ -161,6 +161,20 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  kibana-init:
+    build:
+      context: ./devops/kibana
+      dockerfile: Dockerfile
+    container_name: kibana-init
+    environment:
+      - KIBANA_URL=http://kibana:5601
+    networks:
+      - ft_transcendance
+    depends_on:
+      kibana:
+        condition: service_started
+    restart: "no"
+
   logstash:
     image: docker.elastic.co/logstash/logstash:8.13.0
     container_name: logstash
