@@ -3,8 +3,10 @@
 # ==============================================================
 
 COMPOSE		= docker compose
-APP			= transcendence_app
+APP			= app
 DB			= postgres
+DB_USER 	= transcendence
+DB_NAME 	= transcendence_db
 
 # ==============================================================
 # COULEURS
@@ -75,7 +77,7 @@ studio:
 
 db-shell:
 	@echo "$(GREEN)Connecting to PostgreSQL...$(RESET)"
-	$(COMPOSE) exec $(DB) psql -U root_admin
+	$(COMPOSE) exec $(DB) psql -U $(DB_USER) -d $(DB_NAME)
 
 db-reset:
 	@echo "$(RED)Resetting database...$(RESET)"
