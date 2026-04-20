@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  username        String    @unique
+  displayName     String?
+  password        String
+  avatarUrl       String?
+  isOnline        Boolean   @default(false)
+  lastSeenAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  sentFriendships     Friendship[]  @relation("FriendshipSender")
+  receivedFriendships Friendship[]  @relation("FriendshipReceiver")
+  sentMessages        Message[]     @relation("MessageSender")
+  conversations       Participant[]
+  stats               UserStats?
+  matchesAsPlayer1    Match[]       @relation("MatchPlayer1")
+  matchesAsPlayer2    Match[]       @relation("MatchPlayer2")
+  wonMatches          Match[]       @relation("MatchWinner")
+  blockedUsers        Block[]       @relation("BlockInitiator")
+  blockedByUsers      Block[]       @relation("BlockTarget")
+}
+
+model Friendship {
+  id         String           @id @default(uuid())
+  sender     User             @relation("FriendshipSender", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User             @relation("FriendshipReceiver", fields: [receiverId], references: [id])
+  receiverId String
+  status     FriendshipStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@unique([senderId, receiverId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model Block {
+  id          String   @id @default(uuid())
+  initiator   User     @relation("BlockInitiator", fields: [initiatorId], references: [id])
+  initiatorId String
+  target      User     @relation("BlockTarget", fields: [targetId], references: [id])
+  targetId    String
+  createdAt   DateTime @default(now())
+
+  @@unique([initiatorId, targetId])
+}
+
+model Conversation {
+  id           String        @id @default(uuid())
+  name         String?
+  isGroup      Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  participants Participant[]
+  messages     Message[]
+}
+
+model Participant {
+  id             String       @id @default(uuid())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  joinedAt       DateTime     @default(now())
+  lastReadAt     DateTime?
+
+  @@unique([userId, conversationId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  content        String
+  sender         User         @relation("MessageSender", fields: [senderId], references: [id])
+  senderId       String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  createdAt      DateTime     @default(now())
+  editedAt       DateTime?
+  deletedAt      DateTime?
+}
+
+model Match {
+  id        String      @id @default(uuid())
+  gameMode  String      @default("classic")
+  player1   User        @relation("MatchPlayer1", fields: [player1Id], references: [id])
+  player1Id String
+  player2   User        @relation("MatchPlayer2", fields: [player2Id], references: [id])
+  player2Id String
+  score1    Int         @default(0)
+  score2    Int         @default(0)
+  winner    User?       @relation("MatchWinner", fields: [winnerId], references: [id])
+  winnerId  String?
+  status    MatchStatus @default(PENDING)
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime    @default(now())
+}
+
+enum MatchStatus {
+  PENDING
+  IN_PROGRESS
+  FINISHED
+  CANCELLED
+}
+
+model UserStats {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String   @unique
+  wins       Int      @default(0)
+  losses     Int      @default(0)
+  draws      Int      @default(0)
+  totalGames Int      @default(0)
+  winRate    Float    @default(0)
+  rank       Int?
+  level      Int      @default(1)
+  xp         Int      @default(0)
+  updatedAt  DateTime @updatedAt
+}
