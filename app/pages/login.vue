@@ -4,7 +4,7 @@ const username = ref('')
 const password = ref('')
 
 const handleLogin = async () => {
-	const loginSuccess = login(username.value, password.value)
+	const loginSuccess = await login(username.value, password.value)
 
 	if (loginSuccess) {
 		await navigateTo('/')
@@ -19,8 +19,8 @@ const handleLogin = async () => {
 
 <template>
 	<div>
-		<h1>Login Page</h1>
-		<form @submit.prevent="handleLogin">
+		<h1 class="title">Log in</h1>
+		<form @submit.prevent="handleLogin" class="global-form">
 			<input
 				v-model="username"
 				type="text"
@@ -37,12 +37,26 @@ const handleLogin = async () => {
 </template>
 
 <style scoped>
-.user-input {
 
+.title {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.global-form {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+}
+
+.user-input {
+	padding: 10px 20px;
 }
 
 .pswd-input {
-
+	padding: 10px 20px;
 }
 
 .login-btn {

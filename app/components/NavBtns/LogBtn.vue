@@ -4,8 +4,8 @@
 
 <template>
 	<div class="log-wrapper">
-		<button v-if="currentUser" @click="logout" class="log-btn">Logout</button>
-		<NuxtLink v-else to="/login" class="log-btn">Login</NuxtLink>
+		<button v-if="currentUser" @click="logout" class="logout-btn">Logout</button>
+		<NuxtLink v-else to="/login" class="login-btn">Login</NuxtLink>
 	</div>
 </template>
 
@@ -15,10 +15,24 @@
 	width: 100%;
 }
 
-.log-btn {
+.login-btn {
+	font-family: "Courier New";
+	font-size: 16px;
 	font-weight: bold;
     text-decoration: none;
     color: #333;
+    cursor: pointer;
+}
+
+.logout-btn {
+	font-family: "Courier New";
+	font-size: 16px;
+	font-weight: bold;
+    text-decoration: none;
+    color: #333;
+    border: none;
+    background: none;
+    cursor: pointer;
 }
 
 </style>

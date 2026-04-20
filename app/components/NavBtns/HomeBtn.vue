@@ -14,6 +14,8 @@
 }
 
 .home-btn {
+	font-family: "Courier New";
+	font-size: 16px;
 	font-weight: bold;
     text-decoration: none;
     color: #333;

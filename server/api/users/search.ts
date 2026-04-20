@@ -4,7 +4,7 @@ export default defineEventHandler((event) => {
 	const nameToSearch = query.name as string;
 
 	if (!nameToSearch) {
-		throw createError({ statusCode: 400, message: 'Name required !' });
+		throw createError({ statusCode: 400, message: 'Username required !' });
 	}
 
 	// replace mockUsers by database
