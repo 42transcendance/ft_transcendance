@@ -20,7 +20,7 @@ RESET		= \033[0m
 # PRINCIPAL
 # ==============================================================
 
-all: up migrate-dev
+all: up #migrate-dev
 
 up:
 	@echo "$(GREEN)Starting services...$(RESET)"
@@ -108,7 +108,7 @@ fclean: down
 	$(COMPOSE) down --rmi local -v --remove-orphans
 	docker network prune -f
 
-re: fclean up migrate-dev
+re: fclean up #migrate-dev
 
 # ==============================================================
 # AIDE
