@@ -20,7 +20,7 @@ RESET		= \033[0m
 # PRINCIPAL
 # ==============================================================
 
-all: up
+all: up migrate-dev
 
 up:
 	@echo "$(GREEN)Starting services...$(RESET)"
@@ -30,7 +30,7 @@ down:
 	@echo "$(YELLOW)Stopping services...$(RESET)"
 	$(COMPOSE) down
 
-restart: down up
+restart: down up migrate-dev
 
 logs:
 	$(COMPOSE) logs -f
@@ -61,7 +61,7 @@ migrate:
 
 migrate-dev:
 	@echo "$(GREEN)Creating new migration...$(RESET)"
-	$(COMPOSE) exec $(APP) npx prisma migrate dev
+	$(COMPOSE) exec $(APP) npx prisma migrate dev --name init
 
 generate:
 	@echo "$(GREEN)Generating Prisma client...$(RESET)"
@@ -108,7 +108,7 @@ fclean: down
 	$(COMPOSE) down --rmi local -v --remove-orphans
 	docker network prune -f
 
-re: fclean up
+re: fclean up migrate-dev
 
 # ==============================================================
 # AIDE
