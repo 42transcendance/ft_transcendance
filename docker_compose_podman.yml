@@ -1,3 +1,4 @@
+
 version: '3.8'
  
 services:
@@ -12,15 +13,18 @@ services:
     restart: on-failure
     ports:
       - "8081:8080"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - /:/rootfs:ro
       - /dev/disk/:/dev/disk:ro
       - /etc/machine-id:/etc/machine-id:ro
       - /sys:/sys:ro
-      # PAS /sys/fs/cgroup — cause des erreurs en rootless
       - /var/lib/dbus/machine-id:/var/lib/dbus/machine-id:ro
       - /var/lib/containers:/var/lib/containers:ro
-      # Socket Podman monté dans /var/run/podman/
       - /run/user/${PUID}/podman:/var/run/podman:ro
     command:
       - --podman=unix:///var/run/podman/podman.sock
@@ -42,6 +46,11 @@ services:
     networks:
       - ft_transcendance
     restart: on-failure
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     env_file:
       - ./secrets/discord.env
  
@@ -51,6 +60,11 @@ services:
     networks:
       - ft_transcendance
     restart: on-failure
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "9093:9093"
     volumes:
@@ -73,6 +87,11 @@ services:
     networks:
       - ft_transcendance
     restart: on-failure
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "9090:9090"
     volumes:
@@ -94,6 +113,11 @@ services:
     networks:
       - ft_transcendance
     restart: on-failure
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "3000:3000"
     volumes:
@@ -121,6 +145,11 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
     container_name: elasticsearch
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
@@ -145,6 +174,11 @@ services:
   kibana:
     image: docker.elastic.co/kibana/kibana:8.13.0
     container_name: kibana
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
@@ -173,6 +207,11 @@ services:
   logstash:
     image: docker.elastic.co/logstash/logstash:8.13.0
     container_name: logstash
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - ./devops/logstash/pipeline:/usr/share/logstash/pipeline
     ports:
@@ -190,8 +229,8 @@ services:
     container_name: filebeat
     user: root
     volumes:
-      # Podman rootless — logs des conteneurs dans le storage utilisateur
-      - ${HOME}/.local/share/containers/storage/overlay-containers:/var/lib/docker/containers:ro
+      # Podman sur 42 — logs dans /goinfre
+      - /goinfre/${USER}/containers/overlay-containers:/var/lib/docker/containers:ro
       - /run/user/${PUID}/podman/podman.sock:/var/run/docker.sock
       - ./devops/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - ./devops/filebeat/entrypoint.sh:/entrypoint.sh:ro
