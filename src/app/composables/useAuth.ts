@@ -1,16 +1,19 @@
 export const useAuth = () => {
 
 	const currentUser = useState('currentUser', () => null)
+	const token = useCookie('auth_token', {
+		path: '/',
+		watch: true
+	})
 
 	const login = async (username, password) => {
 		try {
-			const user = await $fetch(`api/users/login?name=${username}&pswd=${password}`)
-			// const user = mockUsers.find(u => u.username === username && u.password === password)
-			if (user && user.id) {
-				currentUser.value = user
-				return true
-			}
-			return false
+			const data = await $fetch('/api/login', {
+				method: 'POST',
+				body: {username, password}
+			})
+			currentUser.value = data.user
+			return true
 		}
 		catch (e) {
 			console.error("Failed request : ", e.statusText)
@@ -18,8 +21,10 @@ export const useAuth = () => {
 		}
 	}
 
-	const logout = () => {
+	const logout = async () => {
+		await $fetch('/api/logout', { method: 'POST' })
 		currentUser.value = null
+		token.value = null
 	}
 
 	return {
