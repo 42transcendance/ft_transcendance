@@ -23,6 +23,7 @@ services:
       - /dev/disk/:/dev/disk:ro
       - /etc/machine-id:/etc/machine-id:ro
       - /sys:/sys:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - /var/lib/dbus/machine-id:/var/lib/dbus/machine-id:ro
       - /var/lib/containers:/var/lib/containers:ro
       - /run/user/${PUID}/podman:/var/run/podman:ro
@@ -232,7 +233,7 @@ services:
       # Podman sur 42 — logs dans /goinfre
       - /goinfre/${USER}/containers/overlay-containers:/var/lib/docker/containers:ro
       - /run/user/${PUID}/podman/podman.sock:/var/run/docker.sock
-      - ./devops/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./devops/filebeat/filebeat_podman.yml:/usr/share/filebeat/filebeat.yml:ro
       - ./devops/filebeat/entrypoint.sh:/entrypoint.sh:ro
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
     networks:
