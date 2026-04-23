@@ -20,7 +20,7 @@ RESET		= \033[0m
 # PRINCIPAL
 # ==============================================================
 
-all: up #migrate-dev
+all: up migrate-dev
 
 up:
 	@echo "$(GREEN)Starting services...$(RESET)"
@@ -57,19 +57,19 @@ rebuild: down build up
 
 migrate:
 	@echo "$(GREEN)Running migrations...$(RESET)"
-	$(COMPOSE) exec $(APP) npx prisma migrate deploy
+	$(COMPOSE) exec $(APP) ./node_modules/.bin/prisma migrate deploy
 
 migrate-dev:
 	@echo "$(GREEN)Creating new migration...$(RESET)"
-	$(COMPOSE) exec $(APP) npx prisma migrate dev --name init
+	$(COMPOSE) exec $(APP) ./node_modules/.bin/prisma migrate dev --name init
 
 generate:
 	@echo "$(GREEN)Generating Prisma client...$(RESET)"
-	$(COMPOSE) exec $(APP) npx prisma generate
+	$(COMPOSE) exec $(APP) ./node_modules/.bin/prisma generate
 
 studio:
 	@echo "$(GREEN)Opening Prisma Studio on http://localhost:5555$(RESET)"
-	$(COMPOSE) exec $(APP) npx prisma studio
+	$(COMPOSE) exec $(APP) ./node_modules/.bin/prisma studio
 
 # ==============================================================
 # BASE DE DONNÉES
@@ -81,7 +81,7 @@ db-shell:
 
 db-reset:
 	@echo "$(RED)Resetting database...$(RESET)"
-	$(COMPOSE) exec $(APP) npx prisma migrate reset --force
+	$(COMPOSE) exec $(APP) ./node_modules/.bin/prisma migrate reset --force
 
 # ==============================================================
 # STATUT / SANTÉ
@@ -108,7 +108,7 @@ fclean: down
 	$(COMPOSE) down --rmi local -v --remove-orphans
 	docker network prune -f
 
-re: fclean up #migrate-dev
+re: fclean up migrate-dev
 
 # ==============================================================
 # AIDE

@@ -3,6 +3,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY src/package*.json ./
+COPY src/prisma ./prisma 
 
 RUN npm install
 
