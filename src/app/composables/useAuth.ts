@@ -8,7 +8,7 @@ export const useAuth = () => {
 
 	const login = async (username, password) => {
 		try {
-			const data = await $fetch('/api/users', {
+			const data = await $fetch('/api/login', {
 				method: 'POST',
 				body: {username, password}
 			})

@@ -1,10 +1,14 @@
-import jwt from 'jsonwebtoken'
-
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
 	const body = await readBody(event)
 	const SECRET_KEY = 'bipboup-Voici-la-cle'
 	// Simulation de vérification (changer avec la vrai database)
-	const user = mockUsers.find(u => body.username === u.username && body.password === u.password)
+	// const user = mockUsers.find(u => body.username === u.username && body.password === u.password)
+	const user = await prisma.user.findUnique({
+		where: {
+			username: body.username,
+			password: body.password,
+		},
+	});
 	if (user) {
 
 		const token = jwt.sign(
@@ -25,4 +29,5 @@ export default defineEventHandler(async (event) => {
 		return { user }
 	}
 	throw createError({ statusCode: 401, message: 'Identifiants invalides' })
-})
+});
+
