@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { login } = useAuth()
+const { login, create } = useAuth()
 const username = ref('')
 const password = ref('')
 
@@ -7,6 +7,18 @@ const handleLogin = async () => {
 	const loginSuccess = await login(username.value, password.value)
 
 	if (loginSuccess) {
+		await navigateTo('/')
+	}
+	else {
+		alert('Wrong logs !')
+	}
+
+}
+
+const handleCreate = async () => {
+	const createSuccess = await create(username.value, password.value)
+
+	if (createSuccess) {
 		await navigateTo('/')
 	}
 	else {
@@ -32,6 +44,22 @@ const handleLogin = async () => {
 				placeholder="Password"
 				class="pswd-input">
 			<button type="submit" class="login-btn">Connect</button>
+		</form>
+	</div>
+	<div>
+		<h1 class="title">Create User</h1>
+		<form @submit.prevent="handleCreate" class="global-form">
+			<input
+				v-model="username"
+				type="text"
+				placeholder="Username"
+				class="user-input">
+			<input
+				v-model="password"
+				type="password"
+				placeholder="Password"
+				class="pswd-input">
+			<button type="submit" class="create-btn">Create</button>
 		</form>
 	</div>
 </template>
@@ -60,6 +88,10 @@ const handleLogin = async () => {
 }
 
 .login-btn {
+
+}
+
+.create-btn {
 
 }
 </style>

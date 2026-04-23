@@ -8,7 +8,7 @@ export const useAuth = () => {
 
 	const login = async (username, password) => {
 		try {
-			const data = await $fetch('/api/login', {
+			const data = await $fetch('/api/users', {
 				method: 'POST',
 				body: {username, password}
 			})
@@ -27,9 +27,27 @@ export const useAuth = () => {
 		token.value = null
 	}
 
+	const create = async () => {
+		try {
+			await $fetch('/api/users', {
+				method: 'POST',
+				body: {username, password}
+			})
+			currentUser.value = data.user
+			return true
+		}
+		catch (e) {
+			console.error("Failed request : ", e.statusText)
+			return false
+		}
+
+	}
+
+
 	return {
 		currentUser,
 		login,
-		logout
+		logout,
+		create
 	}
 }
