@@ -1,5 +1,3 @@
-import { CELL_INFO } from "./constants.js"
-import { GRID_INFO } from "./constants.js"
 import { Cell } from "./cell.js"
 
 
@@ -28,12 +26,4 @@ export class Grid {
 			}
 		}
 	}
-}
-
-export function fillBackground(ctx: any) {
-	ctx.fillStyle = "black";
-	ctx.fillRect(0, 0, GRID_INFO.WIDTH + 10, GRID_INFO.HEIGHT + 10);
-
-	ctx.fillStyle = "lightgray";
-	ctx.fillRect(5, 5, GRID_INFO.WIDTH, GRID_INFO.HEIGHT);
 }
