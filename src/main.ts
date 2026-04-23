@@ -1,27 +1,25 @@
-import { GRID_INFO, GAME, PLAYER_INFO } from "./constants.js"
-import { fillBackground, Grid } from "./grid.js";
-import { Game } from "./game.js";
+import { fillBackground } from "./render.js";
+import { GRID_INFO } from "./constants.js"
 
+const socket = new WebSocket("ws://localhost:8080");
 const canvas = document.getElementById("pixel-fight") as HTMLCanvasElement;
 const button = document.getElementById("paint-button") as HTMLButtonElement;
+const ctx = canvas.getContext("2d")!;
 
 canvas.width = GRID_INFO.WIDTH * 2;
 canvas.height = GRID_INFO.HEIGHT * 2;
 
-const ctx = canvas.getContext("2d")!;
 
+// Partie connexion client
 fillBackground(ctx);
 
-var game: Game = new Game(2);
-
-game.init_game(ctx);
-
 button.addEventListener("click", () => {
-	game.players.forEach( player => {
-		player.paint(ctx, game.board, game);
-	});
-	game.actualize();
+	socket.send("paint")
 });
 
+socket.addEventListener("message", (event) => {
+	const state = JSON.parse(event.data);
+	render(ctx, state);
+});
 
 console.log(ctx);
