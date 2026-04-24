@@ -2,6 +2,9 @@
 const { login, create } = useAuth()
 const username = ref('')
 const password = ref('')
+const createEmail = ref('')
+const createUsername = ref('')
+const createPassword = ref('')
 
 const handleLogin = async () => {
 	const loginSuccess = await login(username.value, password.value)
@@ -12,19 +15,17 @@ const handleLogin = async () => {
 	else {
 		alert('Wrong logs !')
 	}
-
 }
 
 const handleCreate = async () => {
-	const createSuccess = await create(username.value, password.value)
+	const createSuccess = await create(createEmail.value, createUsername.value, createPassword.value)
 
 	if (createSuccess) {
 		await navigateTo('/')
 	}
 	else {
-		alert('Wrong logs !')
+		alert('Creation failed !')
 	}
-
 }
 
 </script>
@@ -50,12 +51,17 @@ const handleCreate = async () => {
 		<h1 class="title">Create User</h1>
 		<form @submit.prevent="handleCreate" class="global-form">
 			<input
-				v-model="username"
+				v-model="createEmail"
+				type="email"
+				placeholder="Email"
+				class="email-input">
+			<input
+				v-model="createUsername"
 				type="text"
 				placeholder="Username"
 				class="user-input">
 			<input
-				v-model="password"
+				v-model="createPassword"
 				type="password"
 				placeholder="Password"
 				class="pswd-input">
@@ -77,6 +83,11 @@ const handleCreate = async () => {
 	flex-direction: column;
 	align-items: center;
 	gap: 15px;
+}
+
+
+.email-input {
+	padding: 10px 20px;
 }
 
 .user-input {

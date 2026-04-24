@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
 	// 1. Lire le cookie que le navigateur a envoyé automatiquement
 	const token = getCookie(event, 'auth_token')
 	const SECRET_KEY = 'bipboup-Voici-la-cle'
@@ -10,7 +10,12 @@ export default defineEventHandler((event) => {
 
 	try {
 		const decoded = jwt.verify(token, SECRET_KEY) as { userId: number }
-		const user = mockUsers.find(u => u.id === decoded.userId);
+		const user = await prisma.user.findUnique({
+			where: {
+				id: decoded.userId,
+			},
+		});
+		// const user = mockUsers.find(u => u.id === decoded.userId);
 		if (user) {
 			const { password, ...userWithoutPassword } = user
 			return userWithoutPassword

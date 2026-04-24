@@ -12,7 +12,7 @@ export const useAuth = () => {
 				method: 'POST',
 				body: {username, password}
 			})
-			currentUser.value = data.user
+			currentUser.value = data
 			return true
 		}
 		catch (e) {
@@ -27,13 +27,13 @@ export const useAuth = () => {
 		token.value = null
 	}
 
-	const create = async () => {
+	const create = async (email, username, password) => {
 		try {
-			await $fetch('/api/users', {
+			const data = await $fetch('/api/users', {
 				method: 'POST',
-				body: {username, password}
+				body: {email, username, password}
 			})
-			currentUser.value = data.user
+			currentUser.value = data
 			return true
 		}
 		catch (e) {

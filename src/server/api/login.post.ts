@@ -1,15 +1,15 @@
-export default defineEventHandler(async () => {
+import jwt from 'jsonwebtoken'
+
+export default defineEventHandler(async (event) => {
 	const body = await readBody(event)
+	console.log("Body reçu:", body)
 	const SECRET_KEY = 'bipboup-Voici-la-cle'
 	// Simulation de vérification (changer avec la vrai database)
 	// const user = mockUsers.find(u => body.username === u.username && body.password === u.password)
 	const user = await prisma.user.findUnique({
-		where: {
-			username: body.username,
-			password: body.password,
-		},
+		where: { username: body.username }
 	});
-	if (user) {
+	if (user && user.password === body.password) {
 
 		const token = jwt.sign(
 			{ userId: user.id },
@@ -26,6 +26,7 @@ export default defineEventHandler(async () => {
 		})
 
 		// 3. On renvoie les infos publiques de l'utilisateur
+		// changer et ne pas envoyer le mdp
 		return { user }
 	}
 	throw createError({ statusCode: 401, message: 'Identifiants invalides' })
