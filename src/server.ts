@@ -1,7 +1,9 @@
-import { GRID_INFO, GAME, PLAYER_INFO } from "./constants.js"
 import { WebSocket, WebSocketServer } from "ws";
+
+import { GRID_INFO, GAME, PLAYER_INFO } from "./constants.js"
 import { Cell } from "./cell.js";
 import { Game } from "./game.js";
+import { ServerMessage } from "./type.js";
 
 // Cree le serveur au port 8080
 const wss = new WebSocketServer({ port: 8080 });
@@ -32,10 +34,11 @@ wss.on("connection", (client) => {
 	playerSocket.playerId = nextId++;
 
 	// Envoie l'état initial de la grille au joueur qui vient de se connecter
-	playerSocket.send(JSON.stringify ({
+	const message: ServerMessage = {
 		type: "cell_init",
 		cells: game.board.grid.flat(),
-	}));
+	};
+	playerSocket.send(JSON.stringify(message));
 
     /**
      * Gère une action de peinture envoyée par le joueur.
@@ -50,19 +53,19 @@ wss.on("connection", (client) => {
         // Vérifie que le joueur est valide et possède des cases peintes
 		if (playerSocket.playerId < GAME.PLAYERS && game.p_painted_cell[playerSocket.playerId].length !== 0) {
 			var cell: Cell = game.players[playerSocket.playerId].paint(game.board, game);
-		}
 
+			// Broadcast la case modifiée à tous les clients actifs
+			const broadcast: ServerMessage = {
+				type: "cell_update",
+				cell: cell,
+			};
+			wss.clients.forEach( (client) => {
+				if (client.readyState == WebSocket.OPEN) {
+					client.send(JSON.stringify(broadcast));
+				}
+			});
+		}
 		game.actualize();
-		
-        // Broadcast la case modifiée à tous les clients actifs
-		wss.clients.forEach( (client) => {
-			if (client.readyState == WebSocket.OPEN) {
-				client.send(JSON.stringify ({
-					type: "cell_update",
-					cell: cell,
-				}));
-			}
-		});
 	});
 });
 

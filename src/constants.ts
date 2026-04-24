@@ -8,9 +8,9 @@ export const PLAYER_INFO = {
 }
 
 export const GAME = {
-	PLAYERS: 1,
-	CELLS_W: 5,
-	CELLS_H: 5,
+	PLAYERS: 2,
+	CELLS_W: 50,
+	CELLS_H: 50,
 }
 
 // For WIDTH and HEIGHT, must be % CELL_SIZE.

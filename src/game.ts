@@ -3,12 +3,19 @@ import { Player } from "./player.js"
 import { Cell } from "./cell.js"
 import { Grid } from "./grid.js"
 
+/**
+ * Classe principale du jeu, gère l'état global de la partie.
+ * Vit côté serveur — ne contient aucune logique de rendu.
+ */
 export class Game {
 	readonly players: Player[] = [];
 	readonly board: Grid;
 	
 	p_painted_cell: Cell[][] = [];
 
+    /**
+     * @param nb_players - Nombre de joueurs dans la partie
+     */
 	constructor(nb_players: number) {
 		this.board = new Grid(GAME.CELLS_H, GAME.CELLS_W);
 
@@ -19,13 +26,21 @@ export class Game {
 		}
 	}
 
+    /**
+     * Initialise la partie en plaçant chaque joueur sur la grille
+     * et en enregistrant leur case de départ.
+     */
 	init_game() {
 		for (let i = 0; i < this.players.length; i++) {
-			this.players[i].init_player(this.board);
+			this.players[i].init_player();
 			this.p_painted_cell[i].push(this.players[i].home);
 		}
 	}
 
+    /**
+     * Synchronise `p_painted_cell` avec l'état réel de la grille.
+     * Retire les cases qui ont été repeintes par un autre joueur.
+     */
 	actualize() {
 		this.players.forEach((player, index) => {
 			this.p_painted_cell[index] = this.p_painted_cell[index].filter( cell => cell.color === player.color);
