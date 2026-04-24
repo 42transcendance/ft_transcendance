@@ -13,17 +13,15 @@ export class Game {
 		this.board = new Grid(GAME.CELLS_H, GAME.CELLS_W);
 
 		for (let i = 0; i < nb_players; i++) {
-			var new_p = new Player(this.board.grid[i + 5][i + 5], PLAYER_INFO.COLOR[i], i);
+			var new_p = new Player(this.board.grid[1][1], PLAYER_INFO.COLOR[i], i);
 			this.players.push(new_p);
 			this.p_painted_cell[i] = [];
 		}
 	}
 
-	init_game(ctx: any) {
-		this.board.fillGrid(ctx);
-
+	init_game() {
 		for (let i = 0; i < this.players.length; i++) {
-			this.players[i].init_player(ctx, this.board);
+			this.players[i].init_player(this.board);
 			this.p_painted_cell[i].push(this.players[i].home);
 		}
 	}
