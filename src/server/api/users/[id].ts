@@ -1,8 +1,9 @@
-export default defineEventHandler(event => {
+export default defineEventHandler(async (event) => {
 	// get the id
 	const id = getRouterParam(event, 'id');
-	// replace mockUsers by database
-	const user = mockUsers.find(u => u.id === Number(id));
+	const user = await prisma.user.findUnique({
+		where: { id: Number(id) }
+	});
 
 	if (!user) {
 		throw createError({statusCode: 404, message: 'No user found'});

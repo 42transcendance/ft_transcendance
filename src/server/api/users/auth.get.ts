@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
 				id: decoded.userId,
 			},
 		});
-		// const user = mockUsers.find(u => u.id === decoded.userId);
 		if (user) {
 			const { password, ...userWithoutPassword } = user
 			return userWithoutPassword

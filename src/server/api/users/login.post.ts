@@ -4,8 +4,7 @@ export default defineEventHandler(async (event) => {
 	const body = await readBody(event)
 	console.log("Body reçu:", body)
 	const SECRET_KEY = 'bipboup-Voici-la-cle'
-	// Simulation de vérification (changer avec la vrai database)
-	// const user = mockUsers.find(u => body.username === u.username && body.password === u.password)
+
 	const user = await prisma.user.findUnique({
 		where: { username: body.username }
 	});

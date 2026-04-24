@@ -8,7 +8,7 @@ export const useAuth = () => {
 
 	const login = async (username, password) => {
 		try {
-			const data = await $fetch('/api/login', {
+			const data = await $fetch('/api/users/login', {
 				method: 'POST',
 				body: {username, password}
 			})
@@ -22,14 +22,14 @@ export const useAuth = () => {
 	}
 
 	const logout = async () => {
-		await $fetch('/api/logout', { method: 'POST' })
+		await $fetch('/api/users/logout', { method: 'POST' })
 		currentUser.value = null
 		token.value = null
 	}
 
 	const create = async (email, username, password) => {
 		try {
-			const data = await $fetch('/api/users', {
+			const data = await $fetch('/api/users/create', {
 				method: 'POST',
 				body: {email, username, password}
 			})

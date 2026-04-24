@@ -1,4 +1,4 @@
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
 	// Get params in after the '?' in the url
 	const query = getQuery(event);
 	const nameToSearch = query.name as string;
@@ -7,11 +7,9 @@ export default defineEventHandler((event) => {
 		throw createError({ statusCode: 400, message: 'Username required !' });
 	}
 
-	// replace mockUsers by database
-	// Search in Fake database
-	const user = mockUsers.find(u => 
-		u.username.toLowerCase() === nameToSearch.toLowerCase()
-	);
+	const user = await prisma.user.findUnique({
+		where: { username: nameToSearch }
+	});
 
 	if (!user) {
 		throw createError({ statusCode: 404, message: 'User not found !' });
