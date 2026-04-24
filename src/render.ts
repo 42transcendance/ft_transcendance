@@ -1,4 +1,5 @@
 import { GRID_INFO, GAME } from "./constants.js"
+import { Cell } from "./cell.js"
 
 export function fillBackground(ctx: any) {
 	ctx.fillStyle = "black";
@@ -8,10 +9,19 @@ export function fillBackground(ctx: any) {
 	ctx.fillRect(5, 5, GRID_INFO.WIDTH, GRID_INFO.HEIGHT);
 }
 
+function draw_cell(ctx: any, cell: Cell): void {
+	ctx.fillStyle = cell.color;
+	ctx.fillRect(cell.pospx.x, cell.pospx.y, cell.size, cell.size);
+}
+
+
 export function render(ctx: any, state: any) {
-	for (let x = 0; x < GAME.CELLS_W; x++) {
-		for (let y = 0; y < GAME.CELLS_H; y++) {
-			
-		}
+	if (state.type === "cell_init") {
+		state.cells.forEach((cell: any) => {
+			draw_cell(ctx, cell);
+		});
+	}
+	if (state.type === "cell_update") {
+		draw_cell(ctx, state.cell);
 	}
 }
