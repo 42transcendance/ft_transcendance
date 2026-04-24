@@ -9,15 +9,16 @@ export default defineEventHandler(async (event) => {
 		return null
 
 	try {
-		const decoded = jwt.verify(token, SECRET_KEY) as { userId: number }
+		const decoded = jwt.verify(token, SECRET_KEY) as { userId: string }
 		const user = await prisma.user.findUnique({
 			where: {
 				id: decoded.userId,
 			},
 		});
 		if (user) {
-			const { password, ...userWithoutPassword } = user
-			return userWithoutPassword
+			//we don't return email nor password
+			const { email, password, ...safeUser } = user
+			return { safeUser }
 		}
 	} catch (e) {
 		return null

@@ -1,19 +1,18 @@
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <template>
-	<div class="home-wrapper">
-		<NuxtLink to="/" class="home-btn">Home</NuxtLink>
+	<div class="login-wrapper">
+		<NuxtLink to="/login" class="login-btn">Log in</NuxtLink>
 	</div>
 </template>
 
 <style scoped>
-	.home-wrapper {
+	.login-wrapper {
 		display: block;
 		width: 100%;
 	}
 
-	.home-btn {
+	.login-btn {
 		font-family: "Courier New";
 		font-size: 16px;
 		font-weight: bold;

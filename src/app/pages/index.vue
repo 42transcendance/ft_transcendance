@@ -3,8 +3,7 @@
 
 <template>
 	<div>
-		<h1>GAMING</h1>
-		<p>Home page</p>
+		<h1>Home Page</h1>
 	</div>
 </template>
 

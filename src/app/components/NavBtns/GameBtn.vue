@@ -2,23 +2,23 @@
 </script>
 
 <template>
-	<div class="home-wrapper">
-		<NuxtLink to="/" class="home-btn">Home</NuxtLink>
+	<div class="game-wrapper">
+		<NuxtLink to="/game" class="game-btn">Game</NuxtLink>
 	</div>
 </template>
 
 <style scoped>
-	.home-wrapper {
+	.game-wrapper {
 		display: block;
 		width: 100%;
 	}
 
-	.home-btn {
+	.game-btn {
 		font-family: "Courier New";
 		font-size: 16px;
 		font-weight: bold;
 		text-decoration: none;
 		color: #333;
-		cursor: pointer;
 	}
 </style>
+
