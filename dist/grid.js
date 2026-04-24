@@ -1,5 +1,13 @@
 import { Cell } from "./cell.js";
+/**
+ * Grille de jeu représentée comme un tableau 2D de cases.
+ * Initialisée avec des cases vides à la couleur par défaut.
+ */
 export class Grid {
+    /**
+     * @param row - Nombre de lignes
+     * @param col - Nombre de colonnes
+     */
     constructor(row, col) {
         this.grid = [];
         this.row = row;

@@ -1,5 +1,14 @@
 import { GAME } from "./constants.js";
+/**
+ * Représente un joueur de la partie.
+ * Gère sa position de départ, sa couleur et sa logique de peinture.
+ */
 export class Player {
+    /**
+     * @param home - Case de départ, immédiatement peinte à la couleur du joueur
+     * @param color - Couleur du joueur
+     * @param id - Identifiant unique
+     */
     constructor(home, color, id) {
         this.color = color;
         home.color = color;
@@ -7,12 +16,25 @@ export class Player {
         this.id = id;
         this.nbr_ptd = 0;
     }
-    init_player(grid) {
+    /**
+     * Initialise le joueur en comptabilisant sa case de départ.
+     */
+    init_player() {
         this.nbr_ptd++;
     }
+    /**
+     * Peint une case adjacente à la zone du joueur.
+     * Sélectionne aléatoirement une case déjà peinte non entièrement entourée,
+     * puis tente de peindre une case voisine dans une direction aléatoire.
+     *
+     * @param grid - Grille de jeu
+     * @param game - Instance du jeu pour accéder aux cases peintes
+     * @returns La case modifiée, ou la case de départ si aucune direction n'est disponible
+     */
     paint(grid, game) {
         var is_surrounded = true;
         var start;
+        // Cherche aléatoirement une case peinte qui a encore des voisins libres
         do {
             let r_i = Math.floor(Math.random() * game.p_painted_cell[this.id].length);
             start = game.p_painted_cell[this.id][r_i];
@@ -29,6 +51,7 @@ export class Player {
             if ((new_x < 0 || new_x >= GAME.CELLS_W) || (new_y < 0 || new_y >= GAME.CELLS_H))
                 continue;
             check = grid.grid[new_x][new_y];
+            // Peint la case si elle n'appartient pas déjà au joueur
             if (!check.is_painted(this.color)) {
                 check.color = this.color;
                 game.p_painted_cell[this.id].push(check);
