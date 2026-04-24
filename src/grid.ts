@@ -17,13 +17,4 @@ export class Grid {
 			}
 		}
 	}
-
-	fillGrid(ctx: any): void {
-		for (let x = 0; x < this.col; x++) {
-			for (let y = 0; y < this.row; y++) {
-				ctx.fillStyle = this.grid[x][y].color;
-				this.grid[x][y].draw_cell(ctx);
-			}
-		}
-	}
 }
