@@ -1,6 +1,5 @@
 import { GAME } from "./constants.js";
 export class Player {
-    // painted: Cell[] = [];
     constructor(home, color, id) {
         this.color = color;
         home.color = color;
@@ -8,12 +7,10 @@ export class Player {
         this.id = id;
         this.nbr_ptd = 0;
     }
-    init_player(ctx, grid) {
-        // this.painted.push(this.home);
-        this.home.draw_cell(ctx);
+    init_player(grid) {
         this.nbr_ptd++;
     }
-    paint(ctx, grid, game) {
+    paint(grid, game) {
         var is_surrounded = true;
         var start;
         do {
@@ -22,27 +19,24 @@ export class Player {
             if (!start.is_surrounded(this.color, grid))
                 is_surrounded = false;
         } while (is_surrounded);
-        let to_check = [-1, +1];
-        for (let i = 0; i < 4; i++) {
-            let check;
-            let new_x = start.pos.x + to_check[i % 2];
-            let new_y = start.pos.y + to_check[i % 2];
-            if ((new_x < 0 || new_x > GAME.CELLS_W) || (new_y < 0 || new_y > GAME.CELLS_H))
-                break;
-            if (i < 2) {
-                check = grid.grid[new_x][start.pos.y];
-            }
-            else {
-                check = grid.grid[start.pos.x][new_y];
-            }
+        let new_dir = [{ x: 0, y: 1 }, { x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }];
+        let check = start;
+        while (new_dir.length > 0) {
+            let index = Math.floor(Math.random() * new_dir.length);
+            let new_x = start.pos.x + new_dir[index].x;
+            let new_y = start.pos.y + new_dir[index].y;
+            new_dir.splice(index, 1);
+            if ((new_x < 0 || new_x >= GAME.CELLS_W) || (new_y < 0 || new_y >= GAME.CELLS_H))
+                continue;
+            check = grid.grid[new_x][new_y];
             if (!check.is_painted(this.color)) {
                 check.color = this.color;
-                check.draw_cell(ctx);
                 game.p_painted_cell[this.id].push(check);
                 this.nbr_ptd++;
                 break;
             }
         }
+        return (check);
     }
 }
 //# sourceMappingURL=player.js.map
