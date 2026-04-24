@@ -2,7 +2,22 @@
 version: '3.8'
  
 services:
- 
+  static-site:
+    build:
+      context: devops/static-site
+      dockerfile: Dockerfile
+    container_name: static-site
+    networks:
+      - ft_transcendance
+    restart: on-failure
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "8080:8080"
+
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
@@ -30,7 +45,7 @@ services:
     command:
       - --podman=unix:///var/run/podman/podman.sock
       - --docker=unix://
-      - --docker_only=true
+      #- --docker_only=true
       - --housekeeping_interval=10s
       - --max_housekeeping_interval=15s
       - --disable_metrics=percpu,sched,tcp,udp,disk,diskIO,hugetlb,referenced_memory,cpu_topology,resctrl

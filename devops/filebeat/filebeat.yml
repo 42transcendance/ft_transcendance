@@ -1,9 +1,17 @@
+
 filebeat.inputs:
   - type: container
     paths:
       - /var/lib/docker/containers/*/*.log
     processors:
-      - add_docker_metadata: ~
+      - dissect:
+          tokenizer: "/var/lib/docker/containers/%{container_id}/%{filename}"
+          field: "log.file.path"
+          target_prefix: ""
+      - add_fields:
+          target: ''
+          fields:
+            service_name: "${container_id}"
 
 output.logstash:
   hosts: ["logstash:5044"]

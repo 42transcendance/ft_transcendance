@@ -6,7 +6,7 @@
 #    By: dbhujoo <dbhujoo@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/28 13:30:24 by dbhujoo           #+#    #+#              #
-#    Updated: 2026/04/22 14:04:47 by dbhujoo          ###   ########.fr        #
+#    Updated: 2026/04/24 10:38:58 by dbhujoo          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -68,9 +68,9 @@ podman-clean: podman-down
 	podman system prune -af
  
 podman-fclean: podman-clean
-	rm -rf /home/${USER}/data/grafana/*
-	rm -rf /home/${USER}/data/elasticsearch/*
- 
+	podman unshare rm -rf ~/data/grafana/*
+	podman unshare rm -rf ~/data/elasticsearch/*
+	
 podman-status:
 	podman ps
  
