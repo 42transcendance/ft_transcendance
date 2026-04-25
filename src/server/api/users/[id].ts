@@ -1,4 +1,7 @@
 export default defineEventHandler(async (event) => {
+	// protection middleware
+	const token = getCookie(event, 'auth_token')
+  	if (!token) throw createError({ statusCode: 401, message: 'Non autorisé' })
 	// get the id
 	const id = getRouterParam(event, 'id');
 	const user = await prisma.user.findUnique({

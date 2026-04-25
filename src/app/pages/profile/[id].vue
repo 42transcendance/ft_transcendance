@@ -1,4 +1,8 @@
 <script setup lang="ts">
+	// middleware proctection
+	definePageMeta({
+		middleware: 'auth'
+	})
 	//get all address informations
 	const route = useRoute();
 	//get data from the user
