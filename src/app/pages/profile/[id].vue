@@ -11,12 +11,12 @@
 
 <template>
 	<div v-if="user" style="border: 1px solid #ccc; padding: 10px; margin-top: 10px;" class="profile-card">
-		<NuxtLink to="/">Back to search</NuxtLink>
 		<h2>Profil found :</h2>
-		<img :src="user.avatar" alt="Avatar" width="100" />
-		<p><strong>Pseudo :</strong> {{ user.username }}</p>
-		<p><strong>Level :</strong> {{ user.level }}</p>
-		<p><strong>Status :</strong> {{ user.status }}</p>
+		<img :src="user.safeUser.avatar" alt="Avatar" width="100" />
+		<p><strong>Username :</strong> {{ user.safeUser.username }}</p>
+		<p><strong>isOnline :</strong> {{ user.safeUser.isOnline }}</p>
+		<p><strong>lastSeenAt :</strong> {{ user.safeUser.lastSeenAt }}</p>
+		<NuxtLink to="/">Back to home</NuxtLink>
 	</div>
 	<div v-else-if="error">
 		<p>Erreur : No user found</p>

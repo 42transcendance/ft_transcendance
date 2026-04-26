@@ -11,6 +11,7 @@ export const useProfile = () => {
 
     const closeProfile = () => {
         isProfileOpen.value = false
+		selectedUser.value = null
     }
 
 	const setError = (msg: string) => {

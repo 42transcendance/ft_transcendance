@@ -7,11 +7,11 @@
 		<div v-if="selectedUser" class="profile-content">
 			<button class="close-btn" @click="closeProfile">×</button>
 			
-			<h2>Profil de {{ selectedUser.username }}</h2>
+			<h2>Profil de {{ selectedUser.safeUser.username }}</h2>
 			<div class="user-info">
-				<img :src="selectedUser.avatar" class="avatar-large" />
-				<p>Niveau : {{ selectedUser.level }}</p>
-				<p>Status : {{ selectedUser.status }}</p>
+				<img :src="selectedUser.safeUser.avatar" class="avatar-large" />
+				<p>Online : {{ selectedUser.safeUser.isOnline }}</p>
+				<p>Last seen : {{ selectedUser.safeUser.lastSeenAt }}</p>
 			</div>
 		</div>
 	</div>
