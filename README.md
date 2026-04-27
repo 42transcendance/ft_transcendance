@@ -5,6 +5,9 @@
 Lancer le serveur en local :
 `npx serve .`
 
+Et le serveur qui héberge la partie :
+`npx tsx src/server.ts`
+
 Puis lancer le compilateur :
 `npx tsc --watch`
 
