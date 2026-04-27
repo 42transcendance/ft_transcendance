@@ -31,9 +31,12 @@ services:
       - service_mesh
     ports:
       - "3000:3000"
+    volumes:
+      - ./uploads_storage:/app/storage/uploads
 
 volumes:
   postgres_data:
+  uploads_storage:
 
 networks:
   service_mesh:

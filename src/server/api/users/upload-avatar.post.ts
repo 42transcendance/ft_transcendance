@@ -1,7 +1,7 @@
-import { promises as fs } from 'fs'
-import { existsSync, mkdirSync } from 'fs'
-import path from 'path'
-import { randomUUID } from 'crypto'
+import { existsSync, mkdirSync, unlinkSync } from 'fs'
+import { promises as fsPromises } from 'node:fs'
+import path from 'node:path'
+import { randomUUID } from 'node:crypto'
 import jwt from 'jsonwebtoken'
 
 export default defineEventHandler(async (event) => {
@@ -17,6 +17,30 @@ export default defineEventHandler(async (event) => {
     const decoded = jwt.verify(token, SECRET_KEY) as { userId: number }
 
     const userId = decoded.userId
+
+	// delete old avatar if exists
+	const user = await prisma.user.findUnique ({
+		where: {id: userId}
+	})
+
+	const oldAvatar = user?.avatarUrl
+
+	if (oldAvatar && oldAvatar !== 'default-Avatar.jpg') {
+
+		const oldFileName = oldAvatar.split('/').pop();
+
+		const oldFilePath = path.join('/app/storage/uploads', oldFileName);
+
+		// check if file exists
+		if (existsSync(oldFilePath)) {
+			try {
+				unlinkSync(oldFilePath); // delete file
+				console.log(`Ancien avatar supprimé : ${oldFileName}`);
+			} catch (err) {
+				console.error("Erreur lors de la suppression de l'ancien fichier :", err);
+			}
+		}
+	}
 
 	// read multipart data
 	const formData = await readMultipartFormData(event)
@@ -36,8 +60,8 @@ export default defineEventHandler(async (event) => {
 	const fileName = `${randomUUID()}.${fileExtension}` // random UUID
 	
 	// path where we will put the picture
-	const uploadPath = path.join(process.cwd(), 'public', 'uploads', fileName)
-	const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+	const uploadDir = '/app/storage/uploads'
+	const uploadPath = path.join(uploadDir, fileName)
 
 	// check if directory exists
 	if (!existsSync(uploadDir)) {
@@ -48,10 +72,8 @@ export default defineEventHandler(async (event) => {
 	const avatarUrl = `/uploads/${fileName}`
 
 	try {
-		console.log(`test 1`)
 		// write the file in the project
-		await fs.writeFile(uploadPath, file.data)
-		console.log(`test 2`)
+		await fsPromises.writeFile(uploadPath, file.data)
 
 		// update prisma db
 		await prisma.user.update({

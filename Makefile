@@ -25,6 +25,7 @@ all: up migrate-dev
 up:
 	@echo "$(GREEN)Starting services...$(RESET)"
 	$(COMPOSE) up --build -d
+	mkdir -p uploads_storage
 
 down:
 	@echo "$(YELLOW)Stopping services...$(RESET)"
@@ -107,6 +108,8 @@ fclean: down
 	@echo "$(RED)Full clean — removing everything including volumes...$(RESET)"
 	$(COMPOSE) down --rmi local -v --remove-orphans
 	docker network prune -f
+	rm -rf ./uploads_storage/*
+	
 
 re: fclean up migrate-dev
 

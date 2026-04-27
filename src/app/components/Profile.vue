@@ -1,5 +1,6 @@
 <script setup lang="ts">
 	const { isProfileOpen, selectedUser, closeProfile } = useProfile()
+	const previewImage = computed(() => {return selectedUser.value?.safeUser?.avatarUrl || null})
 </script>
 
 <template>
@@ -7,9 +8,9 @@
 		<div v-if="selectedUser" class="profile-content">
 			<button class="close-btn" @click="closeProfile">×</button>
 			
-			<h2>Profil de {{ selectedUser.safeUser.username }}</h2>
+			<img :src="previewImage || '/default-avatar.jpg'" alt="Avatar" class="avatar-preview" />
+			<h2 class="profile-title">Profil de {{ selectedUser.safeUser.username }}</h2>
 			<div class="user-info">
-				<img :src="selectedUser.safeUser.avatar" class="avatar-large" />
 				<p>Online : {{ selectedUser.safeUser.isOnline }}</p>
 				<p>Last seen : {{ selectedUser.safeUser.lastSeenAt }}</p>
 			</div>
@@ -38,10 +39,27 @@
 		transform: translateX(0);
 	}
 
+	.avatar-preview {
+		width: 150px;
+		height: 150px;
+		border-radius: 50%;
+		object-fit: cover;
+		border: 3px solid #ddd;
+		justify-content: center;
+	}
+
+	.profile-title {
+		text-align: center;
+		align-items: center;
+		gap: 10px;
+	}
 
 	.profile-content {
 		padding: 20px;
 		padding-top: 60px; /* Pour ne pas être sous la navbar si besoin */
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 	}
 
 	.close-btn {

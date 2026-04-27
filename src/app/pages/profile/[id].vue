@@ -107,10 +107,10 @@
 
 <template>
 	<div class="profile-wrapper">
-		<h1>Your Profile</h1>
+		<h1 class="profile-title">Your Profile</h1>
 		
 		<div class="avatar-section">
-			<img :src="previewImage || '/default-avatar.png'" alt="Avatar" class="avatar-preview" />
+			<img :src="previewImage || '/default-avatar.jpg'" alt="Avatar" class="avatar-preview" />
 			
 			<input 
 				type="file" 
@@ -120,8 +120,8 @@
 				class="hidden"
 			/>
 			
-			<button @click="fileInput?.click()" class="btn-secondary">Choose Image</button>
-			<button v-if="fileInput?.files?.length" @click="uploadAvatar" class="btn-primary">Save Avatar</button>
+			<button @click="fileInput?.click()" class="change-btn">Change Avatar</button>
+			<button v-if="fileInput?.files?.length" @click="uploadAvatar" class="save-btn">Save changes</button>
 			
 			<p v-if="uploadError" class="error">{{ uploadError }}</p>
 		</div>
@@ -138,6 +138,12 @@
 		border: 1px solid #ccc;
 		padding: 10px;
 		margin-top: 10px;
+	}
+
+	.profile-title {
+		text-align: center;
+		align-items: center;
+		gap: 20px;
 	}
 
 	.avatar-section {
