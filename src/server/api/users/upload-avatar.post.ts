@@ -1,4 +1,5 @@
 import { promises as fs } from 'fs'
+import { existsSync, mkdirSync } from 'fs'
 import path from 'path'
 import { randomUUID } from 'crypto'
 import jwt from 'jsonwebtoken'
@@ -35,19 +36,27 @@ export default defineEventHandler(async (event) => {
 	const fileName = `${randomUUID()}.${fileExtension}` // random UUID
 	
 	// path where we will put the picture
-	const uploadPath = path.join(process.cwd(), 'src', 'public', 'uploads', fileName)
-	
+	const uploadPath = path.join(process.cwd(), 'public', 'uploads', fileName)
+	const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+
+	// check if directory exists
+	if (!existsSync(uploadDir)) {
+		mkdirSync(uploadDir, { recursive: true })
+	}
+
 	// Public url that will be stored in db
 	const avatarUrl = `/uploads/${fileName}`
 
 	try {
+		console.log(`test 1`)
 		// write the file in the project
 		await fs.writeFile(uploadPath, file.data)
+		console.log(`test 2`)
 
 		// update prisma db
 		await prisma.user.update({
-		  where: { id: userId },
-		  data: { avatarUrl: avatarUrl }
+			where: { id: userId },
+			data: { avatarUrl: avatarUrl }
 		})
 
 		console.log(`Fichier enregistré : ${uploadPath}`)
