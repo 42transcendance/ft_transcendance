@@ -9,7 +9,8 @@ let ws: WebSocket | null = null
 
 onMounted(() => {
   const ctx = canvas.value!.getContext('2d')!
-  ws = new WebSocket('ws://localhost:3000/ws/game/1')
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+  ws = new WebSocket(`${protocol}//${location.host}/ws/game/1`)
   fillBackground(ctx)
   
   ws.addEventListener('message', (event) => {
