@@ -5,10 +5,19 @@ import { GAME } from '../../../game/constants'
 const game = new Game(GAME.PLAYERS)
 game.init_game()
 let nextId = 0
+const playerMap = new Map<string, number>()
 
 export default defineWebSocketHandler({
   open(peer) {
-    const playerId = nextId++
+    // Refuser si déjà 2 joueurs connectés
+    if (playerMap.size >= GAME.PLAYERS) {
+      peer.send(JSON.stringify({ type: 'error', message: 'Partie pleine' }))
+      peer.close()
+      return
+    }
+    const playerId = nextId % GAME.PLAYERS  // ← reste toujours entre 0 et 1
+    nextId++
+    playerMap.set(peer.id, playerId)
     peer.subscribe('game')
     // Même logique que son server.ts
     const message = {
@@ -20,7 +29,7 @@ export default defineWebSocketHandler({
 
   message(peer, message) {
     const data = JSON.parse(message.text())
-    const playerId = 0 // à améliorer plus tard
+    const playerId = playerMap.get(peer.id) ?? 0 // à améliorer plus tard -> recupere le vrai player id
 
     if (data.type === 'paint') {
       if (playerId < GAME.PLAYERS && game.p_painted_cell[playerId].length !== 0) {
@@ -39,6 +48,7 @@ export default defineWebSocketHandler({
   },
 
   close(peer) {
+    playerMap.delete(peer.id)  // ← nettoie quand le joueur se déconnecte
     console.log('Joueur déconnecté')
   }
 })

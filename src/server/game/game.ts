@@ -18,9 +18,14 @@ export class Game {
 	 */
 	constructor(nb_players: number) {
 		this.board = new Grid(GAME.CELLS_H, GAME.CELLS_W);
+		  const startPositions = [
+			{ x: 1, y: 1 },                                      // joueur 0 → haut gauche
+			{ x: GAME.CELLS_W - 2, y: GAME.CELLS_H - 2 }        // joueur 1 → bas droite
+		]
 
 		for (let i = 0; i < nb_players; i++) {
-			var new_p = new Player(this.board.grid[1][1], PLAYER_INFO.COLOR[i], i);
+			const startCell = this.board.grid[startPositions[i].x][startPositions[i].y]
+    		const new_p = new Player(startCell, PLAYER_INFO.COLOR[i], i)
 			this.players.push(new_p);
 			this.p_painted_cell[i] = [];
 		}
