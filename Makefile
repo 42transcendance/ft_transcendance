@@ -57,36 +57,31 @@ rebuild: down build up
 # ==============================================================
 
 # Variable qui récupère DATABASE_URL depuis Vault
-VAULT_FETCH = export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/transcendence/postgres | sed -n 's/.*"database_url":"\([^"]*\)".*/\1/p')
+migrate-dev:
+	docker compose exec app sh -c 'export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/data/transcendence/postgres | jq -r ".data.data.database_url") && ./node_modules/.bin/prisma migrate dev --name init'
 
 migrate:
 	@echo "$(GREEN)Running migrations...$(RESET)"
-	$(COMPOSE) exec app sh -c '$(VAULT_FETCH) && ./node_modules/.bin/prisma migrate deploy'
-
-migrate-dev:
-	@echo "$(GREEN)Creating new migration...$(RESET)"
-	$(COMPOSE) exec app sh -c '$(VAULT_FETCH) && ./node_modules/.bin/prisma migrate dev --name init'
+	docker compose exec app sh -c 'export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/data/transcendence/postgres | jq -r ".data.data.database_url") && ./node_modules/.bin/prisma migrate deploy'
 
 generate:
 	@echo "$(GREEN)Generating Prisma client...$(RESET)"
-	$(COMPOSE) exec app sh -c '$(VAULT_FETCH) && ./node_modules/.bin/prisma generate'
+	docker compose exec app sh -c 'export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/data/transcendence/postgres | jq -r ".data.data.database_url") && ./node_modules/.bin/prisma generate'
 
 studio:
 	@echo "$(GREEN)Opening Prisma Studio on http://localhost:5555$(RESET)"
-	$(COMPOSE) exec app sh -c '$(VAULT_FETCH) && ./node_modules/.bin/prisma studio'
+	docker compose exec app sh -c 'export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/data/transcendence/postgres | jq -r ".data.data.database_url") && ./node_modules/.bin/prisma studio'
 
 # ==============================================================
 # BASE DE DONNÉES
 # ==============================================================
-
 db-shell:
 	@echo "$(GREEN)Connecting to PostgreSQL...$(RESET)"
 	$(COMPOSE) exec $(DB) psql -U $(DB_USER) -d $(DB_NAME)
 
 db-reset:
 	@echo "$(RED)Resetting database...$(RESET)"
-	$(COMPOSE) exec app sh -c '$(VAULT_FETCH) && ./node_modules/.bin/prisma migrate reset --force'
-
+	docker compose exec app sh -c 'export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/data/transcendence/postgres | jq -r ".data.data.database_url") && ./node_modules/.bin/prisma migrate reset --force'
 # ==============================================================
 # STATUT / SANTÉ
 # ==============================================================
