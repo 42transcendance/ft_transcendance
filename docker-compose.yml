@@ -34,9 +34,48 @@ services:
     volumes:
       - ./uploads_storage:/app/storage/uploads
 
+  nginx:
+    build:
+      context: ./security/nginx
+      dockerfile: Dockerfile
+    container_name: transcendence_nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "8080:80"
+      - "8443:443"
+    networks:
+      - service_mesh
+    healthcheck:
+      test: ["CMD", "curl", "-fk", "https://localhost:443/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  vault:
+    build:
+      context: ./security/vault
+      dockerfile: Dockerfile
+    container_name: transcendence_vault
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_ADDR: http://0.0.0.0:8200
+      VAULT_API_ADDR: http://0.0.0.0:8200
+    ports:
+      - "8200:8200"
+    networks:
+      - service_mesh
+    volumes:
+      - vault_data:/vault/data
+      - ./secrets:/secrets:ro
+
 volumes:
   postgres_data:
   uploads_storage:
+  vault_data:
 
 networks:
   service_mesh:
