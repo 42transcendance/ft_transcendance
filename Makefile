@@ -56,21 +56,24 @@ rebuild: down build up
 # PRISMA
 # ==============================================================
 
+# Variable qui récupère DATABASE_URL depuis Vault
+VAULT_FETCH = export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/transcendence/postgres | sed -n 's/.*"database_url":"\([^"]*\)".*/\1/p')
+
 migrate:
 	@echo "$(GREEN)Running migrations...$(RESET)"
-	$(COMPOSE) exec $(APP) ./node_modules/.bin/prisma migrate deploy
+	$(COMPOSE) exec app sh -c '$(VAULT_FETCH) && ./node_modules/.bin/prisma migrate deploy'
 
 migrate-dev:
 	@echo "$(GREEN)Creating new migration...$(RESET)"
-	$(COMPOSE) exec $(APP) ./node_modules/.bin/prisma migrate dev --name init
+	$(COMPOSE) exec app sh -c '$(VAULT_FETCH) && ./node_modules/.bin/prisma migrate dev --name init'
 
 generate:
 	@echo "$(GREEN)Generating Prisma client...$(RESET)"
-	$(COMPOSE) exec $(APP) ./node_modules/.bin/prisma generate
+	$(COMPOSE) exec app sh -c '$(VAULT_FETCH) && ./node_modules/.bin/prisma generate'
 
 studio:
 	@echo "$(GREEN)Opening Prisma Studio on http://localhost:5555$(RESET)"
-	$(COMPOSE) exec $(APP) ./node_modules/.bin/prisma studio
+	$(COMPOSE) exec app sh -c '$(VAULT_FETCH) && ./node_modules/.bin/prisma studio'
 
 # ==============================================================
 # BASE DE DONNÉES
@@ -82,7 +85,7 @@ db-shell:
 
 db-reset:
 	@echo "$(RED)Resetting database...$(RESET)"
-	$(COMPOSE) exec $(APP) ./node_modules/.bin/prisma migrate reset --force
+	$(COMPOSE) exec app sh -c '$(VAULT_FETCH) && ./node_modules/.bin/prisma migrate reset --force'
 
 # ==============================================================
 # STATUT / SANTÉ
