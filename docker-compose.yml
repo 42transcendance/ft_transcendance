@@ -8,7 +8,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - service_mesh
+      - backend
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U transcendence -d transcendence_db"]
       interval: 10s
@@ -29,7 +29,8 @@ services:
       VAULT_ADDR: http://vault:8200
       VAULT_TOKEN: myroot
     networks:
-      - service_mesh
+      - frontend
+      - backend
     volumes:
       - ./uploads_storage:/app/storage/uploads
 
@@ -45,7 +46,7 @@ services:
       - "8080:80"
       - "8443:443"
     networks:
-      - service_mesh
+      - frontend
     healthcheck:
       test: ["CMD", "curl", "-fk", "https://localhost:443/health"]
       interval: 30s
@@ -64,9 +65,9 @@ services:
       VAULT_ADDR: http://0.0.0.0:8200
       VAULT_API_ADDR: http://0.0.0.0:8200
     ports:
-      - "8200:8200"
+      - "8200:8200" #a supprimer lors de la prod pour ne plus acceder au vault
     networks:
-      - service_mesh
+      - backend
     volumes:
       - vault_data:/vault/data
       - ./secrets:/secrets:ro
@@ -77,5 +78,7 @@ volumes:
   vault_data:
 
 networks:
-  service_mesh:
+  frontend:
+    driver: bridge
+  backend:
     driver: bridge
