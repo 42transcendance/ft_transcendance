@@ -9,12 +9,12 @@ export default defineNitroPlugin(async () => {
   console.log('[vault] Fetching DATABASE_URL from Vault...')
   
   const response = await $fetch<any>(
-    `${vaultAddr}/v1/secret/transcendence/postgres`,
+    `${vaultAddr}/v1/secret/data/transcendence/postgres`,
     {
       headers: { 'X-Vault-Token': vaultToken }
     }
   )
 
-  process.env.DATABASE_URL = response.data.database_url
+  process.env.DATABASE_URL = response.data.data.database_url
   console.log('[vault] ✓ DATABASE_URL loaded successfully')
 })
