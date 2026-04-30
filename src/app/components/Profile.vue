@@ -1,21 +1,64 @@
 <script setup lang="ts">
 	const { isProfileOpen, selectedUser, closeProfile } = useProfile()
-	const previewImage = computed(() => {return selectedUser.value?.safeUser?.avatarUrl || null})
+	const avatar = computed(() => {return selectedUser.value?.safeUser?.avatarUrl || null})
+	const { pendingStatusChange } = useOnlineStatus()
+
+	watch(pendingStatusChange, (change) => {
+		if (change && selectedUser.value?.safeUser?.id === change.userId) {
+			selectedUser.value = {
+				...selectedUser.value,
+				safeUser: {
+					...selectedUser.value.safeUser,
+					isOnline: change.isOnline
+				}
+			}
+		}
+	})
+
+	function formatLastSeen(date: Date | null): string {
+		if (!date)
+			return ''
+
+		const now = new Date()
+		const last = new Date(date)
+		const diffMs = now.getTime() - last.getTime()  // différence en millisecondes
+
+		const minutes = Math.floor(diffMs / (1000 * 60))
+		const hours   = Math.floor(diffMs / (1000 * 60 * 60))
+		const days    = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+		const weeks   = Math.floor(days / 7)
+		const months  = Math.floor(days / 30)
+		const years   = Math.floor(days / 365)
+
+		if (minutes < 1)
+			return 'since a few seconds'
+		if (minutes < 60)
+			return `since ${minutes} minute${minutes > 1 ? 's' : ''}`
+		if (hours < 24)
+			return `since ${hours} hour${hours > 1 ? 's' : ''}`
+		if (days < 7)
+			return `since ${days} day${days > 1 ? 's' : ''}`
+		if (weeks < 4)
+			return `since ${weeks} week${weeks > 1 ? 's' : ''}`
+		if (months < 12)
+			return `since ${months} month${months > 1 ? 's' : ''}`
+		return `since ${years} year${years > 1 ? 's' : ''}`
+	}
 </script>
 
 <template>
 	<div :class="['side-profile', { 'is-open': isProfileOpen }]">
-		<div v-if="selectedUser" class="profile-content">
+		<div v-show="selectedUser" class="profile-content">
 			<button class="close-btn" @click="closeProfile">×</button>
 
-			<img :src="previewImage || '/default-avatar.jpg'" alt="Avatar" class="avatar-preview" />
+			<img :src="avatar || '/default-avatar.jpg'" alt="Avatar" class="avatar" />
 			<h2 class="profile-title">Profil de {{ selectedUser?.safeUser?.username }}</h2>
 			<div v-if="selectedUser?.safeUser?.isOnline" class="user-online">
 				<p>Online 🟢</p>
 			</div>
 			<div v-else class="user-offline">
 				<p>Offline 🔴</p>
-				<p>Last seen : {{ selectedUser?.safeUser?.lastSeenAt }}</p>
+				<p class="last-seen">{{ formatLastSeen(selectedUser?.safeUser?.lastSeenAt) }}</p>
 			</div>
 		</div>
 	</div>
@@ -43,7 +86,7 @@
 		transform: translateX(0);
 	}
 
-	.avatar-preview {
+	.avatar {
 		width: 150px;
 		height: 150px;
 		border-radius: 50%;
@@ -74,5 +117,21 @@
 		border: none;
 		background: none;
 		cursor: pointer;
+	}
+
+	.user-online, .user-offline {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		width: 100%;
+	}
+
+	.last-seen {
+		font-style: italic;
+		color: #949494;
+		font-size: 0.90rem;
+		margin-top: 2px;
 	}
 </style>

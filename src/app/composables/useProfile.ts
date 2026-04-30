@@ -11,12 +11,12 @@ export const useProfile = () => {
 
     const closeProfile = () => {
         isProfileOpen.value = false
-		selectedUser.value = null
+		setTimeout(() => { selectedUser.value = null }, 300)
     }
 
 	const setError = (msg: string) => {
 		errorMessage.value = msg
-		setTimeout(() => { errorMessage.value = '' }, 3000);
+		setTimeout(() => { errorMessage.value = '' }, 3000)
 	}
 
     return {

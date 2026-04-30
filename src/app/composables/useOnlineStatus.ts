@@ -1,14 +1,10 @@
-const onlineStatuses = ref<Record<string, boolean>>({})
+const pendingStatusChange = ref<{ userId: string, isOnline: boolean } | null>(null)
 
 export const useOnlineStatus = () => {
 
-    function updateUserStatus(username: string, isOnline: boolean) {
-        onlineStatuses.value[userId] = isOnline
+    function notifyStatusChange(userId: string, isOnline: boolean) {
+        pendingStatusChange.value = { userId, isOnline }
     }
 
-    function isOnline(username: string): boolean {
-        return onlineStatuses.value[userId] ?? false
-    }
-
-    return { updateUserStatus, isOnline }
+    return { notifyStatusChange, pendingStatusChange }
 }

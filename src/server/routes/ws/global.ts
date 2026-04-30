@@ -10,7 +10,7 @@ export default defineWebSocketHandler({
             return
 		}
 
-		// Parser le cookie manuellement
+		//cookie parsing
 		const cookies = Object.fromEntries(
 			cookieHeader.split(';').map(c => {
 				const [key, ...v] = c.trim().split('=')
@@ -29,7 +29,6 @@ export default defineWebSocketHandler({
         try {
             const decoded = jwt.verify(token, SECRET_KEY) as { userId: string };
 
-            // IMPORTANT : L'objet retourné par Prisma n'a pas de propriété .safeUser
             const user = await prisma.user.findUnique({
                 where: { id: decoded.userId }
             });
@@ -43,7 +42,7 @@ export default defineWebSocketHandler({
                     where: { id: user.id },
                     data: { isOnline: true }
                 });
-                
+
 				peer.publish('status', JSON.stringify({
 					type: 'STATUS_CHANGE',
 					userId: user.id,

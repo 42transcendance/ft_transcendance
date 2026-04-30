@@ -8,7 +8,10 @@
 	//get data from the user
 	const {data: user, error} = await useFetch(`/api/users/${route.params.id}`);
 
-	const { isOnline } = useOnlineStatus()
+	if (error.value) {
+		throw createError({ statusCode: 404, message: 'User not found' })
+	}
+
 	const { currentUser } = useAuth()
 	const fileInput = ref<HTMLInputElement | null>(null)
 	const previewImage = ref<string | null>(currentUser.value?.avatarUrl || null)
@@ -94,13 +97,6 @@
 		</div>
 		<div class="info-section">
 			<p><strong>Username :</strong> {{ user?.safeUser?.username }}</p>
-			<div v-if="isOnline(user?.safeUser?.username)" class="user-online">
-				<p>Online 🟢</p>
-			</div>
-			<div v-else class="user-offline">
-				<p>Offline 🔴</p>
-				<p>Last seen : {{ user?.safeUser?.lastSeenAt }}</p>
-			</div>
 		</div>
 	</div>
 </template>

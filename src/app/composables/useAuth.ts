@@ -1,5 +1,5 @@
 export const useAuth = () => {
-
+	const { closeProfile } = useProfile()
 	const currentUser = useState('currentUser', () => null)
 	const token = useCookie('auth_token', {
 		path: '/',
@@ -25,6 +25,7 @@ export const useAuth = () => {
 		await $fetch('/api/users/logout', { method: 'POST' })
 		currentUser.value = null
 		token.value = null
+		closeProfile()
 		await navigateTo('/')
 	}
 

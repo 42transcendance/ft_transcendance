@@ -1,16 +1,19 @@
 <script setup lang="ts">
 	const { currentUser } = useAuth()
-	const { updateUserStatus } = useOnlineStatus()
+	const { notifyStatusChange } = useOnlineStatus()
+
+	// try to see if the user is already connected
 	const { data } = await useFetch('/api/users/auth')
 	if (data.value)
 		currentUser.value = data.value.safeUser
-
+	else
+		currentUser.value = null
 
 	//webSocket creation
 	let socket: WebSocket | null = null
 	let shouldReconnect = false
 	let retryDelay = 1000
-	let maxRetries = 5
+	let maxRetries = 6
 	let retryCount = 0
 
 	function connect() {
@@ -22,7 +25,7 @@
 		socket = new WebSocket(`${protocol}//${window.location.host}/ws/global`)
 
 		socket.onopen = () => {
-			console.log("✅ Connecté au canal de statut global")
+			console.log("✅ Connected")
 			retryDelay = 1000
 			retryCount = 0
 		}
@@ -30,26 +33,32 @@
 		socket.onclose = (event) => {
 			if (shouldReconnect && !event.wasClean) {
 				if (retryCount >= maxRetries) {
-					console.log("❌ Connexion impossible après 5 tentatives, abandon.")
+					console.log("❌ Reconnexion failed after 6 attempts, we won't try anymore mate")
 					shouldReconnect = false
 					socket = null
 					return
 				}
 				retryCount++
-				console.log(`🔄 Tentative ${retryCount}/${maxRetries} de reconnexion dans ${retryDelay / 1000}s...`)
-				setTimeout(() => {
-					retryDelay = Math.min(retryDelay * 2, 30000)
-					connect()
+				console.log(`🔄 Reconnexion attempt ${retryCount}/${maxRetries} in ${retryDelay / 1000}s...`)
+				setTimeout(async () => {
+					try {
+						await $fetch('/api/users/auth')
+						retryDelay = Math.min(retryDelay * 2, 30000)
+						connect()
+					} catch {
+						console.error("Session lost or database reinitialized. Page reload...")
+						window.location.reload()
+					}
 				}, retryDelay)
 			}
 		}
 
-		socket.onerror = (error) => console.error("❌ Erreur WebSocket", error)
+		socket.onerror = (error) => console.error("❌ WebSocket Error", error)
 
 		socket.onmessage = (event) => {
 			const message = JSON.parse(event.data)
-			if (message?.type === 'STATUS_CHANGE') {
-				updateUserStatus(message.userId, message.isOnline)
+			if (message.type === 'STATUS_CHANGE') {
+				notifyStatusChange(message.userId, message.isOnline)
 			}
 		}
 	}
@@ -60,14 +69,14 @@
 		socket = null
 	}
 
-	// ← C'est ici que tout se joue
+	//check if there is a change in currentUser
 	watch(currentUser, (newUser) => {
 		if (newUser && !socket) {
-			connect()       // l'utilisateur vient de se connecter
+			connect()
 		} else if (!newUser && socket) {
-			disconnect()    // l'utilisateur vient de se déconnecter
+			disconnect()
 		}
-	}, { immediate: true })  // immediate: true = vérifie aussi au premier rendu
+	}, { immediate: true })  //check at first render
 
 	onUnmounted(() => disconnect())
 </script>
