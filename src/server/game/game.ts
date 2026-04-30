@@ -12,6 +12,7 @@ export class Game {
 	readonly board: Grid;
 
 	p_painted_cell: Cell[][] = [];
+	state: "on-going" | "over";
 
 	/**
 	 * @param nb_players - Nombre de joueurs dans la partie
@@ -29,6 +30,7 @@ export class Game {
 			this.players.push(new_p);
 			this.p_painted_cell[i] = [];
 		}
+		this.state = "on-going";
 	}
 
 	/**
@@ -50,5 +52,18 @@ export class Game {
 		this.players.forEach((player, index) => {
 			this.p_painted_cell[index] = this.p_painted_cell[index].filter(cell => cell.color === player.color);
 		});
+	}
+
+	is_finished() {
+		var cpt: number = 0;
+		this.players.forEach((player, index) => {
+			if (this.p_painted_cell[index].length === 0) {
+				cpt++;
+			}
+		});
+
+		if (cpt >= this.player.length - 1) {
+			this.state = "over";
+		}
 	}
 }
