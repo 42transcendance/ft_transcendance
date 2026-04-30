@@ -7,16 +7,20 @@
 	<div :class="['side-profile', { 'is-open': isProfileOpen }]">
 		<div v-if="selectedUser" class="profile-content">
 			<button class="close-btn" @click="closeProfile">×</button>
-			
+
 			<img :src="previewImage || '/default-avatar.jpg'" alt="Avatar" class="avatar-preview" />
-			<h2 class="profile-title">Profil de {{ selectedUser.safeUser.username }}</h2>
-			<div class="user-info">
-				<p>Online : {{ selectedUser.safeUser.isOnline }}</p>
-				<p>Last seen : {{ selectedUser.safeUser.lastSeenAt }}</p>
+			<h2 class="profile-title">Profil de {{ selectedUser?.safeUser?.username }}</h2>
+			<div v-if="selectedUser?.safeUser?.isOnline" class="user-online">
+				<p>Online 🟢</p>
+			</div>
+			<div v-else class="user-offline">
+				<p>Offline 🔴</p>
+				<p>Last seen : {{ selectedUser?.safeUser?.lastSeenAt }}</p>
 			</div>
 		</div>
 	</div>
 </template>
+
 
 <style scoped>
 	.side-profile {
@@ -71,5 +75,4 @@
 		background: none;
 		cursor: pointer;
 	}
-
 </style>
