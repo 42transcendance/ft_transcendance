@@ -2,26 +2,61 @@
 	const { isProfileOpen, selectedUser, closeProfile } = useProfile()
 	const avatar = computed(() => {return selectedUser.value?.safeUser?.avatarUrl || null})
 	const { pendingStatusChange } = useOnlineStatus()
+	const now = ref(new Date())
+    let timer: NodeJS.Timeout | null = null
 
 	watch(pendingStatusChange, (change) => {
 		if (change && selectedUser.value?.safeUser?.id === change.userId) {
+			//change isOnline
+			const newSafeUser = {
+				...selectedUser.value.safeUser,
+				isOnline: change.isOnline
+			}
+			//change lastSeenAt if user went offline
+			if (!change.isOnline && change.lastSeenAt) {
+				newSafeUser.lastSeenAt = change.lastSeenAt
+			}
+			//apply changes
 			selectedUser.value = {
 				...selectedUser.value,
-				safeUser: {
-					...selectedUser.value.safeUser,
-					isOnline: change.isOnline
-				}
+				safeUser: newSafeUser
 			}
 		}
-	})
+	}, { immediate: true })
 
-	function formatLastSeen(date: Date | null): string {
+	//handle lastSeenAt time change (update every 60 secondes)
+    const startTime = () => {
+		if (timer)
+			return
+        timer = setInterval(() => {
+            now.value = new Date()
+        }, 60000)
+    }
+
+	const stopTimer = () => {
+		if (timer) {
+			clearInterval(timer)
+			timer = null
+		}
+	}
+
+
+	watch (isProfileOpen, (isopen) => {
+		if (isOpen) {
+			now.value = new Date()
+			startTimer()
+		} else {
+			stopTimer()
+		}
+	}, { immediate: true })
+
+	const formatLastSeen = computed(() => {
+		const date = selectedUser.value?.safeUser?.lastSeenAt
 		if (!date)
 			return ''
 
-		const now = new Date()
 		const last = new Date(date)
-		const diffMs = now.getTime() - last.getTime()  // différence en millisecondes
+		const diffMs = now.value.getTime() - last.getTime()
 
 		const minutes = Math.floor(diffMs / (1000 * 60))
 		const hours   = Math.floor(diffMs / (1000 * 60 * 60))
@@ -43,7 +78,7 @@
 		if (months < 12)
 			return `since ${months} month${months > 1 ? 's' : ''}`
 		return `since ${years} year${years > 1 ? 's' : ''}`
-	}
+	})
 </script>
 
 <template>
@@ -58,7 +93,7 @@
 			</div>
 			<div v-else class="user-offline">
 				<p>Offline 🔴</p>
-				<p class="last-seen">{{ formatLastSeen(selectedUser?.safeUser?.lastSeenAt) }}</p>
+				<p class="last-seen">{{ formatLastSeen }}</p>
 			</div>
 		</div>
 	</div>

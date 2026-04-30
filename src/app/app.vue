@@ -58,7 +58,7 @@
 		socket.onmessage = (event) => {
 			const message = JSON.parse(event.data)
 			if (message.type === 'STATUS_CHANGE') {
-				notifyStatusChange(message.userId, message.isOnline)
+				notifyStatusChange(message.userId, message.isOnline, message.lastSeenAt)
 			}
 		}
 	}
