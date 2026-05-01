@@ -1,0 +1,30 @@
+{
+  "name": "ft_transcendance",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/42transcendance/ft_transcendance#readme",
+  "bugs": {
+    "url": "https://github.com/42transcendance/ft_transcendance/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/42transcendance/ft_transcendance.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "lil-gui": "^0.21.0",
+    "three": "^0.184.0",
+    "vite": "^8.0.9"
+  },
+  "devDependencies": {
+    "@types/three": "^0.184.0",
+    "typescript": "^6.0.3"
+  }
+}
