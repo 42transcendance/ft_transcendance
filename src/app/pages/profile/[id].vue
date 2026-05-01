@@ -1,45 +1,45 @@
 <script setup lang="ts">
-	// middleware proctection
+	// middleware protection
 	definePageMeta({
 		middleware: 'auth'
 	})
-	//get all address informations
-	const route = useRoute();
-	//get data from the user
-	const {data: user, error} = await useFetch(`/api/users/${route.params.id}`);
+
+	const route = useRoute()
+	const { currentUser } = useAuth()
+
+	// Récupération du profil
+	const { data: user, error } = await useFetch(`/api/users/${route.params.id}`)
 
 	if (error.value) {
 		throw createError({ statusCode: 404, message: 'User not found' })
 	}
 
-	const { currentUser } = useAuth()
+	// ✅ Vérifier si c'est bien notre propre profil
+	const isOwner = computed(() =>
+		String(currentUser.value?.id) === String(route.params.id)
+	)
+
 	const fileInput = ref<HTMLInputElement | null>(null)
 	const previewImage = ref<string | null>(currentUser.value?.avatarUrl || null)
 	const uploadError = ref('')
 
-	//Selection of a profile picture
 	function onFileSelected(event: Event) {
-		//We say we want a file, and we get the first selected one
 		const target = event.target as HTMLInputElement
 		const file = target.files?.[0]
-		if (!file)
-			return
+		if (!file) return
 
-		// Max 2Mo
 		if (file.size > 2 * 1024 * 1024) {
 			uploadError.value = "File is too big (max 2MB) !"
 			return
 		}
 
-		// Check if the file is an image
 		if (!file.type.startsWith('image/')) {
 			uploadError.value = "File must be an image !"
 			return
 		}
 
 		uploadError.value = ''
-		
-		// Local visualisation, the file reader is here to help us render the image
+
 		const reader = new FileReader()
 		reader.onload = (e) => {
 			previewImage.value = e.target?.result as string
@@ -47,23 +47,19 @@
 		reader.readAsDataURL(file)
 	}
 
-	//Saving of a profile picture
 	async function uploadAvatar() {
 		const file = fileInput.value?.files?.[0]
-		if (!file)
-			return
+		if (!file) return
 
-		// We need to use FormData to upload a file
 		const formData = new FormData()
 		formData.append('avatar', file)
 
 		try {
 			const response = await $fetch('/api/users/upload-avatar', {
-			method: 'POST',
-			body: formData, // $fetch automaticaly handle Content-Type: multipart/form-data
+				method: 'POST',
+				body: formData,
 			})
 
-			//currentUser update
 			if (currentUser.value) {
 				currentUser.value.avatarUrl = response.avatarUrl
 			}
@@ -72,29 +68,42 @@
 			uploadError.value = e.statusText || "Upload failed."
 		}
 	}
-
 </script>
 
 <template>
 	<div class="profile-wrapper">
-		<h1 class="profile-title">Your Profile</h1>
-		
+		<h1 class="profile-title">
+			{{ isOwner ? 'Your Profile' : `${user?.safeUser?.username}'s Profile` }}
+		</h1>
+
 		<div class="avatar-section">
-			<img :src="previewImage || '/default-avatar.jpg'" alt="Avatar" class="avatar-preview" />
-			
-			<input 
-				type="file" 
-				ref="fileInput" 
-				accept="image/png, image/jpeg" 
-				@change="onFileSelected" 
-				class="hidden"
+			<img
+				:src="previewImage || '/default-avatar.jpg'"
+				alt="Avatar"
+				class="avatar-preview"
 			/>
-			
-			<button @click="fileInput?.click()" class="change-btn">Change Avatar</button>
-			<button v-if="fileInput?.files?.length" @click="uploadAvatar" class="save-btn">Save changes</button>
-			
-			<p v-if="uploadError" class="error">{{ uploadError }}</p>
+
+			<!-- ✅ Uniquement si c'est ton profil -->
+			<template v-if="isOwner">
+				<input
+					type="file"
+					ref="fileInput"
+					accept="image/png, image/jpeg"
+					@change="onFileSelected"
+					class="hidden"
+				/>
+				<button @click="fileInput?.click()" class="change-btn">Change Avatar</button>
+				<button
+					v-if="fileInput?.files?.length"
+					@click="uploadAvatar"
+					class="save-btn"
+				>
+					Save changes
+				</button>
+				<p v-if="uploadError" class="error">{{ uploadError }}</p>
+			</template>
 		</div>
+
 		<div class="info-section">
 			<p><strong>Username :</strong> {{ user?.safeUser?.username }}</p>
 		</div>
