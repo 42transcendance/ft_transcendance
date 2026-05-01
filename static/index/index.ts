@@ -4,7 +4,7 @@ import { Scene } from "../Scene.ts";
 import { Blocs } from "./Blocs.ts";
 
 const scene = new Scene()
-let gap = 2
+let gap = 1
 
 const blocs = new Blocs('white')
 const blocs1 = new Blocs('#FF50A5')
