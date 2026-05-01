@@ -33,6 +33,9 @@ services:
       - backend
     volumes:
       - ./uploads_storage:/app/storage/uploads
+    env_file:
+      - ./secrets/app.env
+
 
   nginx:
     build:
