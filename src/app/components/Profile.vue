@@ -25,7 +25,7 @@
 	}, { immediate: true })
 
 	//handle lastSeenAt time change (update every 60 secondes)
-    const startTime = () => {
+    const startTimer = () => {
 		if (timer)
 			return
         timer = setInterval(() => {
@@ -41,7 +41,7 @@
 	}
 
 
-	watch (isProfileOpen, (isopen) => {
+	watch (isProfileOpen, (isOpen) => {
 		if (isOpen) {
 			now.value = new Date()
 			startTimer()
