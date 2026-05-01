@@ -6,7 +6,7 @@
 		<NavBtnsGameBtn class="game-btn" />
 		<NavBtnsTitleBtn class="title-btn"/>
 		<NavBtnsLoginBtn class="login-btn"/>
-		<NavBtnsSigninBtn class="signin-btn"/>
+		<NavBtnsSignupBtn class="signup-btn"/>
 	</div>
 </template>
 
@@ -52,8 +52,8 @@
 		text-align: center;
 	}
 
-/* Signin button style */
-	.signin-btn {
+/* Signup button style */
+	.signup-btn {
 		width: 6%;
 		text-align: center;
 	}

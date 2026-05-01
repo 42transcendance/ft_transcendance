@@ -1,18 +1,18 @@
 <script setup lang="ts"></script>
 
 <template>
-	<div class="signin-wrapper">
-		<NuxtLink to="/signin" class="signin-btn">Sign in</NuxtLink>
+	<div class="signup-wrapper">
+		<NuxtLink to="/signup" class="signup-btn">Sign up</NuxtLink>
 	</div>
 </template>
 
 <style scoped>
-	.signin-wrapper {
+	.signup-wrapper {
 		display: block;
 		width: 100%;
 	}
 
-	.signin-btn {
+	.signup-btn {
 		font-family: "Courier New";
 		font-size: 16px;
 		font-weight: bold;

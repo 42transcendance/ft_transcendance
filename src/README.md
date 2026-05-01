@@ -41,7 +41,7 @@ src/
 │   │   │   ├── LogoutBtn.vue         # Bouton de déconnexion
 │   │   │   ├── ProfileBtn.vue        # Accès au profil utilisateur
 │   │   │   ├── SearchBar.vue         # Barre de recherche d'utilisateurs
-│   │   │   ├── SigninBtn.vue         # Bouton d'inscription
+│   │   │   ├── SignupBtn.vue         # Bouton d'inscription
 │   │   │   └── TitleBtn.vue          # Bouton titre / logo
 │   │   ├── NavTypes/                 # Variantes de la barre de navigation
 │   │   │   ├── GuestBar.vue          # Nav pour utilisateurs non connectés
@@ -66,7 +66,7 @@ src/
 │       ├── index.vue                 # Page d'accueil
 │       ├── login.vue                 # Page de connexion
 │       ├── rules.vue                 # Règles du jeu
-│       └── signin.vue                # Page d'inscription
+│       └── signup.vue                # Page d'inscription
 │
 ├── prisma/                           # Schéma et migrations Prisma (ORM)
 │
@@ -109,7 +109,7 @@ src/
 - Nommage des avatars par **UUID** pour éviter les collisions.
 ### 🧭 Navigation contextuelle
  
-- **`GuestBar.vue`** — Affiche les boutons Login et Sign In pour les visiteurs.
+- **`GuestBar.vue`** — Affiche les boutons Login et Sign Up pour les visiteurs.
 - **`UserBar.vue`** — Affiche les boutons Profile et Logout pour les utilisateurs connectés.
 - Le composant `Navbar.vue` bascule entre les deux variantes selon l'état d'authentification.
 ---

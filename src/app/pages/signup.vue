@@ -24,17 +24,20 @@
 				v-model="createEmail"
 				type="email"
 				placeholder="Email"
-				class="email-input">
+				class="email-input"
+				required>
 			<input
 				v-model="createUsername"
 				type="text"
 				placeholder="Username"
-				class="user-input">
+				class="user-input"
+				required>
 			<input
 				v-model="createPassword"
 				type="password"
 				placeholder="Password"
-				class="pswd-input">
+				class="pswd-input"
+				required>
 			<button type="submit" class="create-btn">Create</button>
 		</form>
 	</div>
