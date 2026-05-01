@@ -24,10 +24,12 @@ export default defineWebSocketHandler({
 			peer.close(1008, 'Unauthorized')
             return
         }
-        const SECRET_KEY = 'bipboup-Voici-la-cle';
+
+		const config = useRuntimeConfig()
+        const SECRET_KEY = config.jwtSecret
 
         try {
-            const decoded = jwt.verify(token, SECRET_KEY) as { userId: string };
+            const decoded = jwt.verify(token, SECRET_KEY) as { userId: string }
 
             const user = await prisma.user.findUnique({
                 where: { id: decoded.userId }

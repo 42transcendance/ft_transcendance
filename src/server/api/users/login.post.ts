@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs'
 
 export default defineEventHandler(async (event) => {
 	const body = await readBody(event)
-	const SECRET_KEY = 'bipboup-Voici-la-cle'
+	const config = useRuntimeConfig(event)
+	const SECRET_KEY = config.jwtSecret
 
 	const user = await prisma.user.findUnique({
 		where: { username: body.username }

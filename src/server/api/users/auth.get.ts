@@ -2,7 +2,8 @@ import jwt from 'jsonwebtoken'
 
 export default defineEventHandler(async (event) => {
 	const token = getCookie(event, 'auth_token')
-	const SECRET_KEY = 'bipboup-Voici-la-cle'
+	const config = useRuntimeConfig(event)
+	const SECRET_KEY = config.jwtSecret
 
 	if (!token)
 		return createError({ statusCode: 401, message: 'Unauthorized' })

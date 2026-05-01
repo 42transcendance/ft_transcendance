@@ -3,9 +3,29 @@ import bcrypt from 'bcryptjs'
 
 export default defineEventHandler(async (event) => {
 	const body = await readBody<{ email: string; username: string; password: string }>(event);
-	
-	//a mettre dans vault
-	const SECRET_KEY = 'bipboup-Voici-la-cle'
+	const config = useRuntimeConfig(event)
+	const SECRET_KEY = config.jwtSecret
+
+	if (!body.email || !body.username || !body.password) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: "You need to put something in every field !",
+        })
+    }
+
+	if (body.username.length < 3) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: "Username must a least be 3 characters long",
+        })
+    }
+
+	if (body.password.length < 3) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: "Password must a least be 3 characters long",
+        })
+    }
 
 	const hash = await bcrypt.hash(body.password, 10)
 	//a ameliorer;

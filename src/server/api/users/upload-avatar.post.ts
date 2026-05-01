@@ -8,7 +8,8 @@ export default defineEventHandler(async (event) => {
 	// add middleware here
 	
 	// check token
-	const SECRET_KEY = 'bipboup-Voici-la-cle'
+	const config = useRuntimeConfig(event)
+	const SECRET_KEY = config.jwtSecret
 	const token = getCookie(event, 'auth_token')
 
     if (!token) {
