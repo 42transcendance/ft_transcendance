@@ -13,4 +13,9 @@ vault kv put secret/transcendence/postgres \
     db="$POSTGRES_DB" \
     database_url="$DATABASE_URL"
 
+
+vault kv put secret/transcendence/app \
+    jwt_secret="$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')" \
+    api_key="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+
 echo "Secrets stored in Vault"

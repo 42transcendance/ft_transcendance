@@ -18,6 +18,7 @@ RUN mkdir -p /etc/nginx/ssl && \
     -subj "/C=FR/ST=IDF/L=Paris/O=42/CN=transcendence.local"
 
 COPY modsecurity/modsecurity.conf /etc/modsecurity/modsecurity.conf
+COPY modsecurity/exclusions.conf /etc/modsecurity/exclusions.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80 443
