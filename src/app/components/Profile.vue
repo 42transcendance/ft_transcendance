@@ -95,6 +95,7 @@
 				<p>Offline 🔴</p>
 				<p class="last-seen">{{ formatLastSeen }}</p>
 			</div>
+			<NuxtLink :to="`/profile/${selectedUser?.safeUser?.id}`" class="go-to-profile">Go to profile</NuxtLink>
 		</div>
 	</div>
 </template>
@@ -169,4 +170,14 @@
 		font-size: 0.90rem;
 		margin-top: 2px;
 	}
+
+	.go-to-profile {
+		font-family: "Courier New";
+		font-size: 16px;
+		font-weight: bold;
+		text-decoration: none;
+		color: #333;
+		cursor: pointer;
+	}
+
 </style>

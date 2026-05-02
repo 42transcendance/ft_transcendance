@@ -49,7 +49,11 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "No file uploaded." })
 	}
 	const file = formData[0]
-	
+
+	if (file.data.length > 2 * 1024 * 1024) {
+		throw createError({ statusCode: 400, message: "File too large (max 2MB)" })
+	}
+
 	// server check to see if it's jpeg or png
 	const allowedMimeTypes = ['image/jpeg', 'image/png']
 	if (!allowedMimeTypes.includes(file.type!)) {
