@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 export default defineWebSocketHandler({
     async open(peer) {
 		//get cookie
-		const cookieHeader = peer.request?.headers.get('cookie')
+		const cookieHeader = peer.request?.headers.get('cookie')	
 
 		if (!cookieHeader) {
 			peer.close(1008, 'Unauthorized')
@@ -25,11 +25,10 @@ export default defineWebSocketHandler({
             return
         }
 
-		const config = useRuntimeConfig()
-        const SECRET_KEY = config.jwtSecret
+		const secret = process.env.NUXT_JWT_SECRET
 
         try {
-            const decoded = jwt.verify(token, SECRET_KEY) as { userId: string }
+            const decoded = jwt.verify(token, secret) as { userId: string }
 
             const user = await prisma.user.findUnique({
                 where: { id: decoded.userId }
@@ -51,7 +50,6 @@ export default defineWebSocketHandler({
 					isOnline: true
 				}))
 
-                console.log(`🟢 User ${user.username} est en ligne`);
             }
         } catch (e) {
 			peer.close(1008, 'Unauthorized')

@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs'
 export default defineEventHandler(async (event) => {
 	const body = await readBody(event)
 	const config = useRuntimeConfig(event)
-	const SECRET_KEY = config.jwtSecret
 
 	const user = await prisma.user.findUnique({
 		where: { username: body.username }
@@ -16,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
 		const token = jwt.sign(
 			{ userId: user.id },
-			SECRET_KEY,
+			config.jwtSecret,
 			{ expiresIn: '7d' }
 		)
 

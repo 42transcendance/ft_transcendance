@@ -3,13 +3,12 @@ import jwt from 'jsonwebtoken'
 export default defineEventHandler(async (event) => {
 	const token = getCookie(event, 'auth_token')
 	const config = useRuntimeConfig(event)
-	const SECRET_KEY = config.jwtSecret
 
 	if (!token)
 		return createError({ statusCode: 401, message: 'Unauthorized' })
 
 	try {
-		const decoded = jwt.verify(token, SECRET_KEY) as { userId: string }
+		const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
 		const user = await prisma.user.findUnique({
 			where: {
 				id: decoded.userId,

@@ -1,5 +1,5 @@
 export const useSettings = () => {
-	const { currentUser } = useAuth()
+    const { currentUser } = useAuth()
 
     const updateProfile = async (payload: any) => {
         try {
@@ -8,20 +8,17 @@ export const useSettings = () => {
                 body: payload
             })
 
-			if (currentUser.value && response.user) {
-                currentUser.value.safeUser = { 
-                    ...currentUser.value.safeUser, 
-                    ...response.user 
+            if (currentUser.value && response.user) {
+                currentUser.value = {
+                    ...currentUser.value,
+                    ...response.user
                 }
             }
             return { success: true }
-        } catch (error) {
-            return { success: false, error: error.statusMessage || "Update failed" }
+        } catch (error: any) {
+            return { success: false, error: error.data?.message || 'Update failed' }
         }
     }
 
-    return {
-        updateProfile
-    }
+    return { updateProfile }
 }
-

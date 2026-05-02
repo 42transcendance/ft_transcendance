@@ -9,13 +9,12 @@ export default defineEventHandler(async (event) => {
 	
 	// check token
 	const config = useRuntimeConfig(event)
-	const SECRET_KEY = config.jwtSecret
 	const token = getCookie(event, 'auth_token')
 
     if (!token) {
         throw createError({ statusCode: 401, message: "Non connecté" })
     }
-    const decoded = jwt.verify(token, SECRET_KEY) as { userId: number }
+    const decoded = jwt.verify(token, config.jwtSecret) as { userId: number }
 
     const userId = decoded.userId
 
@@ -85,8 +84,6 @@ export default defineEventHandler(async (event) => {
 			where: { id: userId },
 			data: { avatarUrl: avatarUrl }
 		})
-
-		console.log(`Fichier enregistré : ${uploadPath}`)
 		
 		return { avatarUrl }
 

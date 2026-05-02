@@ -1,27 +1,67 @@
 import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
-    const user = event.context.user // Récupéré via ton middleware d'auth
+    const config = useRuntimeConfig(event)
+    const token = getCookie(event, 'auth_token')
 
-    // On prépare l'objet de mise à jour
+    if (!token)
+        throw createError({ statusCode: 401, message: 'Non-authorized' })
+
+    const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+    const userId = decoded.userId
+
     const updateData: any = {}
 
-    if (body.username) updateData.username = body.username
-    if (body.email)    updateData.email = body.email
-    
-    if (body.password) {
-        const hash = await bcrypt.hash(body.password, 10)
-        updateData.password = hash
+    if (body.username)
+        updateData.username = body.username
+
+    if (body.newPassword) {
+        const user = await prisma.user.findUnique({
+			where: { id: userId }
+		})
+        if (!user)
+            throw createError({ statusCode: 404, message: 'User not found' })
+
+        const isValid = await bcrypt.compare(body.currentPassword, user.password)
+        if (!isValid)
+            throw createError({ statusCode: 401, message: 'Wrong current password' })
+
+		if (body.newPassword.length < 3)
+			throw createError({ statusCode: 400, message: "Password must a least be 3 characters long" })
+
+        updateData.password = await bcrypt.hash(body.newPassword, 10)
+    }
+
+    if (body.username) {
+        const user = await prisma.user.findUnique({
+			where: { id: userId }
+		})
+        if (!user)
+            throw createError({ statusCode: 404, message: 'User not found' })
+
+        const isValid = await bcrypt.compare(body.currentPassword, user.password)
+        if (!isValid)
+            throw createError({ statusCode: 401, message: 'Wrong current password' })
+
+		if (body.username.length < 3)
+			throw createError({ statusCode: 400, message: "Username must a least be 3 characters long" })
+
     }
 
     try {
         const updatedUser = await prisma.user.update({
-            where: { id: user.id },
+            where: { id: userId },
             data: updateData
         })
-        return { success: true }
-    } catch (error) {
-        throw createError({ statusCode: 500, statusMessage: "Erreur base de données" })
+
+        const { email, password, ...safeUser } = updatedUser
+        return { success: true, user: safeUser }
+    } catch (error: any) {
+        // Code P2002 = username taken
+        if (error.code === 'P2002')
+            throw createError({ statusCode: 409, message: 'Username already taken' })
+        throw createError({ statusCode: 500, message: 'Database error' })
     }
 })

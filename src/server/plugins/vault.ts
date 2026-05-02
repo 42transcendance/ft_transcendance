@@ -24,7 +24,7 @@ export default defineNitroPlugin(async () => {
     `${vaultAddr}/v1/secret/data/transcendence/app`,
     { headers: { 'X-Vault-Token': vaultToken } }
   )
-  process.env.JWT_SECRET = appResponse.data.data.jwt_secret
+  process.env.NUXT_JWT_SECRET = appResponse.data.data.jwt_secret
   process.env.API_KEY = appResponse.data.data.api_key
 
   console.log('[vault] ✓ All secrets loaded successfully')

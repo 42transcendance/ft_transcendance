@@ -2,7 +2,9 @@ import jwt from 'jsonwebtoken'
 
 export default defineEventHandler(async (event) => {
     const token = getCookie(event, 'auth_token')
-    if (!token) throw createError({ statusCode: 401, message: 'Non autorisé' })
+	const config = useRuntimeConfig(event)
+    if (!token)
+		throw createError({ statusCode: 401, message: 'Non autorisé' })
 
     const id = getRouterParam(event, 'id')
     const method = getMethod(event)

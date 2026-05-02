@@ -5,26 +5,25 @@ import { Prisma } from '@prisma/client'
 export default defineEventHandler(async (event) => {
 	const body = await readBody<{ email: string; username: string; password: string }>(event);
 	const config = useRuntimeConfig(event)
-	const SECRET_KEY = config.jwtSecret
 
 	if (!body.email || !body.username || !body.password) {
         throw createError({
             statusCode: 400,
-            statusMessage: "You need to put something in every field !",
+            message: "You need to put something in every field !",
         })
     }
 
 	if (body.username.length < 3) {
         throw createError({
             statusCode: 400,
-            statusMessage: "Username must a least be 3 characters long",
+            message: "Username must a least be 3 characters long",
         })
     }
 
 	if (body.password.length < 3) {
         throw createError({
             statusCode: 400,
-            statusMessage: "Password must a least be 3 characters long",
+            message: "Password must a least be 3 characters long",
         })
     }
 
@@ -41,7 +40,7 @@ export default defineEventHandler(async (event) => {
 
 		const token = jwt.sign(
 			{ userId: user.id },
-			SECRET_KEY,
+			config.jwtSecret,
 			{ expiresIn: '7d' }
 		)
 
@@ -62,14 +61,14 @@ export default defineEventHandler(async (event) => {
             if (e.code === 'P2002') {
                 throw createError({
                     statusCode: 409,
-                    statusMessage: 'This email or username is already taken.'
+                    message: 'This email or username is already taken.'
                 })
             }
         }
 
         throw createError({
             statusCode: 500,
-            statusMessage: 'An unexpected error occurred during registration.'
+            message: 'An unexpected error occurred during registration.'
         })
 	}
 });
