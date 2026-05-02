@@ -11,8 +11,8 @@ export default defineEventHandler(async (event) => {
     if (body.email)    updateData.email = body.email
     
     if (body.password) {
+        const hash = await bcrypt.hash(body.password, 10)
         updateData.password = hash
-		const hash = await bcrypt.hash(body.password, 10)
     }
 
     try {

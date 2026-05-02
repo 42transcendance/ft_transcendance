@@ -82,6 +82,9 @@ db-shell:
 db-reset:
 	@echo "$(RED)Resetting database...$(RESET)"
 	docker compose exec app sh -c 'export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/data/transcendence/postgres | jq -r ".data.data.database_url") && ./node_modules/.bin/prisma migrate reset --force'
+db-reset-and-migrate:
+	docker compose exec app sh -c 'export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/data/transcendence/postgres | jq -r ".data.data.database_url") && ./node_modules/.bin/prisma migrate reset --force && ./node_modules/.bin/prisma migrate dev --name init'
+
 # ==============================================================
 # STATUT / SANTÉ
 # ==============================================================
@@ -109,7 +112,7 @@ fclean: down
 	rm -rf ./uploads_storage
 	
 
-re: fclean up migrate-dev
+re: clean up migrate
 
 # ==============================================================
 # AIDE
