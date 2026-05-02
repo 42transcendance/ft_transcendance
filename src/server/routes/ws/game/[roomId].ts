@@ -1,54 +1,73 @@
-import { Game } from '../../../game/game'
+import { Room } from '../../../game/room'
 import { GAME } from '../../../game/constants'
+import { ServerMessage, ClientMessage } from '../../../game/type'
 
 // État partagé entre toutes les connexions
-const game = new Game(GAME.PLAYERS)
-game.init_game()
-let nextId = 0
-const playerMap = new Map<string, number>()
+const rooms: Room[] =[];
+const peerRoom = new Map<string, Room>()
 
 export default defineWebSocketHandler({
-  open(peer) {
-    // Refuser si déjà 2 joueurs connectés
-    if (playerMap.size >= GAME.PLAYERS) {
-      peer.send(JSON.stringify({ type: 'error', message: 'Partie pleine' }))
-      peer.close()
-      return
-    }
-    const playerId = nextId % GAME.PLAYERS  // ← reste toujours entre 0 et 1
-    nextId++
-    playerMap.set(peer.id, playerId)
-    peer.subscribe('game')
-    // Même logique que son server.ts
-    const message = {
-      type: 'cell_init',
-      cells: game.board.grid.flat()
-    }
-    peer.send(JSON.stringify(message))
-  },
+	open(peer) {
+	
+	var currRoom = rooms.find(r => r.states === "waiting");
 
-  message(peer, message) {
-    const data = JSON.parse(message.text())
-    const playerId = playerMap.get(peer.id) ?? 0 // à améliorer plus tard -> recupere le vrai player id
+	if (currRoom === undefined) {
+		currRoom = new Room(GAME.PLAYERS);
+		rooms.push(currRoom)
+	}
+	currRoom.add_player(peer);
+	peerRoom.set(peer.id,currRoom);
 
-    if (data.type === 'paint') {
-      if (playerId < GAME.PLAYERS && game.p_painted_cell[playerId].length !== 0) {
-        const cell = game.players[playerId].paint(game.board, game)
-        
-        const broadcast = {
-          type: 'cell_update',
-          cell: cell
-        }
-        // Broadcast à tous
-        peer.publish('game', JSON.stringify(broadcast))
-        peer.send(JSON.stringify(broadcast))
-      }
-      game.actualize()
-    }
-  },
+	if (currRoom.currPlayer === GAME.PLAYERS) {
+		const start_msg: ServerMessage = {
+			type: "starting"
+		}
+		currRoom.broadcast(start_msg);
+		currRoom.start_game();
+	} else {
+		const waiting_msg: ServerMessage = {
+			type: "waiting",
+		}
+		peer.send(JSON.stringify(waiting_msg));
+	}
+},
 
-  close(peer) {
-    playerMap.delete(peer.id)  // ← nettoie quand le joueur se déconnecte
-    console.log('Joueur déconnecté')
-  }
+message(peer, message) {
+	const data: ClientMessage = JSON.parse(message.text())
+	const currRoom = peerRoom.get(peer.id);
+	const playerId = currRoom?.get_id(peer);
+
+	if (!currRoom) {
+		return;
+	}
+
+	if (data.type === 'paint') {
+
+		if (!currRoom.game) {
+			return ;
+		}
+		if (playerId < GAME.PLAYERS && currRoom.game.p_painted_cell[playerId].length !== 0) {
+			const cell = currRoom.game.players[playerId].paint(currRoom.game.board, currRoom.game);
+
+			const broadcast: ServerMessage = {
+				type: 'cell_update',
+				cell: cell
+			}
+			// Broadcast à tous
+			currRoom.broadcast(broadcast);
+		}
+		currRoom.game.actualize()
+	}
+},
+
+	close(peer) {
+    	const currRoom = peerRoom.get(peer.id);
+		currRoom?.remove_player(peer);
+		if (currRoom?.currPlayer === 0) {
+			const index = rooms.indexOf(currRoom);
+			rooms.splice(index, 1)
+		}
+    	peerRoom.delete(peer.id)  // ← nettoie quand le joueur se déconnecte
+    	console.log('Joueur déconnecté')
+	}
 })

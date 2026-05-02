@@ -8,3 +8,8 @@ export type Point = {
 export type ServerMessage =
 	| { type: "cell_init"; cells: Cell[] }
 	| { type: "cell_update"; cell: Cell }
+	| { type: "waiting"}
+	| { type: "starting"}
+
+export type ClientMessage =
+	| { type: "paint"}

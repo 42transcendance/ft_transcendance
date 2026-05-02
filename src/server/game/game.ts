@@ -62,7 +62,7 @@ export class Game {
 			}
 		});
 
-		if (cpt >= this.player.length - 1) {
+		if (cpt >= this.players.length - 1) {
 			this.state = "over";
 		}
 	}

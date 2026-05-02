@@ -15,18 +15,28 @@ export class Room {
 		this.game = null;
 	}
 
-	getState() {
-		return this.states;
+	get_id(peer: Peer): number {
+		return (this.playerSockets.indexOf(peer));
 	}
 
 	add_player(player: Peer) {
-		this.currPlayer++;
+		if (this.currPlayer < this.maxPlayer) {
+			this.currPlayer++;
+			this.playerSockets.push(player);
+		}
 
-		if (this.currPlayer <= this.maxPlayer)
-			playerSockets.push(player);
-		else {
+		this.update_room_state();
+	}
+
+	remove_player(player: Peer) {
+		const id = this.get_id(player);
+
+		if (id >= 0) {
+			this.playerSockets.splice(id, 1);
 			this.currPlayer--;
 		}
+	
+		this.update_room_state();
 	}
 	
 	update_room_state() {
@@ -35,6 +45,12 @@ export class Room {
 		}
 		else if (this.currPlayer == this.maxPlayer) {
 			this.states = "starting";
+		}
+	}
+	
+	broadcast(message: any) {
+		for (const peer of this.playerSockets) {
+			peer.send(JSON.stringify(message))
 		}
 	}
 
@@ -46,13 +62,20 @@ export class Room {
 
 		setTimeout(() => {
 			console.log("starting game !");
-			this.game = new Game(this.maxPlayer);
+			const newGame = new Game(this.maxPlayer);
+			this.game = newGame;
+			
+			const message = {
+				type: 'cell_init',
+				cells: this.game.board.grid.flat()
+			}
+			this.broadcast(message);
 			this.states = "playing";
 		}, 10000);
 	}
 
 	end_game() {
-		if (this.game.state === "over") {
+		if (this.game && this.game.state === "over") {
 			this.states = "finished";
 		}
 	}
