@@ -3,7 +3,7 @@ export class Scene
 {
 	readonly scene = new THREE.Scene()
 	readonly canvas = document.querySelector('canvas.webgl') as HTMLCanvasElement
-	readonly renderer = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true }) // transparent background
+	readonly renderer = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true, antialias: true }) // transparent background with antialiasing
 	width = this.canvas.clientWidth
 	height = this.canvas.clientHeight
 	fov = 75

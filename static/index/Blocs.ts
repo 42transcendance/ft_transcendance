@@ -8,14 +8,26 @@ export class Blocs {
 	group: THREE.Group
 	color: string
 	material: THREE.MeshBasicMaterial
+	edgeMaterial: THREE.MeshBasicMaterial
 	width = 0
 	height = 0
+
+	private darkenColor(color: string, percent: number): string
+	{
+		const num = parseInt(color.replace("#", ""), 16)
+		const r = Math.floor((num >> 16) * (1 - percent / 100))
+		const g = Math.floor(((num >> 8) & 0x00FF) * (1 - percent / 100))
+		const b = Math.floor((num & 0x0000FF) * (1 - percent / 100))
+		return "#" + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1)
+	}
 
 	constructor(color?: string)
 	{
 		const blocNumbers = Math.floor(Math.random() * (this.blocMax - this.blocMin + 1)) + this.blocMin
 		this.color = color || 'white'
 		this.material = new THREE.MeshBasicMaterial({ color: this.color })
+		const darkenedColor = this.darkenColor(this.color, 80)
+		this.edgeMaterial = new THREE.MeshBasicMaterial({ color: darkenedColor })
 		this.group = new THREE.Group()
 		for (let i = 0; i < blocNumbers; i++) {
 			this.addBloc()
@@ -45,10 +57,21 @@ export class Blocs {
 		}
 	}
 
+	private createEdges(mesh: THREE.Mesh)
+	{
+		const geometry = mesh.geometry as THREE.BoxGeometry
+		const edges = new THREE.EdgesGeometry(geometry)
+		const wireframe = new THREE.LineSegments(edges, this.edgeMaterial)
+		mesh.add(wireframe)
+	}
+
 	addBloc()
 	{
 		const geometry = new THREE.BoxGeometry(1, 1, 1)
 		const mesh = new THREE.Mesh(geometry, this.material)
+		
+		// Ajouter les arêtes visibles avec des tubes
+		this.createEdges(mesh)
 		
 		if (this.meshes.length === 0) {
 			mesh.position.set(0, 0, 0)
@@ -93,9 +116,9 @@ export class Blocs {
 			const mesh = this.meshes.splice(index, 1)[0]
 			this.group.remove(mesh)
 		}
-		if (this.meshes.length > 0) {
-			this.centerGroup()
-		}
+		// if (this.meshes.length > 0) {
+		// 	this.centerGroup()
+		// }
 	}
 
 	setOriginCorner(corner: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center')
