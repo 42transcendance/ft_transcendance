@@ -1,0 +1,32 @@
+import jwt from 'jsonwebtoken'
+
+export default defineEventHandler(async (event) => {
+    const body = await readBody(event)
+    const token = getCookie(event, 'auth_token')
+    const config = useRuntimeConfig(event)
+
+    if (!token)
+        throw createError({ statusCode: 401, message: 'Unauthorized' })
+
+    const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+
+    if (!body.friendshipId)
+        throw createError({ statusCode: 400, message: 'friendshipId required' })
+
+    const friendship = await prisma.friendship.findUnique({
+        where: { id: body.friendshipId }
+    })
+
+    if (!friendship)
+        throw createError({ statusCode: 404, message: 'Friendship not found' })
+
+    if (friendship.senderId !== userId && friendship.receiverId !== decoded.userId)
+        throw createError({ statusCode: 403, message: 'Forbidden' })
+
+    await prisma.friendship.delete({
+		where:
+			{ id: body.friendshipId }
+	})
+
+    return { success: true }
+})
