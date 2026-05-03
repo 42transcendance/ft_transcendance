@@ -1,5 +1,9 @@
 import jwt from 'jsonwebtoken'
 
+const secret = process.env.NUXT_JWT_SECRET
+if (!secret)
+    throw new Error('NUXT_JWT_SECRET is not defined')
+
 export default defineWebSocketHandler({
     async open(peer) {
 		//get cookie
@@ -24,8 +28,6 @@ export default defineWebSocketHandler({
 			peer.close(1008, 'Unauthorized')
             return
         }
-
-		const secret = process.env.NUXT_JWT_SECRET
 
         try {
             const decoded = jwt.verify(token, secret) as { userId: string }
@@ -76,9 +78,10 @@ export default defineWebSocketHandler({
                     lastSeenAt: new Date()
                 }))
 
-                console.log(`🔴 User ${userId} est maintenant déconnecté`);
+                console.log(`🔴 User ${userId} is now offline`);
             } catch (e) {
-                console.error("Erreur Prisma lors de la déconnexion", e);
+				if (e.code !== 'P2025')
+					console.error("Prisma error when logout", e);
             }
         }
     }

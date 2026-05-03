@@ -12,9 +12,9 @@ export default defineEventHandler(async (event) => {
 	const token = getCookie(event, 'auth_token')
 
     if (!token) {
-        throw createError({ statusCode: 401, message: "Non connecté" })
+        throw createError({ statusCode: 401, message: "Unauthorized" })
     }
-    const decoded = jwt.verify(token, config.jwtSecret) as { userId: number }
+    const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
 
     const userId = decoded.userId
 
@@ -35,9 +35,9 @@ export default defineEventHandler(async (event) => {
 		if (existsSync(oldFilePath)) {
 			try {
 				unlinkSync(oldFilePath); // delete file
-				console.log(`Ancien avatar supprimé : ${oldFileName}`);
+				console.log(`Old avatar deleted : ${oldFileName}`);
 			} catch (err) {
-				console.error("Erreur lors de la suppression de l'ancien fichier :", err);
+				console.error("Error while deleting old avatar :", err);
 			}
 		}
 	}

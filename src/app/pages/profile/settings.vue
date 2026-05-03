@@ -1,8 +1,12 @@
 <script setup lang="ts">
 	definePageMeta({ middleware: 'auth' })
 
-	const { currentUser } = useAuth()
-	const { updateProfile } = useSettings()
+	const { data, error } = await useFetch('/api/users/auth')
+	if (error.value || !data.value)
+		await navigateTo('/login')
+
+	const { currentUser, logout } = useAuth()
+	const { updateProfile, deleteProfile } = useSettings()
 
 	// Avatar
 	const fileInput = ref<HTMLInputElement | null>(null)
@@ -123,6 +127,32 @@
 			passwordError.value = error
 		}
 	}
+
+
+	// Popup delete
+	const showDeletePopup = ref(false)
+	const deletePassword = ref('')
+	const deleteError = ref('')
+
+	async function submitDelete() {
+		deleteError.value = ''
+		if (!deletePassword.value) {
+			deleteError.value = 'Please enter your current password to confirm'
+			return
+		}
+
+		const { success, error } = await deleteProfile(deletePassword.value)
+
+		if (success) {
+			showDeletePopup.value = false
+			deletePassword.value = ''
+			alert('Account deleted!')
+			await logout()
+		} else {
+			deleteError.value = error
+		}
+	}
+
 </script>
 
 <template>
@@ -152,6 +182,9 @@
             <button @click="showPasswordPopup = true" class="btn">Change Password</button>
         </section>
 
+        <!-- Delete account -->
+		<button @click="showDeletePopup = true" class="delete-btn">Delete Account</button>
+
         <!-- Popup username -->
         <div v-if="showUsernamePopup" class="overlay" @click.self="showUsernamePopup = false">
             <div class="popup">
@@ -180,6 +213,20 @@
                 </div>
             </div>
         </div>
+
+        <!-- Popup delete -->
+        <div v-if="showDeletePopup" class="overlay" @click.self="showDeletePopup = false">
+            <div class="popup">
+                <h3>Delete account</h3>
+                <input v-model="deletePassword" type="password" placeholder="Current password" class="input" />
+                <p v-if="deleteError" class="error">{{ passwordError }}</p>
+                <div class="popup-actions">
+                    <button @click="showDeletePopup = false" class="btn-cancel">Cancel</button>
+                    <button @click="submitDelete" class="btn">Confirm</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -242,6 +289,17 @@
 	.btn-cancel:hover {
 		background-color: #f5f5f5;
 	}
+
+	.delete-btn {
+		background-color: #BABABA;
+		color: white;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: background-color 0.3s;
+	}
+	.delete-btn:hover { background-color: #E32B2B; }
 
 	.overlay {
 		position: fixed;

@@ -20,5 +20,19 @@ export const useSettings = () => {
         }
     }
 
-    return { updateProfile }
+	const deleteProfile = async (password: string) => {
+        try {
+            const response = await $fetch('/api/users/user', {
+                method: 'DELETE',
+                body: { password },
+				credentials: 'include'
+            })
+		
+            return { success: true }
+        } catch (error: any) {
+            return { success: false, error: error.data?.message || 'Delete failed' }
+        }
+    }
+
+    return { updateProfile, deleteProfile }
 }

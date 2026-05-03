@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
 	const config = useRuntimeConfig(event)
 
 	if (!token)
-		return createError({ statusCode: 401, message: 'Unauthorized' })
+		throw createError({ statusCode: 401, message: 'Unauthorized' })
 
 	try {
 		const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
@@ -19,9 +19,9 @@ export default defineEventHandler(async (event) => {
 			const { email, password, ...safeUser } = user
 			return { safeUser }
 		} else {
-			return createError({ statusCode: 401, message: 'Unauthorized' })
+			throw createError({ statusCode: 401, message: 'Unauthorized' })
 		}
 	} catch (e) {
-		return createError({ statusCode: 401, message: 'Unauthorized' })
+		throw createError({ statusCode: 401, message: 'Unauthorized' })
 	}
 })

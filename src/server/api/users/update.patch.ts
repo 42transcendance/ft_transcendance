@@ -7,48 +7,38 @@ export default defineEventHandler(async (event) => {
     const token = getCookie(event, 'auth_token')
 
     if (!token)
-        throw createError({ statusCode: 401, message: 'Non-authorized' })
+        throw createError({ statusCode: 401, message: 'Unauthorized' })
 
     const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
     const userId = decoded.userId
 
     const updateData: any = {}
 
-    if (body.username)
-        updateData.username = body.username
+	
+	const user = await prisma.user.findUnique({ where: { id: userId } })
+	if (!user)
+		throw createError({ statusCode: 404, message: 'User not found' })
 
-    if (body.newPassword) {
-        const user = await prisma.user.findUnique({
-			where: { id: userId }
-		})
-        if (!user)
-            throw createError({ statusCode: 404, message: 'User not found' })
+	if (body.username || body.newPassword) {
+		if (!body.currentPassword)
+			throw createError({ statusCode: 400, message: 'Current password required' })
 
-        const isValid = await bcrypt.compare(body.currentPassword, user.password)
-        if (!isValid)
-            throw createError({ statusCode: 401, message: 'Wrong current password' })
+		const isValid = await bcrypt.compare(body.currentPassword, user.password)
 
-		if (body.newPassword.length < 3)
-			throw createError({ statusCode: 400, message: "Password must a least be 3 characters long" })
+		if (!isValid)
+			throw createError({ statusCode: 401, message: 'Wrong current password' })
+	}
 
-        updateData.password = await bcrypt.hash(body.newPassword, 10)
-    }
-
-    if (body.username) {
-        const user = await prisma.user.findUnique({
-			where: { id: userId }
-		})
-        if (!user)
-            throw createError({ statusCode: 404, message: 'User not found' })
-
-        const isValid = await bcrypt.compare(body.currentPassword, user.password)
-        if (!isValid)
-            throw createError({ statusCode: 401, message: 'Wrong current password' })
-
+	if (body.username) {
 		if (body.username.length < 3)
-			throw createError({ statusCode: 400, message: "Username must a least be 3 characters long" })
-
-    }
+			throw createError({ statusCode: 400, message: 'Username must be at least 3 characters' })
+		updateData.username = body.username
+	}
+	if (body.newPassword) {
+		if (body.newPassword.length < 3)
+			throw createError({ statusCode: 400, message: 'Password must be at least 3 characters' })
+		updateData.password = await bcrypt.hash(body.newPassword, 10)
+	}
 
     try {
         const updatedUser = await prisma.user.update({

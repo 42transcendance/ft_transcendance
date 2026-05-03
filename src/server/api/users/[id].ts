@@ -4,14 +4,13 @@ export default defineEventHandler(async (event) => {
     const token = getCookie(event, 'auth_token')
 	const config = useRuntimeConfig(event)
     if (!token)
-		throw createError({ statusCode: 401, message: 'Non autorisé' })
+		throw createError({ statusCode: 401, message: 'Unauthorized' })
 
     const id = getRouterParam(event, 'id')
     const method = getMethod(event)
 
     // ✅ Pour toute modification, vérifier que c'est bien son profil
     if (method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
-        const config = useRuntimeConfig(event)
         const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
 
         if (String(decoded.userId) !== String(id)) {
