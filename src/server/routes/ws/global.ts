@@ -45,7 +45,7 @@ export default defineWebSocketHandler({
                     where: { id: user.id },
                     data: { isOnline: true }
                 });
-
+                console.log(`🟢 User ${user.id} is now online`)
 				peer.publish('status', JSON.stringify({
 					type: 'STATUS_CHANGE',
 					userId: user.id,
