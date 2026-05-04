@@ -1,9 +1,62 @@
 <script setup lang="ts">
 	const { isProfileOpen, selectedUser, closeProfile } = useProfile()
-	const avatar = computed(() => {return selectedUser.value?.safeUser?.avatarUrl || null})
+	const { fetchFriends, sendRequest, respondRequest, removeFriend, getFriendshipStatus, getFriendshipId } = useFriends()
+	const { currentUser } = useAuth()
 	const { pendingStatusChange } = useOnlineStatus()
+	const friendActionError = ref('')
+	const avatar = computed(() => {return selectedUser.value?.safeUser?.avatarUrl || null})
 	const now = ref(new Date())
     let timer: NodeJS.Timeout | null = null
+
+	const friendshipStatus = computed(() => {
+		console.log('selectedUser id:', selectedUser.value?.safeUser?.id)
+		console.log('currentUser id:', currentUser.value?.id)
+		if (!selectedUser.value?.safeUser?.id)
+			return 'NONE'
+		if (selectedUser.value.safeUser.id === currentUser.value?.id)
+			return 'SELF'
+		return getFriendshipStatus(selectedUser.value.safeUser.id)
+	})
+
+	const friendshipId = computed(() => {
+		if (!selectedUser.value?.safeUser?.id)
+			return null
+		return getFriendshipId(selectedUser.value.safeUser.id)
+	})
+
+	async function handleSendRequest() {
+		friendActionError.value = ''
+		const { success, error } = await sendRequest(selectedUser.value.safeUser.id)
+		if (!success)
+			friendActionError.value = error
+	}
+
+
+	async function handleAccept() {
+		friendActionError.value = ''
+		const { success, error } = await respondRequest(friendshipId.value, 'ACCEPTED')
+		if (!success)
+			friendActionError.value = error
+	}
+
+	async function handleDecline() {
+		friendActionError.value = ''
+		const { success, error } = await respondRequest(friendshipId.value, 'DECLINED')
+		if (!success)
+			friendActionError.value = error
+	}
+
+	async function handleRemove() {
+		friendActionError.value = ''
+		const { success, error } = await removeFriend(friendshipId.value)
+		if (!success)
+			friendActionError.value = error
+	}
+
+	watch(isProfileOpen, (isOpen) => {
+		if (isOpen)
+			fetchFriends()
+	})
 
 	watch(pendingStatusChange, (change) => {
 		if (change && selectedUser.value?.safeUser?.id === change.userId) {
@@ -94,6 +147,28 @@
 			<div v-else class="user-offline">
 				<p>Offline 🔴</p>
 				<p class="last-seen">{{ formatLastSeen }}</p>
+			</div>
+			<div v-if="friendshipStatus !== 'SELF'">
+				<button
+					v-if="friendshipStatus === 'NONE'"
+					@click="handleSendRequest">
+					Add Friend
+				</button>
+				<button
+					v-if="friendshipStatus === 'PENDING_SENT'"
+					disabled>
+					Pending...
+				</button>
+				<template v-if="friendshipStatus === 'PENDING_RECEIVED'">
+					<button @click="handleAccept">Accept</button>
+					<button @click="handleDecline">Decline</button>
+				</template>
+				<button
+					v-if="friendshipStatus === 'ACCEPTED'"
+					@click="handleRemove">
+					Remove Friend
+				</button>
+
 			</div>
 			<NuxtLink :to="`/profile/${selectedUser?.safeUser?.id}`" class="go-to-profile">Go to profile</NuxtLink>
 		</div>
