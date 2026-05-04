@@ -1,6 +1,7 @@
 <script setup lang="ts">
 	const { currentUser } = useAuth()
-	const { notifyStatusChange } = useOnlineStatus()
+	const { notifyStatusUpdate, notifyUsernameUpdate, notifyAvatarUpdate } = useOnlineStatus()
+	const { fetchFriends } = useFriends()
 
 	// try to see if the user is already connected
 	const { data } = await useFetch('/api/users/auth')
@@ -58,7 +59,19 @@
 		socket.onmessage = (event) => {
 			const message = JSON.parse(event.data)
 			if (message.type === 'STATUS_CHANGE') {
-				notifyStatusChange(message.userId, message.isOnline, message.lastSeenAt)
+				notifyStatusUpdate(message.userId, message.isOnline, message.lastSeenAt)
+			}
+
+			if (message.type === 'FRIEND_UPDATE') {
+				fetchFriends()
+			}
+
+			if (message.type === 'USERNAME_UPDATE') {
+				notifyUsernameUpdate(message.userId, message.username)
+			}
+
+			if (message.type === 'AVATAR_UPDATE') {
+				notifyAvatarUpdate(message.userId, message.avatarUrl)
 			}
 		}
 	}

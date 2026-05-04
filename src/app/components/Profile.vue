@@ -2,25 +2,27 @@
 	const { isProfileOpen, selectedUser, closeProfile } = useProfile()
 	const { fetchFriends, sendRequest, respondRequest, removeFriend, getFriendshipStatus, getFriendshipId } = useFriends()
 	const { currentUser } = useAuth()
-	const { pendingStatusChange } = useOnlineStatus()
+	const { pendingStatusUpdate, pendingUsernameUpdate, pendingAvatarUpdate } = useOnlineStatus()
 	const friendActionError = ref('')
 	const avatar = computed(() => {return selectedUser.value?.safeUser?.avatarUrl || null})
 	const now = ref(new Date())
     let timer: NodeJS.Timeout | null = null
 
+	// Friends functions
 	const friendshipStatus = computed(() => {
-		console.log('selectedUser id:', selectedUser.value?.safeUser?.id)
-		console.log('currentUser id:', currentUser.value?.id)
 		if (!selectedUser.value?.safeUser?.id)
 			return 'NONE'
+
 		if (selectedUser.value.safeUser.id === currentUser.value?.id)
 			return 'SELF'
+
 		return getFriendshipStatus(selectedUser.value.safeUser.id)
 	})
 
 	const friendshipId = computed(() => {
 		if (!selectedUser.value?.safeUser?.id)
 			return null
+
 		return getFriendshipId(selectedUser.value.safeUser.id)
 	})
 
@@ -30,7 +32,6 @@
 		if (!success)
 			friendActionError.value = error
 	}
-
 
 	async function handleAccept() {
 		friendActionError.value = ''
@@ -53,12 +54,10 @@
 			friendActionError.value = error
 	}
 
-	watch(isProfileOpen, (isOpen) => {
-		if (isOpen)
-			fetchFriends()
-	})
 
-	watch(pendingStatusChange, (change) => {
+
+	// Online Status functions
+	watch(pendingStatusUpdate, (change) => {
 		if (change && selectedUser.value?.safeUser?.id === change.userId) {
 			//change isOnline
 			const newSafeUser = {
@@ -132,6 +131,34 @@
 			return `since ${months} month${months > 1 ? 's' : ''}`
 		return `since ${years} year${years > 1 ? 's' : ''}`
 	})
+
+
+	// Username change function
+	watch(pendingUsernameUpdate, (update) => {
+		if (update && selectedUser.value?.safeUser?.id === update.userId) {
+			selectedUser.value = {
+				...selectedUser.value,
+				safeUser: {
+					...selectedUser.value.safeUser,
+					username: update.username,
+				}
+			}
+		}
+	})
+
+	// Avatar change function
+	watch(pendingAvatarUpdate, (update) => {
+		if (update && selectedUser.value?.safeUser?.id === update.userId) {
+			selectedUser.value = {
+				...selectedUser.value,
+				safeUser: {
+					...selectedUser.value.safeUser,
+					avatarUrl: update.avatarUrl,
+				}
+			}
+		}
+	})
+
 </script>
 
 <template>
@@ -151,21 +178,24 @@
 			<div v-if="friendshipStatus !== 'SELF'">
 				<button
 					v-if="friendshipStatus === 'NONE'"
-					@click="handleSendRequest">
+					@click="handleSendRequest"
+					class="green-btn">
 					Add Friend
 				</button>
 				<button
 					v-if="friendshipStatus === 'PENDING_SENT'"
+					class="gray-btn"
 					disabled>
 					Pending...
 				</button>
-				<template v-if="friendshipStatus === 'PENDING_RECEIVED'">
-					<button @click="handleAccept">Accept</button>
-					<button @click="handleDecline">Decline</button>
+				<template v-if="friendshipStatus === 'PENDING_RECEIVED'" class="friends-choice-btn">
+					<button @click="handleAccept" class="green-btn">Accept</button>
+					<button @click="handleDecline" class="red-btn">Decline</button>
 				</template>
 				<button
 					v-if="friendshipStatus === 'ACCEPTED'"
-					@click="handleRemove">
+					@click="handleRemove"
+					class="red-btn">
 					Remove Friend
 				</button>
 
@@ -253,6 +283,47 @@
 		text-decoration: none;
 		color: #333;
 		cursor: pointer;
+	}
+
+	.friends-choice-btn {
+		display: flex;
+
+	}
+
+	.green-btn {
+		background-color: #BABABA;
+		color: white;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: background-color 0.3s;
+	}
+
+	.green-btn:hover {
+		background-color: #42b883;
+	}
+
+	.red-btn {
+		background-color: #BABABA;
+		color: white;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: background-color 0.3s;
+	}
+
+	.red-btn:hover {
+		background-color: #E32B2B;
+	}
+
+	.gray-btn {
+		background-color: #BABABA;
+		color: white;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
 	}
 
 </style>

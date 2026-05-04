@@ -84,7 +84,15 @@ export default defineEventHandler(async (event) => {
 			where: { id: userId },
 			data: { avatarUrl: avatarUrl }
 		})
-		
+	
+		if (avatarUrl) {
+			broadcast({
+				type: 'AVATAR_UPDATE',
+				userId: userId,
+				avatarUrl: avatarUrl
+			})
+		}
+
 		return { avatarUrl }
 
 	} catch (error) {

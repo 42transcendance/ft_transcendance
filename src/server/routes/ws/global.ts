@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import { connectedPeers } from '../../utils/peers'
 
 const secret = process.env.NUXT_JWT_SECRET
 if (!secret)
@@ -37,8 +38,8 @@ export default defineWebSocketHandler({
             });
 
             if (user) {
-                peer.ctx = { userId: user.id };
-
+                peer.ctx = { userId: user.id }
+				connectedPeers.set(user.id, peer)
 				peer.subscribe('status')
 
                 await prisma.user.update({
@@ -52,6 +53,8 @@ export default defineWebSocketHandler({
 					isOnline: true
 				}))
 
+				peer.subscribe(`user:${user.id}`)
+				console.log(`User ${user.id} connected to private channel`)
             }
         } catch (e) {
 			peer.close(1008, 'Unauthorized')
@@ -70,6 +73,8 @@ export default defineWebSocketHandler({
                         lastSeenAt: new Date() 
                     }
                 });
+
+				connectedPeers.delete(userId)
 
 				peer.publish('status', JSON.stringify({
                     type: 'STATUS_CHANGE',

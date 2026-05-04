@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import { notifyUser } from '../../utils/notifyUser'
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
@@ -31,6 +32,8 @@ export default defineEventHandler(async (event) => {
     const friendship = await prisma.friendship.create({
         data: { senderId: decoded.userId, receiverId: body.receiverId }
     })
+
+	notifyUser(body.receiverId, { type: 'FRIEND_UPDATE' })
 
     return { friendship }
 })

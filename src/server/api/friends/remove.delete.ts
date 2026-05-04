@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import { notifyUser } from '../../utils/notifyUser'
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
@@ -20,13 +21,18 @@ export default defineEventHandler(async (event) => {
     if (!friendship)
         throw createError({ statusCode: 404, message: 'Friendship not found' })
 
-    if (friendship.senderId !== userId && friendship.receiverId !== decoded.userId)
+    if (friendship.senderId !== decoded.userId && friendship.receiverId !== decoded.userId)
         throw createError({ statusCode: 403, message: 'Forbidden' })
 
     await prisma.friendship.delete({
 		where:
 			{ id: body.friendshipId }
 	})
+
+	const otherUserId = friendship.senderId === decoded.userId 
+		? friendship.receiverId 
+		: friendship.senderId
+	notifyUser(otherUserId, { type: 'FRIEND_UPDATE' })
 
     return { success: true }
 })

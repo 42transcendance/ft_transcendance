@@ -1,10 +1,26 @@
-const pendingStatusChange = ref<{ userId: string, isOnline: boolean, lastSeenAt: Date } | null>(null)
+const pendingStatusUpdate = ref<{ userId: string, isOnline: boolean, lastSeenAt: Date } | null>(null)
+const pendingUsernameUpdate = ref<{ userId: string, username: string } | null>(null)
+const pendingAvatarUpdate = ref<{ userId: string, avatar: string } | null>(null)
 
 export const useOnlineStatus = () => {
 
-    function notifyStatusChange(userId: string, isOnline: boolean, lastSeenAt: Date) {
-        pendingStatusChange.value = { userId, isOnline, lastSeenAt }
+    function notifyStatusUpdate(userId: string, isOnline: boolean, lastSeenAt: Date) {
+        pendingStatusUpdate.value = { userId, isOnline, lastSeenAt }
     }
 
-    return { notifyStatusChange, pendingStatusChange }
+	function notifyUsernameUpdate(userId: string, username: string) {
+		pendingUsernameUpdate.value = { userId, username }
+	}
+
+	function notifyAvatarUpdate(userId: string, avatarUrl: string) {
+		pendingAvatarUpdate.value = { userId, avatarUrl }
+	}
+    return {
+		notifyStatusUpdate,
+		notifyUsernameUpdate,
+		notifyAvatarUpdate,
+		pendingStatusUpdate,
+		pendingUsernameUpdate,
+		pendingAvatarUpdate
+	}
 }

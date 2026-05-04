@@ -1,6 +1,6 @@
 export const useFriends = () => {
 	const friends = useState<any[]>('friends', () => [])
-	const pendingSend = useState<any[]>('pendingSend', () => [])
+	const pendingSent = useState<any[]>('pendingSent', () => [])
 	const pendingReceived = useState<any[]>('pendingReceived', () => [])
 	const error = useState<string>('friendsError', () => '')
 
@@ -8,7 +8,7 @@ export const useFriends = () => {
 		try {
 			const data = await $fetch('/api/friends')
 			friends.value = data.friends
-			pendingSend.value = data.pendingSend
+			pendingSent.value = data.pendingSent
 			pendingReceived.value = data.pendingReceived
 		} catch (e) {
 			error.value = e.data?.message || 'Failed to load friends'
@@ -59,11 +59,11 @@ export const useFriends = () => {
 	}
 
 	const getFriendshipStatus = (friendId: string) => {
-		if (!friends.value || !pendingSend.value || !pendingReceived.value)
+		if (!friends.value || !pendingSent.value || !pendingReceived.value)
 			return 'NONE'
-		if (friends.value.find(f => f.id === friendId))
+		if (friends.value.find(f => f.user.id === friendId))
 			return 'ACCEPTED'
-		if (pendingSend.value.find(f => f.user.id === friendId))
+		if (pendingSent.value.find(f => f.user.id === friendId))
 			return 'PENDING_SENT'
 		if (pendingReceived.value.find(f => f.user.id === friendId))
 			return 'PENDING_RECEIVED'
@@ -71,7 +71,11 @@ export const useFriends = () => {
 	}
 
 	const getFriendshipId = (friendId: string) => {
-		const inSent = pendingSend.value.find(f => f.user.id === friendId)
+		const inFriends = friends.value.find(f => f.user.id === friendId)
+		if (inFriends)
+			return inFriends.friendshipId
+
+		const inSent = pendingSent.value.find(f => f.user.id === friendId)
 		if (inSent)
 			return inSent.friendshipId
 
@@ -84,7 +88,7 @@ export const useFriends = () => {
 
 	return {
 		friends,
-		pendingSend,
+		pendingSent,
 		pendingReceived,
 		error,
 		fetchFriends,

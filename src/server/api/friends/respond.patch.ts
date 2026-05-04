@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import { notifyUser } from '../../utils/notifyUser'
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
@@ -35,13 +36,17 @@ export default defineEventHandler(async (event) => {
 				{ id: body.friendshipId }
 		})
 
+		notifyUser(friendship.senderId, { type: 'FRIEND_UPDATE' })
+
         return { success: true, action: 'DECLINED' }
-    }
+    } else {
+		const updated = await prisma.friendship.update({
+			where: { id: body.friendshipId },
+			data: { status: 'ACCEPTED' }
+		})
 
-    const updated = await prisma.friendship.update({
-        where: { id: body.friendshipId },
-        data: { status: 'ACCEPTED' }
-    })
+		notifyUser(friendship.senderId, { type: 'FRIEND_UPDATE' })
 
-    return { success: true, action: 'ACCEPTED', friendship: updated }
+		return { success: true, action: 'ACCEPTED', friendship: updated }
+	}
 })

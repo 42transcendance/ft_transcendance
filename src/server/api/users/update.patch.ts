@@ -47,6 +47,14 @@ export default defineEventHandler(async (event) => {
         })
 
         const { email, password, ...safeUser } = updatedUser
+
+		if (body.username) {
+		broadcast({
+			type: 'USERNAME_UPDATE',
+			userId: userId,
+			username: safeUser.username,
+		})
+}
         return { success: true, user: safeUser }
     } catch (error: any) {
         // Code P2002 = username taken

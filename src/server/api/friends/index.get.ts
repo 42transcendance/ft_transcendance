@@ -26,15 +26,15 @@ export default defineEventHandler(async (event) => {
 		.filter(f => f.status === 'ACCEPTED')
 		.map(f => ({
 			friendshipId: f.id,
-			user: f.senderId === userId ? f.receiver : f.sender
+			user: f.senderId === decoded.userId ? f.receiver : f.sender
 		}))
 
     const pendingReceived = friendships
-        .filter(f => f.status === 'PENDING' && f.receiverId === userId)
+        .filter(f => f.status === 'PENDING' && f.receiverId === decoded.userId)
         .map(f => ({ friendshipId: f.id, user: f.sender }))
 
     const pendingSent = friendships
-        .filter(f => f.status === 'PENDING' && f.senderId === userId)
+        .filter(f => f.status === 'PENDING' && f.senderId === decoded.userId)
         .map(f => ({ friendshipId: f.id, user: f.receiver }))
 
     return { friends, pendingReceived, pendingSent }
