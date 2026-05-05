@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
+import { setCookie } from 'h3'
 
 export default defineEventHandler(async (event) => {
 	const body = await readBody(event)

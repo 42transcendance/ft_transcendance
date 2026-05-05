@@ -6,5 +6,7 @@ COPY src/prisma ./prisma
 RUN npm install
 COPY src/ .
 RUN npm run build
+# Generate Prisma client for production
+RUN npx prisma generate
 EXPOSE 3000
 CMD ["npm", "run", "preview"]

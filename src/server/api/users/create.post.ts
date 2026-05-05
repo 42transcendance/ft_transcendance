@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { Prisma } from '@prisma/client'
+import { setCookie } from 'h3'
 
 export default defineEventHandler(async (event) => {
 	const body = await readBody<{ email: string; username: string; password: string }>(event);

@@ -10,6 +10,7 @@ export default defineNuxtConfig({
 	},
 
 	runtimeConfig: {
-		jwtSecret: ''
+		jwtSecret: process.env.NUXT_JWT_SECRET || 'dev-secret-key-change-in-production',
+		apiKey: process.env.API_KEY || 'dev-api-key-change-in-production'
 	}
 })

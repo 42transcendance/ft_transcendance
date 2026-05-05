@@ -1,12 +1,17 @@
 import jwt from 'jsonwebtoken'
 import { connectedPeers } from '../../utils/peers'
 
-const secret = process.env.NUXT_JWT_SECRET
-if (!secret)
-    throw new Error('NUXT_JWT_SECRET is not defined')
-
 export default defineWebSocketHandler({
     async open(peer) {
+		const config = useRuntimeConfig()
+		const secret = config.jwtSecret
+		
+		if (!secret) {
+			console.error('[ws] NUXT_JWT_SECRET is not defined')
+			peer.close(1008, 'Server error')
+			return
+		}
+
 		//get cookie
 		const cookieHeader = peer.request?.headers.get('cookie')	
 
@@ -57,6 +62,7 @@ export default defineWebSocketHandler({
 				console.log(`User ${user.id} connected to private channel`)
             }
         } catch (e) {
+			console.error('[ws] Authentication error:', e)
 			peer.close(1008, 'Unauthorized')
             return
         }
