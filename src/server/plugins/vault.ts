@@ -1,7 +1,27 @@
 export default defineNitroPlugin(async () => {
   const vaultAddr = process.env.VAULT_ADDR
   const vaultToken = process.env.VAULT_TOKEN
+  const isDevMode = process.env.NODE_ENV !== 'production'
 
+  // Development mode: use environment variables or defaults
+  if (isDevMode && (!vaultToken || !vaultAddr)) {
+    console.log('[vault] Development mode: Using environment variables or defaults')
+    
+    if (!process.env.DATABASE_URL) {
+      process.env.DATABASE_URL = 'postgresql://transcendence:transcendence@localhost:5432/transcendence_db'
+    }
+    if (!process.env.NUXT_JWT_SECRET) {
+      process.env.NUXT_JWT_SECRET = 'dev-jwt-secret-change-in-production'
+    }
+    if (!process.env.API_KEY) {
+      process.env.API_KEY = 'dev-api-key-change-in-production'
+    }
+    
+    console.log('[vault] ✓ Using dev defaults for DATABASE_URL, NUXT_JWT_SECRET, API_KEY')
+    return
+  }
+
+  // Production mode: require Vault
   if (!vaultToken || !vaultAddr) {
     throw new Error('VAULT_ADDR or VAULT_TOKEN missing')
   }
