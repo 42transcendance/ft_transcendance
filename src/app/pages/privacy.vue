@@ -1,7 +1,7 @@
 <template>
   <main class="legal-page">
     <h1>Privacy Policy</h1>
-    <p class="last-updated">Last updated: June 2025</p>
+    <p class="last-updated">Last updated: June 2026</p>
 
     <section>
       <h2>1. Introduction</h2>
