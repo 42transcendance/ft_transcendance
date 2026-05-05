@@ -86,6 +86,14 @@ export const useFriends = () => {
 		return null
 	}
 
+	const updateFriendStatus = (userId: string, isOnline: boolean) => {
+		const friend = friends.value.find(f => f.user.id === userId)
+		if (friend) {
+			friend.user.isOnline = isOnline
+			friends.value = [...friends.value]
+		}
+	}
+
 	return {
 		friends,
 		pendingSent,
@@ -96,6 +104,7 @@ export const useFriends = () => {
 		sendRequest,
 		respondRequest,
 		getFriendshipStatus,
-		getFriendshipId
+		getFriendshipId,
+		updateFriendStatus
 	}
 }

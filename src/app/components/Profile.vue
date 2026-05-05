@@ -9,6 +9,7 @@
     let timer: NodeJS.Timeout | null = null
 
 	// Friends functions
+
 	const friendshipStatus = computed(() => {
 		if (!selectedUser.value?.safeUser?.id)
 			return 'NONE'
@@ -95,6 +96,7 @@
 
 	watch (isProfileOpen, (isOpen) => {
 		if (isOpen) {
+			fetchFriends()
 			now.value = new Date()
 			startTimer()
 		} else {

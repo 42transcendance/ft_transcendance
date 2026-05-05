@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	const { currentUser } = useAuth()
-	const { notifyStatusUpdate, notifyUsernameUpdate, notifyAvatarUpdate } = useOnlineStatus()
+	const { notifyStatusUpdate, notifyUsernameUpdate, notifyAvatarUpdate, updateFriendStatus, updateFriendProfile } = useOnlineStatus()
 	const { fetchFriends } = useFriends()
 
 	// try to see if the user is already connected
@@ -60,6 +60,7 @@
 			const message = JSON.parse(event.data)
 			if (message.type === 'STATUS_CHANGE') {
 				notifyStatusUpdate(message.userId, message.isOnline, message.lastSeenAt)
+				updateFriendStatus(message.userId, message.isOnline)
 			}
 
 			if (message.type === 'FRIEND_UPDATE') {
@@ -86,8 +87,12 @@
 	watch(currentUser, (newUser) => {
 		if (newUser && !socket) {
 			connect()
+			fetchFriends()
 		} else if (!newUser && socket) {
 			disconnect()
+			friends.value = []
+			pendingSent.value = []
+			pendingReceived.value = []
 		}
 	}, { immediate: true })  //check at first render
 
