@@ -9,6 +9,7 @@ const peerRoom = new Map<string, Room>()
 export default defineWebSocketHandler({
 	open(peer) {
 	
+    	console.log('Joueur connecté')
 	var currRoom = rooms.find(r => r.states === "waiting");
 
 	if (currRoom === undefined) {
@@ -18,18 +19,19 @@ export default defineWebSocketHandler({
 	currRoom.add_player(peer);
 	peerRoom.set(peer.id,currRoom);
 
+	let server_msg: ServerMessage;
 	if (currRoom.currPlayer === GAME.PLAYERS) {
-		const start_msg: ServerMessage = {
+		server_msg = {
 			type: "starting"
 		}
-		currRoom.broadcast(start_msg);
+		currRoom.broadcast(server_msg);
 		currRoom.start_game();
 	} else {
-		const waiting_msg: ServerMessage = {
+		server_msg = {
 			type: "waiting",
 		}
-		peer.send(JSON.stringify(waiting_msg));
 	}
+	peer.send(JSON.stringify(server_msg));
 },
 
 message(peer, message) {
@@ -40,13 +42,21 @@ message(peer, message) {
 	if (!currRoom) {
 		return;
 	}
+	
+	if (data.type === 'ready') {
+		const init_board: ServerMessage = {
+			type: 'cell_init',
+			cells: currRoom.game.board.grid.flat()
+		};
+		peer.send(JSON.stringify(init_board));
+	}
 
 	if (data.type === 'paint') {
 
 		if (!currRoom.game) {
 			return ;
 		}
-		if (playerId < GAME.PLAYERS && currRoom.game.p_painted_cell[playerId].length !== 0) {
+		if (playerId < currRoom.maxPlayer && currRoom.game.state === "on-going") {
 			const cell = currRoom.game.players[playerId].paint(currRoom.game.board, currRoom.game);
 
 			const broadcast: ServerMessage = {
@@ -55,17 +65,25 @@ message(peer, message) {
 			}
 			// Broadcast à tous
 			currRoom.broadcast(broadcast);
+			currRoom.game.actualize();
+			currRoom.end_game();
 		}
-		currRoom.game.actualize()
 	}
 },
 
 	close(peer) {
     	const currRoom = peerRoom.get(peer.id);
 		currRoom?.remove_player(peer);
+
 		if (currRoom?.currPlayer === 0) {
 			const index = rooms.indexOf(currRoom);
 			rooms.splice(index, 1)
+		}
+		else {
+			if (currRoom.game) {
+				currRoom.game.actualize();
+				currRoom.end_game();
+			}
 		}
     	peerRoom.delete(peer.id)  // ← nettoie quand le joueur se déconnecte
     	console.log('Joueur déconnecté')
