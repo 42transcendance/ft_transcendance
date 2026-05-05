@@ -1,4 +1,4 @@
-import { GAME, GRID_INFO, PLAYER_INFO } from "./constants"
+import { GAME, GRID_INFO, PLAYER_INFO, CELL_INFO } from "./constants"
 import { Player } from "./player"
 import { Cell } from "./cell"
 import { Grid } from "./grid"
@@ -47,23 +47,27 @@ export class Game {
 	/**
 	 * Synchronise `p_painted_cell` avec l'état réel de la grille.
 	 * Retire les cases qui ont été repeintes par un autre joueur.
+	 * Met a l'état 'over' si il ne reste qu'un joueur en vie
 	 */
 	actualize() {
+		var dead_player: number = 0;
+
 		this.players.forEach((player, index) => {
 			this.p_painted_cell[index] = this.p_painted_cell[index].filter(cell => cell.color === player.color);
+			if (this.p_painted_cell[index].length === 0)
+				dead_player++;
 		});
-	}
-
-	is_finished() {
-		var cpt: number = 0;
-		this.players.forEach((player, index) => {
-			if (this.p_painted_cell[index].length === 0) {
-				cpt++;
-			}
-		});
-
-		if (cpt >= this.players.length - 1) {
+		if (dead_player === this.players.length - 1)
 			this.state = "over";
-		}
+	}
+	
+	/**
+	* Supprime toutes les cases peintes d'un joueur en particulier.
+	* @param id - Identifiant du joueur à supprimer
+	*/
+	kill_player(id: number) {
+		this.p_painted_cell[id].forEach((cell) => {
+			cell.color = CELL_INFO.COLOR;
+		});
 	}
 }
