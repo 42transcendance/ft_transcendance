@@ -1,1 +1,0 @@
-reste a faire -> room id avec logique serveur, setup index.vue pour le jeu puis test
