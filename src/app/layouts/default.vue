@@ -1,19 +1,20 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div>
-    <Navbar />
-    <Profile />
-	<NavBtnsNotifBtn />	
-    <main class="main-content">
-      <slot />
-    </main>
-    <footer class="footer">
-      <NuxtLink to="/privacy">Privacy Policy</NuxtLink>
-      <span>·</span>
-      <NuxtLink to="/terms">Terms of Service</NuxtLink>
-    </footer>
-  </div>
+  <ClientOnly>
+    <div>
+      <Navbar />
+      <Profile />
+      <main class="main-content">
+        <slot />
+      </main>
+      <footer class="footer">
+        <NuxtLink to="/privacy">Privacy Policy</NuxtLink>
+        <span>·</span>
+        <NuxtLink to="/terms">Terms of Service</NuxtLink>
+      </footer>
+    </div>
+  </ClientOnly>
 </template>
 
 <style scoped>
