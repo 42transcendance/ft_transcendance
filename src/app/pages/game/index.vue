@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { fillBackground, render } from '~/game/render'
-import { GRID_INFO } from '~/game/constants'
+import { GRID_INFO, TIMER } from '~shared/game/constants'
 
 definePageMeta({ middleware: 'auth' })
 
 const gameState = ref<"waiting" | "starting" | "playing" | "finished">("waiting");
-const gameTimer = ref(10);
-let starting: ReturnType<typeof setTimeout> | null = null;
+const launchingTimer = ref(TIMER.LAUNCHING);
+let starting: ReturnType<typeof setInterval> | null = null;
+
+const gameTimer = ref(TIMER.GAME);
+let gaming: ReturnType<typeof setInterval> | null = null;
+
+const winner = ref<number | null>(null);
+const painted = ref<number | null>(null);
+const clicked = ref<number | null>(null);
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let ctx: CanvasRenderingContext2D | null = null;
@@ -30,7 +37,15 @@ onMounted(() => {
 	if (state.type === "playing")
 		gameState.value = "playing"
 	if (state.type === "finished")
+	{
 		gameState.value = "finished"
+		winner.value = state.winner;
+	}
+	if (state.type === "stats")
+	{
+		painted.value = state.painted;
+		clicked.value = state.clicked;
+	}
 	if (ctx)
 		render(ctx, state);
   })
@@ -42,15 +57,16 @@ onMounted(() => {
  */
 watch(gameState, async (newState) => {
 	if (newState === "waiting") {
-		clearTimeout(starting);
+		clearInterval(starting);
 		starting = null;
-		gameTimer.value = 10;
+		launchingTimer.value = TIMER.LAUNCHING;
 	}
 	if (newState === "starting")
-		start_timer();
+		timer(starting, launchingTimer);
 	if (newState === "playing")
 	{
 		await nextTick();
+		timer(gaming, gameTimer);
 		ctx = canvas.value!.getContext('2d')!
 
 		fillBackground(ctx)
@@ -58,22 +74,26 @@ watch(gameState, async (newState) => {
 	}
 	if (newState === "finished") {
 		ctx = null;
+
+		clearInterval(gaming);
+		gaming = null;
+		gameTimer.value = TIMER.GAME;
 		await nextTick();
 	}
 })
 
 /**
- * Lance le compte à rebours de 10 secondes affiché à l'écran.
- * Décrémente `gameTimer` chaque seconde et s'arrête à 0.
+ * Lance un compte à rebours en secondes affiché à l'écran.
  */
-function start_timer() {
-	starting = setInterval(() => {
-		gameTimer.value--;
-		if (gameTimer.value <= 0) {
-			clearInterval(starting);
+function timer(timer: any, seconds: any) {
+	timer = setInterval(() => {
+		seconds.value--;
+		if (seconds.value <= 0) {
+			clearInterval(timer);
 		}
 	}, 1000);
 }
+
 /** Ferme proprement la connexion WebSocket à la destruction du composant */
 onUnmounted(() => ws?.close())
 
@@ -84,6 +104,20 @@ onUnmounted(() => ws?.close())
 const paint = () => {
   ws?.send(JSON.stringify({ type: 'paint' }))
 }
+
+/**
+ * Temps formatte pour l'affichage xx:xx
+ * ATTENTION: Ne fonctionne qu'avec 'gameTimer' mais il existe
+ * un moyen de le faire en dynamique !
+ */
+const seconds = computed(() => {
+	return String(gameTimer.value % 60).padStart(2, '0')
+})
+
+const minutes = computed(() => {
+	return String(Math.floor(gameTimer.value / 60)).padStart(2, '0')
+})
+
 </script>
 
 <template>
@@ -93,7 +127,7 @@ const paint = () => {
 	</div>
 
 	<div v-if="gameState === 'starting'">
-		<p>Le jeu se lance dans {{ gameTimer }} secondes!</p>
+		<p>Le jeu se lance dans {{ launchingTimer }} secondes!</p>
 	</div>
 
 	<div v-if="gameState === 'playing'">
@@ -103,10 +137,20 @@ const paint = () => {
 		:height="GRID_INFO.HEIGHT * 2"
 		/>
 		<button @click="paint">Paint</button>
+		<p> {{ minutes }} : {{ seconds }} </p>
 	</div>
 	<div v-if="gameState === 'finished'">
-		Jeu Termine ! Envie de refaire une partie ?
+		Jeu Termine !
+		<p>
+		Le gagnant est le joueur {{ winner }} !
+		</p>
+		Stats:
+		<p>
+		Nombre de cases peintes : {{ painted }}
+		<p>
+		</p>
+		Nombre de cliques : {{ clicked }}
+		</p>
 	</div>
   </div>
 </template>
-
