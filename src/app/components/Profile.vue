@@ -164,168 +164,215 @@
 </script>
 
 <template>
-	<div :class="['side-profile', { 'is-open': isProfileOpen }]">
-		<div v-show="selectedUser" class="profile-content">
-			<button class="close-btn" @click="closeProfile">×</button>
+    <div :class="['side-profile', { 'is-open': isProfileOpen }]">
+        <div v-show="selectedUser" class="profile-content">
+            <button class="close-btn" @click="closeProfile">×</button>
 
-			<img :src="avatar || '/default-avatar.jpg'" alt="Avatar" class="avatar" />
-			<h2 class="profile-title">Profil de {{ selectedUser?.safeUser?.username }}</h2>
-			<div v-if="selectedUser?.safeUser?.isOnline" class="user-online">
-				<p>Online 🟢</p>
-			</div>
-			<div v-else class="user-offline">
-				<p>Offline 🔴</p>
-				<p class="last-seen">{{ formatLastSeen }}</p>
-			</div>
-			<div v-if="friendshipStatus !== 'SELF'">
-				<button
-					v-if="friendshipStatus === 'NONE'"
-					@click="handleSendRequest"
-					class="green-btn">
-					Add Friend
-				</button>
-				<button
-					v-if="friendshipStatus === 'PENDING_SENT'"
-					class="gray-btn"
-					disabled>
-					Pending...
-				</button>
-				<template v-if="friendshipStatus === 'PENDING_RECEIVED'" class="friends-choice-btn">
-					<button @click="handleAccept" class="green-btn">Accept</button>
-					<button @click="handleDecline" class="red-btn">Decline</button>
-				</template>
-				<button
-					v-if="friendshipStatus === 'ACCEPTED'"
-					@click="handleRemove"
-					class="red-btn">
-					Remove Friend
-				</button>
+            <img :src="avatar || '/default-avatar.jpg'" alt="Avatar" class="avatar" />
+            <h2 class="profile-title">{{ selectedUser?.safeUser?.username }}</h2>
 
-			</div>
-			<NuxtLink :to="`/profile/${selectedUser?.safeUser?.id}`" class="go-to-profile">Go to profile</NuxtLink>
-		</div>
-	</div>
+            <div v-if="selectedUser?.safeUser?.isOnline" class="status-block">
+                <span class="status-dot online"></span>
+                <span class="status-text">Online</span>
+            </div>
+            <div v-else class="status-block">
+                <span class="status-dot offline"></span>
+                <span class="status-text">Offline</span>
+                <p class="last-seen">{{ formatLastSeen }}</p>
+            </div>
+
+            <div class="divider"></div>
+
+            <div v-if="friendshipStatus !== 'SELF'" class="friend-zone">
+
+                <template v-if="friendshipStatus === 'NONE'">
+                    <button @click="handleSendRequest" class="btn btn-green">
+                        Add Friend
+                    </button>
+                </template>
+
+                <template v-if="friendshipStatus === 'PENDING_SENT'">
+                    <p class="friend-status-text">Friend request sent</p>
+                    <button class="btn btn-gray" disabled>Pending...</button>
+                </template>
+
+                <template v-if="friendshipStatus === 'PENDING_RECEIVED'">
+                    <p class="friend-status-text">
+                        <strong>{{ selectedUser?.safeUser?.username }}</strong> sent you a friend request
+                    </p>
+                    <div class="btn-row">
+                        <button @click="handleAccept" class="btn btn-green">Accept</button>
+                        <button @click="handleDecline" class="btn btn-red">Decline</button>
+                    </div>
+                </template>
+
+                <template v-if="friendshipStatus === 'ACCEPTED'">
+                    <p class="friend-status-text">You are friends 🤝</p>
+                    <button @click="handleRemove" class="btn btn-outline-red">Remove Friend</button>
+                </template>
+
+                <p v-if="friendActionError" class="error">{{ friendActionError }}</p>
+            </div>
+
+            <div class="spacer"></div>
+            <NuxtLink :to="`/profile/${selectedUser?.safeUser?.id}`" class="go-to-profile">
+                Go to profile →
+            </NuxtLink>
+        </div>
+    </div>
 </template>
 
 
 <style scoped>
-	.side-profile {
-		position: fixed;
-		top: 60px;
-		right: 0;
-		width: 400px;
-		height: calc(100vh - 60px);
-		background: white;
-		z-index: 2000; /* Plus haut que la navbar */
-		box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+.side-profile {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    width: 400px;
+    height: calc(100vh - 60px);
+    background: white;
+    z-index: 2000;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+}
+.side-profile.is-open {
+    transform: translateX(0);
+}
 
-		/* L'animation : on déplace la boîte de 100% vers la droite */
-		transform: translateX(100%);
-		transition: transform 0.3s ease-in-out;
-	}
+.profile-content {
+    height: 100%;
+    padding: 60px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+}
 
-	/* Quand la classe 'is-open' est ajoutée, on remet le X à 0 */
-	.side-profile.is-open {
-		transform: translateX(0);
-	}
+.close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 28px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #666;
+}
+.close-btn:hover { color: #333; }
 
-	.avatar {
-		width: 150px;
-		height: 150px;
-		border-radius: 50%;
-		object-fit: cover;
-		border: 3px solid #ddd;
-		justify-content: center;
-	}
+.avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #eee;
+}
 
-	.profile-title {
-		text-align: center;
-		align-items: center;
-		gap: 10px;
-	}
+.profile-title {
+    font-size: 1.2rem;
+    text-align: center;
+    margin: 0;
+    color: #222;
+}
 
-	.profile-content {
-		padding: 20px;
-		padding-top: 60px; /* Pour ne pas être sous la navbar si besoin */
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
+.status-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
 
-	.close-btn {
-		position: absolute;
-		top: 20px;
-		right: 20px;
-		font-size: 30px;
-		border: none;
-		background: none;
-		cursor: pointer;
-	}
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+.status-dot.online  { background: #42b883; }
+.status-dot.offline { background: #bbb; }
 
-	.user-online, .user-offline {
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		width: 100%;
-	}
+.status-text {
+    font-size: 0.95rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+}
 
-	.last-seen {
-		font-style: italic;
-		color: #949494;
-		font-size: 0.90rem;
-		margin-top: 2px;
-	}
+.last-seen {
+    font-style: italic;
+    color: #aaa;
+    font-size: 0.82rem;
+    margin: 0;
+}
 
-	.go-to-profile {
-		font-family: "Courier New";
-		font-size: 16px;
-		font-weight: bold;
-		text-decoration: none;
-		color: #333;
-		cursor: pointer;
-	}
+.divider {
+    width: 80%;
+    height: 1px;
+    background: #eee;
+    margin: 4px 0;
+}
 
-	.friends-choice-btn {
-		display: flex;
+.friend-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: center;
+}
 
-	}
+.friend-status-text {
+    color: #555;
+    font-size: 0.9rem;
+    margin: 0;
+}
 
-	.green-btn {
-		background-color: #BABABA;
-		color: white;
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: background-color 0.3s;
-	}
+.btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
 
-	.green-btn:hover {
-		background-color: #42b883;
-	}
+.btn {
+    padding: 9px 22px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+.btn-green            { background: #42b883; color: white; }
+.btn-green:hover      { background: #369a6e; }
+.btn-red              { background: #e32b2b; color: white; }
+.btn-red:hover        { background: #b52020; }
+.btn-gray             { background: #ddd; color: #888; cursor: default; }
+.btn-outline-red      { background: transparent; color: #e32b2b; border: 1px solid #e32b2b; }
+.btn-outline-red:hover { background: #ffeaea; }
 
-	.red-btn {
-		background-color: #BABABA;
-		color: white;
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: background-color 0.3s;
-	}
+.error {
+    color: red;
+    font-size: 0.82rem;
+    text-align: center;
+}
 
-	.red-btn:hover {
-		background-color: #E32B2B;
-	}
+.spacer {
+    flex-grow: 1;
+}
 
-	.gray-btn {
-		background-color: #BABABA;
-		color: white;
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-	}
-
+.go-to-profile {
+    font-family: "Courier New";
+    font-size: 0.95rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: #555;
+    padding: 10px 0;
+    width: 100%;
+    text-align: center;
+    border-top: 1px solid #eee;
+    transition: color 0.2s;
+}
+.go-to-profile:hover { color: #42b883; }
 </style>

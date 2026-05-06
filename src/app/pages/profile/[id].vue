@@ -23,13 +23,20 @@
 	const previewImage = ref<string | null>(user?.value?.safeUser?.avatarUrl || null)
 
 	watch(pendingStatusUpdate, (update) => {
-		if (update && user.value?.safeUser?.id === update.userId) {
-			user.value = {
-				...user.value,
-				safeUser: {
-					...user.value.safeUser,
-					isOnline: update.isOnline,
-					lastSeenAt: update.lastSeenAt
+		if (update) {
+			const friend = friends.value.find(f => f.user.id === update.userId)
+			if (friend) {
+				friend.user.isOnline = update.isOnline
+				friends.value = [...friends.value]
+			}
+			if (user.value?.safeUser?.id === update.userId) {
+				user.value = {
+					...user.value,
+					safeUser: {
+						...user.value.safeUser,
+						isOnline: update.isOnline,
+						lastSeenAt: update.lastSeenAt
+					}
 				}
 			}
 		}
