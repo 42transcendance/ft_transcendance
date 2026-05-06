@@ -9,10 +9,10 @@
       <main class="main-content">
         <slot />
       </main>
-      <footer class="footer">
-        <NuxtLink to="/privacy">Privacy Policy</NuxtLink>
-        <span>·</span>
-        <NuxtLink to="/terms">Terms of Service</NuxtLink>
+      <footer class="text-center py-6 mt-8 text-sm text-gray-500 border-t border-gray-200 flex flex-col sm:flex-row justify-center gap-4 flex-wrap">
+        <NuxtLink to="/privacy" class="text-gray-500 no-underline hover:underline">Privacy Policy</NuxtLink>
+        <span class="hidden sm:inline">·</span>
+        <NuxtLink to="/terms" class="text-gray-500 no-underline hover:underline">Terms of Service</NuxtLink>
       </footer>
     </div>
   </ClientOnly>
@@ -22,26 +22,5 @@
 .main-content {
   margin-top: 60px;
   padding: 20px;
-}
-
-.footer {
-  text-align: center;
-  padding: 1.5rem;
-  margin-top: 2rem;
-  font-size: 0.85rem;
-  color: #888;
-  border-top: 1px solid #eee;
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.footer a {
-  color: #888;
-  text-decoration: none;
-}
-
-.footer a:hover {
-  text-decoration: underline;
 }
 </style>
