@@ -1,10 +1,10 @@
 <script setup lang="ts">
-	const { currentUser, logout } = useAuth()
+	const { currentUser, } = useAuth()
 
 </script>
 
 <template>
-	<nav class="bg-white shadow-md p-4">
+	<nav class="bg-white shadow-md p-4 pl-8 pr-8">
 		<div class="flex justify-between items-center lg:flex-row">
 			<div class="flex md:gap-12 gap-2">
 				<NuxtLink to="/">Logo</NuxtLink>
