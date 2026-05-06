@@ -108,7 +108,7 @@ clean: down
 fclean: down
 	@echo "$(RED)Full clean — removing everything including volumes...$(RESET)"
 	$(COMPOSE) down --rmi local -v --remove-orphans
-	docker network prune -f
+	docker system prune -af
 	rm -rf ./uploads_storage
 	
 

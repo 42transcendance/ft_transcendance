@@ -4,13 +4,18 @@
 	const password = ref('')
 
 	const handleLogin = async () => {
+		if (!username.value || !password.value) {
+			alert('Please fill in all fields.')
+			return
+		}
+
 		const loginSuccess = await login(username.value, password.value)
 
 		if (loginSuccess) {
 			await navigateTo('/')
 		}
 		else {
-			alert('Wrong logs !')
+			alert('Wrong username or password.')
 		}
 	}
 </script>

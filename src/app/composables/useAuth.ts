@@ -16,7 +16,7 @@ export const useAuth = () => {
 			return true
 		}
 		catch (e) {
-			console.error("Failed request : ", e.statusText)
+			console.error("Failed request : ", e.data?.message ?? e.statusText)
 			return false
 		}
 	}
@@ -39,7 +39,7 @@ export const useAuth = () => {
 			return true
 		}
 		catch (e) {
-			console.error("Failed request : ", e.statusText)
+			console.error("Failed request : ", e.data?.message ?? e.statusText)
 			return false
 		}
 
