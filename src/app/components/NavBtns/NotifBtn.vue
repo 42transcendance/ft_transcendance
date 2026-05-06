@@ -1,33 +1,49 @@
 <script setup lang="ts">
-const { pendingReceived, respondRequest, fetchFriends } = useFriends()
-const { openProfile } = useProfile()
+	const { pendingReceived, respondRequest, fetchFriends } = useFriends()
+	const { pendingStatusUpdate, pendingUsernameUpdate, pendingAvatarUpdate } = useOnlineStatus()
+	const { openProfile } = useProfile()
 
-const showPopup = ref(false)
+	const showPopup = ref(false)
 
-// Liste locale pour gérer les animations de disparition
-const localRequests = ref<any[]>([])
-const dismissing = ref<Set<string>>(new Set())
+	const localRequests = ref<any[]>([])
+	const dismissing = ref<Set<string>>(new Set())
 
-// Synchronise localRequests avec pendingReceived
-watch(pendingReceived, (newVal) => {
-    // Ajoute les nouveaux, ne supprime pas ceux en cours de disparition
-    localRequests.value = newVal.filter(
-        r => !dismissing.value.has(r.friendshipId)
-    )
-}, { immediate: true, deep: true })
+	watch(pendingReceived, (newVal) => {
+		localRequests.value = newVal.filter(
+			r => !dismissing.value.has(r.friendshipId)
+		)
+	}, { immediate: true, deep: true })
 
-const pendingCount = computed(() => pendingReceived.value.length)
+	const pendingCount = computed(() => pendingReceived.value.length)
 
-async function handleRespond(friendshipId: string, action: 'ACCEPTED' | 'DECLINED') {
-    // 1. Lance l'animation de disparition
-    dismissing.value = new Set([...dismissing.value, friendshipId])
-    localRequests.value = localRequests.value.filter(r => r.friendshipId !== friendshipId)
+	async function handleRespond(friendshipId: string, action: 'ACCEPTED' | 'DECLINED') {
+		dismissing.value = new Set([...dismissing.value, friendshipId])
+		localRequests.value = localRequests.value.filter(r => r.friendshipId !== friendshipId)
 
-    // 2. Attend la fin de l'animation (300ms) puis appelle l'API
-    await new Promise(resolve => setTimeout(resolve, 300))
-    await respondRequest(friendshipId, action)
-    dismissing.value.delete(friendshipId)
-}
+		await new Promise(resolve => setTimeout(resolve, 300))
+		await respondRequest(friendshipId, action)
+		dismissing.value.delete(friendshipId)
+	}
+
+	watch(pendingUsernameUpdate, (update) => {
+		if (update) {
+			const pend = pendingReceived.value.find(p => p.user.id === update.userId)
+			if (pend) {
+				pend.user.username = update.username
+				pendingReceived.value = [...pendingReceived.value]
+			}
+		}
+	})
+
+	watch(pendingAvatarUpdate, (update) => {
+		if (update) {
+			const pend = pendingReceived.value.find(p => p.user.id === update.userId)
+			if (pend) {
+				pend.user.avatarUrl = update.avatarUrl
+				pendingReceived.value = [...pendingReceived.value]
+			}
+		}
+	})
 </script>
 
 <template>
