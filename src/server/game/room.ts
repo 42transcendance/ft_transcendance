@@ -83,7 +83,7 @@ export class Room {
      * en "starting" si elle vient de se remplir.
      */
 	update_room_state() {
-		if (this.currPlayer < this.maxPlayer && (this.states !== "playing" || this.states !== "finished") {
+		if (this.currPlayer < this.maxPlayer && (this.states !== "playing" || this.states !== "finished")) {
 			this.states = "waiting";
 		}
 		else if (this.currPlayer == this.maxPlayer) {
