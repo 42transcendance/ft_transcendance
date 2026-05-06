@@ -1,7 +1,7 @@
-import { GAME } from "./constants"
-import { Point } from "./type"
-import { Cell } from "./cell"
-import { Grid } from "./grid"
+import { GAME } from "~shared/game/constants"
+import { Point } from "~shared/game/type"
+import { Cell } from "~shared/game/cell"
+import { Grid } from "~shared/game/grid"
 import { Game } from "./game"
 
 /**
@@ -13,7 +13,7 @@ export class Player {
 	readonly color: string;
 	readonly id: number;
 
-	nbr_ptd: number;
+	nbr_clkd: number;
 
 	/**
 	 * @param home - Case de départ, immédiatement peinte à la couleur du joueur
@@ -25,14 +25,14 @@ export class Player {
 		home.color = color;
 		this.home = home;
 		this.id = id;
-		this.nbr_ptd = 0;
+		this.nbr_clkd = 0;
 	}
 
 	/**
 	 * Initialise le joueur en comptabilisant sa case de départ.
 	 */
 	init_player() {
-		this.nbr_ptd++;
+		this.nbr_clkd = 0;
 	}
 
 	/**
@@ -75,7 +75,7 @@ export class Player {
 			if (!check.is_painted(this.color)) {
 				check.color = this.color;
 				game.p_painted_cell[this.id].push(check);
-				this.nbr_ptd++;
+				this.nbr_clkd++;
 				break;
 			}
 		}

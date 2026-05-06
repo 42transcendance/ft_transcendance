@@ -1,6 +1,7 @@
 import { Game } from "./game"
+import { TIMER } from "~shared/game/constants"
 import type { Peer } from "crossws"
-import { ServerMessage } from './type'
+import { ServerMessage } from '~shared/game/type'
 
 /**
  * Représente une salle de jeu (room).
@@ -9,6 +10,7 @@ import { ServerMessage } from './type'
  */
 export class Room {
 	private startTimer: ReturnType<typeof setTimeout> | null = null;
+	private gameTimer: ReturnType<typeof setTimeout> | null = null;
 	readonly maxPlayer: number;
 
 	playerSockets: Peer[] = [];
@@ -34,6 +36,21 @@ export class Room {
      */
 	get_id(peer: Peer): number {
 		return (this.playerSockets.indexOf(peer));
+	}
+
+	/**
+	 *
+	 */
+	get_stats(peer: Peer): ServerMessage {
+		const	cell_painted: number = this.game.get_painted(this.get_id(peer));
+		const	nbr_clicked: number = this.game.get_clicked(this.get_id(peer));
+
+		const stats: ServerMessage = {
+			type: 'stats',
+			painted: cell_painted,
+			clicked: nbr_clicked,
+		}
+		return (stats);
 	}
 
     /**
@@ -73,7 +90,6 @@ export class Room {
 			this.playerSockets.splice(id, 1);
 			this.currPlayer--;
 		}
-	
 		this.update_room_state();
 	}
 	
@@ -83,7 +99,7 @@ export class Room {
      * en "starting" si elle vient de se remplir.
      */
 	update_room_state() {
-		if (this.currPlayer < this.maxPlayer && (this.states !== "playing" || this.states !== "finished")) {
+		if (this.currPlayer < this.maxPlayer && (this.states !== "playing" && this.states !== "finished")) {
 			this.states = "waiting";
 		}
 		else if (this.currPlayer == this.maxPlayer) {
@@ -111,7 +127,7 @@ export class Room {
 		if (this.states !== "starting") {
 			return ;
 		}
-		console.log("starting game in 10 secs !")
+		console.log("starting game in few secs !")
 
 		this.startTimer = setTimeout(() => {
 			console.log("starting game !");
@@ -124,7 +140,24 @@ export class Room {
 			}
 			this.broadcast(message);
 			this.states = "playing";
-		}, 10000);
+			this.game_timer();
+
+		}, TIMER.LAUNCHING * 1000);
+	}
+
+	/**
+	 * Démarre le compte a rebours de la partie.
+	 * À la fin du timer, passe la room à l'état 'finished' et notifie les joueurs.
+     * Le timer peut être annulé via `remove_player` si un joueur quitte avant la fin.
+	 */
+	game_timer() {
+		if (this.states !== "playing")
+			return ;
+
+		this.gameTimer = setTimeout(() => {
+			this.game.state = "over";
+			this.end_game();
+		}, TIMER.GAME * 1000);
 	}
 
     /**
@@ -133,10 +166,16 @@ export class Room {
 	end_game() {
 		if (this.game && this.game.state === "over") {
 			this.states = "finished";
+			const winner_id = this.game.get_winner();
 			const end_msg: ServerMessage = {
 				type: 'finished',
+				winner: winner_id,
 			}
 			this.broadcast(end_msg);
+			//Envoie des stats
+			for (const peer of this.playerSockets) {
+				peer.send(JSON.stringify(this.get_stats(peer)));
+			}
 		}
 	}
 }

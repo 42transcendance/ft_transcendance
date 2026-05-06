@@ -1,7 +1,7 @@
-import { GAME, GRID_INFO, PLAYER_INFO, CELL_INFO } from "./constants"
+import { GAME, GRID_INFO, PLAYER_INFO, CELL_INFO } from "~shared/game/constants"
 import { Player } from "./player"
-import { Cell } from "./cell"
-import { Grid } from "./grid"
+import { Cell } from "~shared/game/cell"
+import { Grid } from "~shared/game/grid"
 
 /**
  * Classe principale du jeu, gère l'état global de la partie.
@@ -59,6 +59,30 @@ export class Game {
 		});
 		if (dead_player === this.players.length - 1)
 			this.state = "over";
+	}
+
+	/**
+	 *
+	 */
+	get_winner(): number {
+		let max_painted: number = 0;
+		let winner_id: number = 0;
+		this.players.forEach((player, index) => {
+			let curr_painted: number = this.p_painted_cell[index].length;
+			if (curr_painted >= max_painted) {
+				max_painted = curr_painted;
+				winner_id = player.id;
+			}
+		});
+		return (winner_id);
+	}
+
+	get_painted(id: number): number {
+		return (this.p_painted_cell[id].length);
+	}
+
+	get_clicked(id: number): number {
+		return (this.players[id].nbr_clkd);
 	}
 	
 	/**
