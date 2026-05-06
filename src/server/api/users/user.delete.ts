@@ -46,6 +46,15 @@ export default defineEventHandler(async (event) => {
 		}
 	}
 
+	await prisma.friendship.deleteMany({
+		where: {
+			OR: [
+				{ senderId: decoded.userId },
+				{ receiverId: decoded.userId }
+			]
+		}
+	})
+
     await prisma.user.delete({
         where: { id: decoded.userId }
     })
