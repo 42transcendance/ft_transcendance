@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { existsSync, unlinkSync } from 'fs'
 import path from 'node:path'
+import { connectedPeers } from '../../utils/peers'
 
 export default defineEventHandler(async (event) => {
 	const body = await readBody(event)
@@ -28,6 +29,7 @@ export default defineEventHandler(async (event) => {
     if (!isValid)
         throw createError({ statusCode: 401, message: 'Wrong password' })
 
+	const oldUsername = user.username
 	const oldAvatar = user?.avatarUrl
 
 	if (oldAvatar && oldAvatar !== 'default-Avatar.jpg') {
@@ -49,6 +51,21 @@ export default defineEventHandler(async (event) => {
     await prisma.user.delete({
         where: { id: decoded.userId }
     })
+
+	const broadcast = JSON.stringify({
+    type: 'user_deleted',
+    data: { oldUsername }
+  })
+
+  	for (const [key, peer] of connectedPeers.entries()) {
+    if (key.startsWith('chat:')) {
+      try {
+        peer.send(broadcast)
+      } catch (e) {
+        console.error('Erreur broadcast user_deleted:', e)
+      }
+    }
+  }
 
     deleteCookie(event, 'auth_token')
     return { success: true }

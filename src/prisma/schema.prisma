@@ -28,6 +28,7 @@ model User {
   matchesAsPlayer4    Match[]       @relation("MatchPlayer4")
   blockedUsers        Block[]       @relation("BlockInitiator")
   blockedByUsers      Block[]       @relation("BlockTarget")
+  globalMessages      GlobalMessage[]
 }
 
 model Friendship {
@@ -121,4 +122,15 @@ model UserStats {
   losses     Int      @default(0)
   level      Int      @default(1)
   xp         Int      @default(0)
+}
+
+model GlobalMessage {
+  id        String   @id @default(uuid())
+  content   String
+  senderId  String?  // permettre la suppression de l'user
+  senderUsername  String
+  sender    User?    @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  
+  @@index([createdAt])
 }

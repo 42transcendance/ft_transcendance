@@ -6,10 +6,10 @@
 		<NavBtnsGameBtn class="game-btn" />
 		<NavBtnsTitleBtn class="title-btn"/>
 		<NavBtnsSearchBar class="search-bar"/>
+		<NavBtnsChatBtn class="chat-btn"/>
 		<NavBtnsProfileBtn class="profile-btn"/>
 		<NavBtnsLogoutBtn class="logout-btn"/>
 	</div>
-
 </template>
 
 <style scoped>
@@ -52,6 +52,12 @@
 	.search-bar {
 		display: flex;
 		flex-grow: 1;
+	}
+
+/* Chat button style */
+	.chat-btn {
+		width: 6%;
+		text-align: center;
 	}
 
 /* Profile button style */
