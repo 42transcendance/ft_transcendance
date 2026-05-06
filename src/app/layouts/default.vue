@@ -5,6 +5,7 @@
     <div>
       <Navbar />
       <Profile />
+	  <NavBtnsNotifBtn />	
       <main class="main-content">
         <slot />
       </main>
