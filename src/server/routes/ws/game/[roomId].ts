@@ -1,6 +1,6 @@
 import { Room } from '../../../game/room'
-import { GAME } from '../../../game/constants'
-import { ServerMessage, ClientMessage } from '../../../game/type'
+import { GAME } from '~shared/game/constants'
+import { ServerMessage, ClientMessage } from '~shared/game/type'
 
 // État partagé entre toutes les connexions
 const rooms: Room[] =[];
