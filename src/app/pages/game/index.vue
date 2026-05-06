@@ -151,6 +151,7 @@ const minutes = computed(() => {
 		</p>
 		Nombre de cliques : {{ clicked }}
 		</p>
+		<NuxtLink to="/">Retour au menu</NuxtLink>
 	</div>
   </div>
 </template>
