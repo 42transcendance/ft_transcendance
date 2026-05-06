@@ -109,7 +109,7 @@ export default defineWebSocketHandler({
 			rooms.splice(index, 1)
 		}
 		else {
-			if (currRoom.game) {
+			if (currRoom.game && currRoom.states !== "finished") {
 				currRoom.game.actualize();
 				currRoom.end_game();
 			}
