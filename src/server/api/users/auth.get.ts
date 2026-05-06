@@ -17,7 +17,13 @@ export default defineEventHandler(async (event) => {
 		if (user) {
 			//we don't return email nor password
 			const { email, password, ...safeUser } = user
-			return { safeUser }
+
+			return {
+				safeuser: {
+					...safeuser,
+					isonline: safeuser.isonline > 0
+				}
+			}
 		} else {
 			throw createError({ statusCode: 401, message: 'Unauthorized' })
 		}

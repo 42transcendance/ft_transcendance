@@ -37,6 +37,11 @@ export default defineEventHandler(async (event) => {
 	//we don't return email nor password
 	const {email, password, ...safeUser} = user
 
-	return { safeUser }
+	return {
+		safeUser: {
+			...safeUser,
+			isOnline: safeUser.isOnline > 0
+		}
+	}
 });
 

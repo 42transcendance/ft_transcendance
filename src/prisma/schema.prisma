@@ -14,7 +14,7 @@ model User {
   displayName     String?
   password        String
   avatarUrl       String?
-  isOnline        Boolean   @default(false)
+  isOnline        Int   @default(0)
   lastSeenAt      DateTime?
 
   sentFriendships     Friendship[]  @relation("FriendshipSender")
