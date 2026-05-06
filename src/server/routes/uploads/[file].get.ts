@@ -17,5 +17,5 @@ export default defineEventHandler((event) => {
 		return sendStream(event, fs.createReadStream(filePath));
 	}
 
-	throw createError({ statusCode: 404, statusMessage: 'Fichier introuvable' });
+	throw createError({ statusCode: 404, message: 'Fichier introuvable' });
 });

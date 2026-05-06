@@ -3,8 +3,14 @@
 	const createEmail = ref('')
 	const createUsername = ref('')
 	const createPassword = ref('')
-
+	const confirmPassword = ref('')
+	
 	const handleCreate = async () => {
+		if (createPassword.value != confirmPassword.value) {
+			alert('Passwords don\'t match !')
+			return
+		}
+
 		const createSuccess = await create(createEmail.value, createUsername.value, createPassword.value)
 
 		if (createSuccess) {
@@ -24,17 +30,30 @@
 				v-model="createEmail"
 				type="email"
 				placeholder="Email"
-				class="email-input">
+				class="email-input"
+				pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
+				title="You must enter a valid email"
+				required>
 			<input
 				v-model="createUsername"
 				type="text"
 				placeholder="Username"
-				class="user-input">
+				class="user-input"
+				required>
 			<input
 				v-model="createPassword"
+				id="password"
 				type="password"
 				placeholder="Password"
-				class="pswd-input">
+				class="pswd-input"
+				required>
+			<input
+				v-model="confirmPassword"
+				type="password"
+				id="confirmPassword"
+				placeholder="Comfirm password"
+				class="pswd-input"
+				required>
 			<button type="submit" class="create-btn">Create</button>
 		</form>
 	</div>

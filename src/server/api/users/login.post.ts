@@ -3,36 +3,40 @@ import bcrypt from 'bcryptjs'
 
 export default defineEventHandler(async (event) => {
 	const body = await readBody(event)
-	console.log("Body reçu:", body)
-	const SECRET_KEY = 'bipboup-Voici-la-cle'
+	const config = useRuntimeConfig(event)
+
+	if (!body.password)
+        throw createError({ statusCode: 400, message: 'Password required' })
 
 	const user = await prisma.user.findUnique({
 		where: { username: body.username }
 	});
 
-	const okPassword = await bcrypt.compare(body.password, user.password)
+    if (!user)
+        throw createError({ statusCode: 404, message: 'User not found' })
 
-	if (user && okPassword) {
+	const isValid = await bcrypt.compare(body.password, user.password)
 
-		const token = jwt.sign(
-			{ userId: user.id },
-			SECRET_KEY,
-			{ expiresIn: '7d' }
-		)
+    if (!isValid)
+        throw createError({ statusCode: 401, message: 'Wrong password' })
 
-		// 2. On place ce token dans un Cookie HTTP-only
-		setCookie(event, 'auth_token', token, {
-			httpOnly: true, //invisible pour le JS malveillant
-			secure: process.env.NODE_ENV === 'production', // Uniquement en HTTPS en prod, passer en secure true plus tard
-			maxAge: 60 * 60 * 24 * 7, // Garde le cookie 1 semaine (en secondes)
-			path: '/' // Disponible sur tout le site
-		})
+	const token = jwt.sign(
+		{ userId: user.id },
+		config.jwtSecret,
+		{ expiresIn: '7d' }
+	)
 
-		//we don't return email nor password
-		const {email, password, ...safeUser} = user
+	// 2. On place ce token dans un Cookie HTTP-only
+	setCookie(event, 'auth_token', token, {
+		httpOnly: true, //invisible pour le JS malveillant
+		secure: process.env.NODE_ENV === 'production', // Uniquement en HTTPS en prod, passer en secure true plus tard
+		maxAge: 60 * 60 * 24 * 7, // Garde le cookie 1 semaine (en secondes)
+		path: '/' // Disponible sur tout le site
+	})
 
-		return { safeUser }
-	}
-	throw createError({ statusCode: 401, message: 'Identifiants invalides' })
+	//we don't return email nor password
+	const {email, password, ...safeUser} = user
+
+	return { safeUser }
 });
 

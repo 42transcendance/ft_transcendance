@@ -1,5 +1,5 @@
 # Was in the first main depot
-*.env
+#*.env
 
 # Created by Nuxt
 # Nuxt dev/build outputs
@@ -23,6 +23,6 @@ logs
 .idea
 
 # Local env files
-.env
+#.env
 .env.*
 !.env.example

@@ -1,19 +1,26 @@
+import jwt from 'jsonwebtoken'
+
 export default defineEventHandler(async (event) => {
-	// protection middleware
-	const token = getCookie(event, 'auth_token')
-  	if (!token) throw createError({ statusCode: 401, message: 'Non autorisé' })
-	// get the id
-	const id = getRouterParam(event, 'id');
-	const user = await prisma.user.findUnique({
-		where: { id: id }
-	});
+    const token = getCookie(event, 'auth_token')
+	const config = useRuntimeConfig(event)
+    if (!token)
+		throw createError({ statusCode: 401, message: 'Unauthorized' })
 
-	if (!user) {
-		throw createError({statusCode: 404, message: 'No user found'});
-	}
+    const id = getRouterParam(event, 'id')
+    const method = getMethod(event)
 
-	//we don't return email nor password
-	const { email, password, ...safeUser } = user
-	return { safeUser }
+    // ✅ Pour toute modification, vérifier que c'est bien son profil
+    if (method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
+        const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+
+        if (String(decoded.userId) !== String(id)) {
+            throw createError({ statusCode: 403, message: 'Forbidden' })
+        }
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: id } })
+    if (!user) throw createError({ statusCode: 404, message: 'No user found' })
+
+    const { email, password, ...safeUser } = user
+    return { safeUser }
 })
-

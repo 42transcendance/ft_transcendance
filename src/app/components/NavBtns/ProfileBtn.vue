@@ -4,7 +4,7 @@
 
 <template>
 	<div class="profile-wrapper">
-		<NuxtLink :to="`/profile/${currentUser.id}`" class="profile-btn">Profile</NuxtLink>
+		<NuxtLink :to="`/profile/${currentUser?.id}`" class="profile-btn">Profile</NuxtLink>
 	</div>
 </template>
 

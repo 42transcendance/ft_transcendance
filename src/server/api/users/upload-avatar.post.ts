@@ -8,13 +8,13 @@ export default defineEventHandler(async (event) => {
 	// add middleware here
 	
 	// check token
-	const SECRET_KEY = 'bipboup-Voici-la-cle'
+	const config = useRuntimeConfig(event)
 	const token = getCookie(event, 'auth_token')
 
     if (!token) {
-        throw createError({ statusCode: 401, message: "Non connecté" })
+        throw createError({ statusCode: 401, message: "Unauthorized" })
     }
-    const decoded = jwt.verify(token, SECRET_KEY) as { userId: number }
+    const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
 
     const userId = decoded.userId
 
@@ -35,9 +35,9 @@ export default defineEventHandler(async (event) => {
 		if (existsSync(oldFilePath)) {
 			try {
 				unlinkSync(oldFilePath); // delete file
-				console.log(`Ancien avatar supprimé : ${oldFileName}`);
+				console.log(`Old avatar deleted : ${oldFileName}`);
 			} catch (err) {
-				console.error("Erreur lors de la suppression de l'ancien fichier :", err);
+				console.error("Error while deleting old avatar :", err);
 			}
 		}
 	}
@@ -48,7 +48,11 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "No file uploaded." })
 	}
 	const file = formData[0]
-	
+
+	if (file.data.length > 2 * 1024 * 1024) {
+		throw createError({ statusCode: 400, message: "File too large (max 2MB)" })
+	}
+
 	// server check to see if it's jpeg or png
 	const allowedMimeTypes = ['image/jpeg', 'image/png']
 	if (!allowedMimeTypes.includes(file.type!)) {
@@ -80,9 +84,15 @@ export default defineEventHandler(async (event) => {
 			where: { id: userId },
 			data: { avatarUrl: avatarUrl }
 		})
+	
+		if (avatarUrl) {
+			broadcast({
+				type: 'AVATAR_UPDATE',
+				userId: userId,
+				avatarUrl: avatarUrl
+			})
+		}
 
-		console.log(`Fichier enregistré : ${uploadPath}`)
-		
 		return { avatarUrl }
 
 	} catch (error) {
