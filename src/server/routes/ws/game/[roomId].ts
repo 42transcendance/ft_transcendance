@@ -1,54 +1,120 @@
-import { Game } from '../../../game/game'
-import { GAME } from '../../../game/constants'
+import { Room } from '../../../game/room'
+import { GAME } from '~shared/game/constants'
+import { ServerMessage, ClientMessage } from '~shared/game/type'
 
 // État partagé entre toutes les connexions
-const game = new Game(GAME.PLAYERS)
-game.init_game()
-let nextId = 0
-const playerMap = new Map<string, number>()
+const rooms: Room[] =[];
+const peerRoom = new Map<string, Room>()
 
+/**
+ * Handler WebSocket principal du jeu Pixel Fight.
+ * Gère le matchmaking, les actions de jeu et les déconnexions.
+ */
 export default defineWebSocketHandler({
-  open(peer) {
-    // Refuser si déjà 2 joueurs connectés
-    if (playerMap.size >= GAME.PLAYERS) {
-      peer.send(JSON.stringify({ type: 'error', message: 'Partie pleine' }))
-      peer.close()
-      return
-    }
-    const playerId = nextId % GAME.PLAYERS  // ← reste toujours entre 0 et 1
-    nextId++
-    playerMap.set(peer.id, playerId)
-    peer.subscribe('game')
-    // Même logique que son server.ts
-    const message = {
-      type: 'cell_init',
-      cells: game.board.grid.flat()
-    }
-    peer.send(JSON.stringify(message))
-  },
 
-  message(peer, message) {
-    const data = JSON.parse(message.text())
-    const playerId = playerMap.get(peer.id) ?? 0 // à améliorer plus tard -> recupere le vrai player id
+	/**
+     * Gère la connexion d'un nouveau joueur.
+     * Cherche une room en attente ou en crée une nouvelle, ajoute le joueur,
+     * puis lui envoie son état (waiting ou starting).
+     * Si la room est complète, lance le compte à rebours de démarrage.
+     *
+     * @param peer - Socket WebSocket du joueur qui se connecte
+     */
+	open(peer) {
+	
+    	console.log('Joueur connecté')
+		var currRoom = rooms.find(r => r.states === "waiting");
 
-    if (data.type === 'paint') {
-      if (playerId < GAME.PLAYERS && game.p_painted_cell[playerId].length !== 0) {
-        const cell = game.players[playerId].paint(game.board, game)
-        
-        const broadcast = {
-          type: 'cell_update',
-          cell: cell
-        }
-        // Broadcast à tous
-        peer.publish('game', JSON.stringify(broadcast))
-        peer.send(JSON.stringify(broadcast))
-      }
-      game.actualize()
-    }
-  },
+		if (currRoom === undefined) {
+			currRoom = new Room(GAME.PLAYERS);
+			rooms.push(currRoom)
+		}
+		currRoom.add_player(peer);
+		peerRoom.set(peer.id,currRoom);
 
-  close(peer) {
-    playerMap.delete(peer.id)  // ← nettoie quand le joueur se déconnecte
-    console.log('Joueur déconnecté')
-  }
+		let server_msg: ServerMessage;
+		if (currRoom.currPlayer === GAME.PLAYERS) {
+			server_msg = {
+				type: "starting"
+			}
+			currRoom.broadcast(server_msg);
+			currRoom.start_game();
+		} else {
+			server_msg = {
+				type: "waiting",
+			}
+		}
+		peer.send(JSON.stringify(server_msg));
+	},
+
+    /**
+     * Gère les messages reçus d'un joueur.
+     * Deux types de messages sont supportés :
+     * - "ready" : le client est prêt à recevoir l'état initial du plateau
+     * - "paint" : le joueur veut peindre une case adjacente à sa zone
+     *
+     * @param peer - Socket du joueur qui envoie le message
+     * @param message - Message brut reçu du client
+     */
+	message(peer, message) {
+		const data: ClientMessage = JSON.parse(message.text())
+		const currRoom = peerRoom.get(peer.id);
+		const playerId = currRoom?.get_id(peer);
+
+		if (!currRoom) {
+			return;
+		}
+		// Le client signale qu'il est prêt → on lui envoie l'état initial du plateau
+		if (currRoom.game && data.type === 'ready') {
+			const init_board: ServerMessage = {
+				type: 'cell_init',
+				cells: currRoom.game.board.grid.flat()
+			};
+			peer.send(JSON.stringify(init_board));
+		}
+        // Le client veut peindre une case
+		if (data.type === 'paint') {
+
+			if (!currRoom.game) {
+				return ;
+			}
+			if (playerId < currRoom.maxPlayer && currRoom.game.state === "on-going") {
+				const cell = currRoom.game.players[playerId].paint(currRoom.game.board, currRoom.game);
+
+				const broadcast: ServerMessage = {
+					type: 'cell_update',
+					cell: cell
+				}
+				// Broadcast à tous
+				currRoom.broadcast(broadcast);
+				currRoom.game.actualize();
+				currRoom.end_game();
+			}
+		}
+	},
+
+    /**
+     * Gère la déconnexion d'un joueur.
+     * Retire le joueur de sa room. Si la room est vide, la supprime du serveur.
+     * Sinon, met à jour l'état du jeu (peut déclencher la fin de partie).
+     *
+     * @param peer - Socket du joueur qui se déconnecte
+     */
+	close(peer) {
+    	const currRoom = peerRoom.get(peer.id);
+		currRoom?.remove_player(peer);
+
+		if (currRoom?.currPlayer === 0) {
+			const index = rooms.indexOf(currRoom);
+			rooms.splice(index, 1)
+		}
+		else {
+			if (currRoom.game && currRoom.states !== "finished") {
+				currRoom.game.actualize();
+				currRoom.end_game();
+			}
+		}
+    	peerRoom.delete(peer.id)  // ← nettoie quand le joueur se déconnecte
+    	console.log('Joueur déconnecté')
+	}
 })
