@@ -38,6 +38,89 @@ services:
       - ./uploads_storage:/app/storage/uploads
 
 
+  prometheus:
+    image: docker.io/prom/prometheus:v2.54.1
+    container_name: transcendence_prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - frontend
+      - backend
+
+  grafana:
+    image: docker.io/grafana/grafana:11.2.2
+    container_name: transcendence_grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    env_file:
+      - ./secrets/monitoring.env
+    environment:
+      GF_SERVER_DOMAIN: localhost
+      GF_SERVER_ROOT_URL: https://localhost/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_SECURITY_ALLOW_EMBEDDING: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - frontend
+
+  node-exporter:
+    image: docker.io/prom/node-exporter:v1.8.2
+    container_name: transcendence_node_exporter
+    restart: unless-stopped
+    command:
+      - "--path.rootfs=/host"
+    pid: host
+    volumes:
+      - /:/host:ro
+    networks:
+      - backend
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: transcendence_cadvisor
+    restart: unless-stopped
+    privileged: true
+    command:
+      - "--docker_only=true"
+      - "--store_container_labels=true"
+      - "--disable_metrics=advtcp,cpuLoad,cpu_topology,cpuset,hugetlb,memory_numa,percpu,process,referenced_memory,resctrl,sched,tcp,udp"
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - backend
+
+  postgres-exporter:
+    image: docker.io/prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: transcendence_postgres_exporter
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://transcendence:transcendence@postgres:5432/transcendence_db?sslmode=disable
+    networks:
+      - backend
+
+
   nginx:
     build:
       context: ./security/nginx
@@ -49,6 +132,8 @@ services:
     ports:
       - "8080:80"
       - "8443:443"
+    env_file:
+      - ./secrets/monitoring.env
     networks:
       - frontend
     healthcheck:
@@ -80,6 +165,8 @@ volumes:
   postgres_data:
   uploads_storage:
   vault_data:
+  prometheus_data:
+  grafana_data:
 
 networks:
   frontend:

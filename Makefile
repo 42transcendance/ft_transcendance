@@ -42,6 +42,9 @@ logs-app:
 logs-db:
 	$(COMPOSE) logs -f $(DB)
 
+logs-monitoring:
+	$(COMPOSE) logs -f prometheus grafana node-exporter cadvisor postgres-exporter
+
 # ==============================================================
 # BUILD
 # ==============================================================
@@ -128,6 +131,7 @@ help:
 	@echo "  $(YELLOW)make logs$(RESET)          → affiche tous les logs"
 	@echo "  $(YELLOW)make logs-app$(RESET)      → logs du serveur Node"
 	@echo "  $(YELLOW)make logs-db$(RESET)       → logs de PostgreSQL"
+	@echo "  $(YELLOW)make logs-monitoring$(RESET) → logs Prometheus/Grafana/exporters"
 	@echo ""
 	@echo "  $(YELLOW)make migrate$(RESET)       → applique les migrations"
 	@echo "  $(YELLOW)make migrate-dev$(RESET)   → crée une nouvelle migration"
@@ -143,6 +147,6 @@ help:
 	@echo "  $(YELLOW)make re$(RESET)            → clean + up"
 	@echo ""
 
-.PHONY: all up down restart logs logs-app logs-db build rebuild \
+.PHONY: all up down restart logs logs-app logs-db logs-monitoring build rebuild \
         migrate migrate-dev generate studio db-shell db-reset \
         status health clean fclean re help
