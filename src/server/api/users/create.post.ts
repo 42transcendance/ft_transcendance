@@ -55,7 +55,13 @@ export default defineEventHandler(async (event) => {
 		//we don't return email nor password
 		const {email, password, ...safeUser} = user
 
-		return { safeUser }
+		return {
+			safeUser: {
+				...safeUser,
+				isOnline: safeUser.isOnline > 0
+			}
+		}
+
 	} catch (e) {
 		if (e instanceof Prisma.PrismaClientKnownRequestError) {
             if (e.code === 'P2002') {
