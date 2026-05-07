@@ -68,7 +68,6 @@ services:
     environment:
       VAULT_ADDR: http://0.0.0.0:8200
       VAULT_API_ADDR: http://0.0.0.0:8200
-      HOME: /tmp #Ligne temporaire pour faire fonctionner le jeu - Theo
     ports:
       - "8200:8200" #a supprimer lors de la prod pour ne plus acceder au vault
     networks:
