@@ -1,6 +1,6 @@
-import { GRID_INFO, GAME } from "./constants"
-import { ServerMessage } from "./type"
-import { Cell } from "./cell"
+import { GRID_INFO, GAME } from "~shared/game/constants"
+import { ServerMessage } from "~shared/game/type"
+import { Cell } from "~shared/game/cell"
 
 /**
  * Dessine le fond de la grille — bordure noire et surface grise.

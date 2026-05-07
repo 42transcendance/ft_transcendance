@@ -31,7 +31,7 @@ down:
 	@echo "$(YELLOW)Stopping services...$(RESET)"
 	$(COMPOSE) down
 
-restart: down up migrate-dev
+restart: down up migrate
 
 logs:
 	$(COMPOSE) logs -f

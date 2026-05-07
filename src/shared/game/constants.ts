@@ -9,8 +9,8 @@ export const PLAYER_INFO = {
 
 export const GAME = {
 	PLAYERS: 2,
-	CELLS_W: 50,
-	CELLS_H: 50,
+	CELLS_W: 10,
+	CELLS_H: 10,
 }
 
 // For WIDTH and HEIGHT, must be % CELL_SIZE.
@@ -21,4 +21,9 @@ export const GRID_INFO = {
 	ROW:  GAME.CELLS_H,
 	COL: GAME.CELLS_W,
 	BORDER: CELL_INFO.SIZE / 10,
+}
+
+export const TIMER = {
+	GAME: 10,
+	LAUNCHING: 7,
 }

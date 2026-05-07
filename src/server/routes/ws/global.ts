@@ -44,7 +44,7 @@ export default defineWebSocketHandler({
 
                 await prisma.user.update({
                     where: { id: user.id },
-                    data: { isOnline: true }
+                    data: { isOnline: { increment: 1 } }
                 });
                 console.log(`🟢 User ${user.id} is now online`)
 				peer.publish('status', JSON.stringify({
@@ -69,21 +69,25 @@ export default defineWebSocketHandler({
                 await prisma.user.update({
                     where: { id: userId },
                     data: { 
-                        isOnline: false, 
+                        isOnline: { decrement: 1 }, 
                         lastSeenAt: new Date() 
                     }
                 });
 
-				connectedPeers.delete(userId)
+				const updatedUser = await prisma.user.findUnique({ where: { id: userId } })
 
-				peer.publish('status', JSON.stringify({
-                    type: 'STATUS_CHANGE',
-                    userId: userId,
-                    isOnline: false,
-                    lastSeenAt: new Date()
-                }))
+				if (updatedUser.isOnline === 0) {
+					connectedPeers.delete(userId)
 
-                console.log(`🔴 User ${userId} is now offline`);
+					peer.publish('status', JSON.stringify({
+						type: 'STATUS_CHANGE',
+						userId: userId,
+						isOnline: false,
+						lastSeenAt: new Date()
+					}))
+
+					console.log(`🔴 User ${userId} is now offline`);
+				}
             } catch (e) {
 				if (e.code !== 'P2025')
 					console.error("Prisma error when logout", e);

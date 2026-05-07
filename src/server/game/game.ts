@@ -1,7 +1,7 @@
-import { GAME, GRID_INFO, PLAYER_INFO } from "./constants"
+import { GAME, GRID_INFO, PLAYER_INFO, CELL_INFO } from "~shared/game/constants"
 import { Player } from "./player"
-import { Cell } from "./cell"
-import { Grid } from "./grid"
+import { Cell } from "~shared/game/cell"
+import { Grid } from "~shared/game/grid"
 
 /**
  * Classe principale du jeu, gère l'état global de la partie.
@@ -12,6 +12,7 @@ export class Game {
 	readonly board: Grid;
 
 	p_painted_cell: Cell[][] = [];
+	state: "on-going" | "over";
 
 	/**
 	 * @param nb_players - Nombre de joueurs dans la partie
@@ -29,6 +30,7 @@ export class Game {
 			this.players.push(new_p);
 			this.p_painted_cell[i] = [];
 		}
+		this.state = "on-going";
 	}
 
 	/**
@@ -45,10 +47,51 @@ export class Game {
 	/**
 	 * Synchronise `p_painted_cell` avec l'état réel de la grille.
 	 * Retire les cases qui ont été repeintes par un autre joueur.
+	 * Met a l'état 'over' si il ne reste qu'un joueur en vie
 	 */
 	actualize() {
+		var dead_player: number = 0;
+
 		this.players.forEach((player, index) => {
 			this.p_painted_cell[index] = this.p_painted_cell[index].filter(cell => cell.color === player.color);
+			if (this.p_painted_cell[index].length === 0)
+				dead_player++;
+		});
+		if (dead_player === this.players.length - 1)
+			this.state = "over";
+	}
+
+	/**
+	 *
+	 */
+	get_winner(): number {
+		let max_painted: number = 0;
+		let winner_id: number = 0;
+		this.players.forEach((player, index) => {
+			let curr_painted: number = this.p_painted_cell[index].length;
+			if (curr_painted >= max_painted) {
+				max_painted = curr_painted;
+				winner_id = player.id;
+			}
+		});
+		return (winner_id);
+	}
+
+	get_painted(id: number): number {
+		return (this.p_painted_cell[id].length);
+	}
+
+	get_clicked(id: number): number {
+		return (this.players[id].nbr_clkd);
+	}
+	
+	/**
+	* Supprime toutes les cases peintes d'un joueur en particulier.
+	* @param id - Identifiant du joueur à supprimer
+	*/
+	kill_player(id: number) {
+		this.p_painted_cell[id].forEach((cell) => {
+			cell.color = CELL_INFO.COLOR;
 		});
 	}
 }
