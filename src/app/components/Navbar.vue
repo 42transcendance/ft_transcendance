@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	const { currentUser, } = useAuth()
+	const { currentUser, logout} = useAuth()
 
 </script>
 
@@ -9,12 +9,12 @@
 			<div class="flex md:gap-12 gap-2">
 				<NuxtLink to="/">Logo</NuxtLink>
 				<NuxtLink to="/game">Play</NuxtLink>
-				<NuxtLink to="/rules">Rules</NuxtLink>
-			</div>
+				<NuxtLink to="/rules">Rules</NuxtLink>			</div>
 			<NavBtnsSearchBar v-if="currentUser" class="search-bar"/>
 			<div class="flex md:gap-12 gap-2">
 				<NuxtLink v-if="!currentUser" to="/login">Login</NuxtLink>
 				<NuxtLink v-if="!currentUser" to="/signup">Signup</NuxtLink>
+				<NuxtLink v-if="currentUser" to="/chat">Chat</NuxtLink>
 				<NuxtLink v-if="currentUser" :to="`/profile/${currentUser?.id}`">Profile</NuxtLink>
 				<button v-if="currentUser" @click="logout" class="bg-none border-none cursor-pointer text-inherit p-0">Logout</button>
 			</div>
