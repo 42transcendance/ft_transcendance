@@ -140,7 +140,7 @@ help:
 	@echo ""
 	@echo "  $(YELLOW)make clean$(RESET)         → supprime containers + images"
 	@echo "  $(YELLOW)make fclean$(RESET)        → supprime tout + volumes"
-	@echo "  $(YELLOW)make re$(RESET)            → fclean + up"
+	@echo "  $(YELLOW)make re$(RESET)            → clean + up"
 	@echo ""
 
 .PHONY: all up down restart logs logs-app logs-db build rebuild \
