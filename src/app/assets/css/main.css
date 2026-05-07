@@ -1,7 +1,12 @@
 @import "tailwindcss";
 
 html,
-body,
+body {
+	height: 100vh !important;
+	width: 100% !important;
+	@apply bg-blue-800;
+}
+
 #__nuxt,
 #__layout {
 	height: 100% !important;
