@@ -6,7 +6,7 @@
     <section>
       <h2>1. Acceptance</h2>
       <p>
-        By creating an account on "Pixel War", you agree to these Terms of Service.
+        By creating an account on "Pixel Fight", you agree to these Terms of Service.
         If you do not agree, please do not use the application.
       </p>
     </section>
@@ -14,7 +14,7 @@
     <section>
       <h2>2. Description of Service</h2>
       <p>
-        "Pixel War" is a real-time multiplayer web application developed for educational
+        "Pixel Fight" is a real-time multiplayer web application developed for educational
         purposes as part of the 42 School curriculum. It allows users to play our application and interact with other users via chat.
       </p>
     </section>

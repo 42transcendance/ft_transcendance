@@ -6,7 +6,7 @@
     <section>
       <h2>1. Introduction</h2>
       <p>
-        YourProject is a web application developed as part of the ft_transcendence
+        "Pixel Fight" is a web application developed as part of the ft_transcendence
         project at 42 School. This policy explains what data we collect and how we use it.
       </p>
     </section>
