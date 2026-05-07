@@ -36,6 +36,10 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const { data, error } = await useFetch('/api/users/auth')
+if (error.value || !data.value)
+    await navigateTo('/login')
+
 interface ChatMessage {
   id: string
   content: string
