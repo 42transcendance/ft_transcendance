@@ -5,10 +5,20 @@ body {
 	height: 100vh !important;
 	width: 100% !important;
 	@apply bg-blue-800;
+	--main-font: "Gasoek One";
 }
 
 #__nuxt,
 #__layout {
 	height: 100% !important;
 	width: 100% !important;
+}
+
+@font-face {
+	font-family: "Gasoek One";
+	src: url("./GasoekOne-Regular.ttf") format("truetype");
+}
+
+.font-gasoek {
+	font-family: "Gasoek One", sans-serif;
 }
