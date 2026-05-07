@@ -4,7 +4,7 @@
 </script>
 
 <template>
-	<nav class="bg-blue-100 p-4 pl-8 pr-8 rounded-b-xl">
+	<nav class="fixed w-full bg-blue-100 p-4 pl-8 pr-8 rounded-b-xl">
 		<div class="flex justify-between items-center lg:flex-row">
 			<div class="flex md:gap-12 gap-2">
 				<NuxtLink to="/">Logo</NuxtLink>

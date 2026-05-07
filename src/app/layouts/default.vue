@@ -2,11 +2,11 @@
 
 <template>
 	<ClientOnly>
-		<div class="h-screen w-screen flex flex-col">
+		<div class="h-full w-full flex flex-col">
 			<Navbar />
 			<Profile />
 			<NavBtnsNotifBtn />
-			<main class="flex-1 p-8 text-white h-full">
+			<main class="flex-1 p-8 pt-16 text-white h-full">
 				<slot />
 			</main>
 			<footer
