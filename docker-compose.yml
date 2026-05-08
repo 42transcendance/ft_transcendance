@@ -53,7 +53,7 @@ services:
       - ./monitoring/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
       - prometheus_data:/prometheus
     networks:
-      - frontend
+      - monitoring
       - backend
 
   alertmanager:
@@ -63,7 +63,7 @@ services:
     volumes:
       - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     networks:
-      - backend
+      - monitoring
 
   grafana:
     image: docker.io/grafana/grafana:11.2.2
@@ -75,8 +75,8 @@ services:
       - ./secrets/monitoring.env
     environment:
       GF_SERVER_DOMAIN: localhost
-      GF_SERVER_ROOT_URL: https://localhost/grafana/
-      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_SERVER_ROOT_URL: https://localhost:9443/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "false"
       GF_SECURITY_ALLOW_EMBEDDING: "false"
       GF_AUTH_ANONYMOUS_ENABLED: "false"
       GF_USERS_ALLOW_SIGN_UP: "false"
@@ -85,6 +85,7 @@ services:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     networks:
+      - monitoring
       - frontend
 
   node-exporter:
@@ -97,7 +98,7 @@ services:
     volumes:
       - /:/host:ro,z
     networks:
-      - backend
+      - monitoring
 
   postgres-exporter:
     image: docker.io/prometheuscommunity/postgres-exporter:v0.16.0
@@ -109,6 +110,7 @@ services:
     environment:
       DATA_SOURCE_NAME: postgresql://transcendence:transcendence@postgres:5432/transcendence_db?sslmode=disable
     networks:
+      - monitoring
       - backend
 
 
@@ -123,6 +125,7 @@ services:
     ports:
       - "8080:80"
       - "8443:443"
+      - "9443:9443"
     env_file:
       - ./secrets/monitoring.env
     networks:
@@ -163,4 +166,6 @@ networks:
   frontend:
     driver: bridge
   backend:
+    driver: bridge
+  monitoring:
     driver: bridge
