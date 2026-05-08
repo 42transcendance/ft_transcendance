@@ -12,7 +12,7 @@ groups:
 
       - alert: HighNodeCPUUsage
         expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
-        for: 10m
+        for: 1m
         labels:
           severity: warning
         annotations:
@@ -21,7 +21,7 @@ groups:
 
       - alert: HighNodeMemoryUsage
         expr: ((1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100) > 90
-        for: 10m
+        for: 1m
         labels:
           severity: warning
         annotations:
@@ -30,7 +30,7 @@ groups:
 
       - alert: PostgresDown
         expr: pg_up == 0
-        for: 2m
+        for: 1m
         labels:
           severity: critical
         annotations:
@@ -39,7 +39,7 @@ groups:
 
       - alert: AppHighP95Latency
         expr: histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m]))) > 1
-        for: 10m
+        for: 1m
         labels:
           severity: warning
         annotations:

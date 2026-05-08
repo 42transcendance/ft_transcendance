@@ -1,52 +1,117 @@
 # Monitoring module: Prometheus + Grafana
 
-## Services added
+## Architecture
 
-- Prometheus: metric collection and rule evaluation
-- Grafana: visualization dashboards
-- Node Exporter: host/system metrics
-- cAdvisor: container metrics
-- PostgreSQL Exporter: database metrics
-- App metrics endpoint: custom HTTP metrics from Nuxt/Nitro
+```
+Machine hôte (WSL2)
+│
+├── /proc, /sys, /net  ← lus par Node Exporter via volume :ro
+│
+└── Docker network: backend
+    ├── node-exporter:9100    (pid: host, /:/host:ro)
+    ├── postgres-exporter:9187
+    ├── prometheus:9090       ← évalue les règles d'alerte toutes les 15s
+    └── alertmanager:9093     ← regroupe et envoie les alertes
+    └── app:3000/api/metrics
 
-## What is monitored
+    Docker network: frontend
+    ├── prometheus:9090
+    └── grafana:3000          ← accessible via Nginx /grafana/ (HTTPS + basic auth)
 
-- Availability: all scrape targets via `up`
-- App throughput and latency: `http_requests_total`, `http_request_duration_seconds`
-- Host CPU and memory usage (Node Exporter)
-- Container CPU usage (cAdvisor)
-- PostgreSQL health (`pg_up`)
+Flux d'alertes:
+  Prometheus (évaluation) → Alertmanager (regroupement) → Discord Webhook
+```
 
-## Alert rules configured
+## Services
 
-- ServiceDown (critical)
-- HighNodeCPUUsage (warning)
-- HighNodeMemoryUsage (warning)
-- PostgresDown (critical)
-- AppHighP95Latency (warning)
+| Service | Image | Rôle |
+|---|---|---|
+| Prometheus | prom/prometheus:v2.54.1 | Collecte et stocke les métriques, évalue les règles d'alerte |
+| Grafana | grafana/grafana:11.2.2 | Visualisation et dashboards |
+| Alertmanager | prom/alertmanager:v0.27.0 | Regroupe les alertes Prometheus et les envoie aux receivers (Discord) |
+| Node Exporter | prom/node-exporter:v1.8.2 | Métriques machine hôte (CPU, RAM, réseau, disque) |
+| PostgreSQL Exporter | prometheuscommunity/postgres-exporter:v0.16.0 | Métriques PostgreSQL |
 
-Rules file: `monitoring/prometheus/alert_rules.yml`
+> cAdvisor a été retiré: incompatible avec Docker Desktop/WSL2 (échec lecture overlayfs layerdb).
+
+## Node Exporter — position dans l'architecture
+
+Node Exporter tourne comme conteneur Docker mais avec `pid: host` et le volume `/:/host:ro`.
+Il lit directement `/proc` et `/sys` de la machine WSL2 hôte — il voit donc les métriques
+système globales (pas par conteneur), identiques à ce qu'on aurait sur un serveur Linux bare-metal.
+
+Métriques exposées sur `:9100/metrics`:
+- `node_cpu_seconds_total` → temps CPU par mode (idle, user, system...)
+- `node_memory_MemAvailable_bytes` / `node_memory_MemTotal_bytes` → RAM disponible/totale
+- `node_network_receive_bytes_total` / `node_network_transmit_bytes_total` → débit réseau par interface
+- `node_filesystem_*` → occupation disque
+
+## What is monitored (dashboard panels)
+
+| Panel | Source | Métrique |
+|---|---|---|
+| Active Targets | Prometheus | `up{job!~"prometheus"}` — état UP/DOWN de chaque exporter |
+| Host CPU Usage | Node Exporter | `node_cpu_seconds_total{mode="idle"}` |
+| App p95 Latency | App (prom-client) | `http_request_duration_seconds` histogram p95 |
+| HTTP Request Rate | App (prom-client) | `http_requests_total` par route et méthode |
+| Host Memory Usage | Node Exporter | `node_memory_MemAvailable_bytes` |
+| Host Network I/O | Node Exporter | `node_network_receive/transmit_bytes_total` sur interface physique |
+| PostgreSQL Status | PostgreSQL Exporter | `pg_up` → UP (vert) / DOWN (rouge) |
+
+## Alert rules et notifications
+
+### Règles d'alerte (Prometheus)
+
+| Alerte | Condition | Durée | Sévérité | Action |
+|---|---|---|---|---|
+| ServiceDown | target `up == 0` | 1 min | 🔴 critical | service indisponible |
+| HighNodeCPUUsage | CPU > 85% | 1 min | 🟡 warning | surcharge CPU hôte |
+| HighNodeMemoryUsage | RAM > 90% | 1 min | 🟡 warning | mémoire hôte saturée |
+| PostgresDown | `pg_up == 0` | 1 min | 🔴 critical | DB indisponible |
+| AppHighP95Latency | p95 > 1s | 1 min | 🟡 warning | app lente |
+
+Fichier: `monitoring/prometheus/alert_rules.yml`
+
+### Alertmanager et notifications Discord
+
+Quand une règle se déclenche:
+
+1. **Prometheus** évalue la condition (toutes les 15s)
+2. Si condition validée → Prometheus envoie l'alerte à **Alertmanager**
+3. **Alertmanager** regroupe les alertes par `alertname`, `cluster`, `service`
+4. Après 30s d'attente (`group_wait`), envoie un message Discord via webhook
+5. Les alertes résolues (`send_resolved: true`) envoient aussi une notification Discord
+
+Configuration actuelle:
+- Alertmanager utilise le receiver natif `discord_configs` (v0.27)
+- Aucun template Discord custom n'est requis pour envoyer les notifications
+
+Fichiers:
+- `monitoring/alertmanager/alertmanager.yml` — configuration Alertmanager
+- `secrets/monitoring.env` — credentials Grafana et Basic Auth Nginx
+
+Le webhook Discord est référencé dans la configuration Alertmanager actuelle. Recommandation production: injecter l'URL via variable d'environnement ou fichier secret plutôt que la laisser en clair.
 
 ## Secure access model for Grafana
 
-- Grafana is NOT exposed on a host port
-- Access is only through Nginx HTTPS reverse proxy at `/grafana/`
-- Additional Nginx Basic Auth is enabled in front of Grafana
-- Grafana anonymous access and sign-up are disabled
+- Grafana n'est pas exposé sur un port hôte
+- Accès uniquement via Nginx HTTPS sur `/grafana/`
+- Basic Auth Nginx devant Grafana (credentials dans `secrets/monitoring.env`)
+- Anonymous access et sign-up désactivés côté Grafana
+- `/api/metrics` bloqué publiquement par Nginx (403) — Prometheus scrape en interne
 
-Credentials file:
-- `secrets/monitoring.env`
+Credentials: `secrets/monitoring.env` — **changer avant mise en production**
 
-Change defaults before production.
+## URLs et accès réseau
 
-## URLs
-
-- App: https://localhost:8443/
-- Grafana: https://localhost:8443/grafana/
-- Prometheus UI is internal-only by default (not published)
-
-## Notes
-
-- Public access to `/api/metrics` through Nginx is blocked (403).
-- Prometheus scrapes app metrics over the internal Docker network.
-- On non-Linux hosts, Node Exporter and cAdvisor host metrics may require Docker/host-specific adjustments.
+| Service | URL / Port hôte | Accessible ? | Remarque |
+|---|---|---|---|
+| App (HTTPS) | `https://localhost:8443` | ✅ public | via Nginx, TLS 1.2/1.3 |
+| App (HTTP) | `http://localhost:8080` | ✅ redirige | 301 → HTTPS automatique |
+| Grafana | `https://localhost:8443/grafana/` | ✅ restreint | Basic Auth + HTTPS obligatoire |
+| Prometheus | interne uniquement | ❌ non exposé | scrape Docker network uniquement |
+| Node Exporter | interne uniquement | ❌ non exposé | `backend` network uniquement |
+| PostgreSQL Exporter | interne uniquement | ❌ non exposé | `backend` network uniquement |
+| Vault | `http://localhost:8200` | ⚠️ à supprimer | exposé pour dev, supprimer en prod |
+| PostgreSQL | `localhost:5432` | ⚠️ à supprimer | exposé pour dev, supprimer en prod |
+| `/api/metrics` (app) | `https://localhost:8443/api/metrics` | ❌ bloqué | Nginx retourne 403 |

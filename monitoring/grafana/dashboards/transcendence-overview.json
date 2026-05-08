@@ -34,52 +34,50 @@
       },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "mappings": [],
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "DOWN", "color": "red" },
+                "1": { "text": "UP",   "color": "green" }
+              }
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
+              { "color": "red",   "value": null },
+              { "color": "green", "value": 1 }
             ]
-          }
+          },
+          "color": { "mode": "thresholds" }
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
+        "w": 16,
         "x": 0,
         "y": 0
       },
       "id": 1,
       "options": {
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "auto",
-        "orientation": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "name"
       },
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "expr": "sum(up{job!~\"prometheus\"})",
-          "legendFormat": "",
+          "expr": "up{job!~\"prometheus\"}",
+          "legendFormat": "{{ job }}",
           "refId": "A"
         }
       ],
@@ -115,9 +113,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 4,
         "w": 8,
-        "x": 8,
+        "x": 16,
         "y": 0
       },
       "id": 2,
@@ -173,10 +171,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 4,
         "w": 8,
         "x": 16,
-        "y": 0
+        "y": 4
       },
       "id": 3,
       "options": {
@@ -318,13 +316,25 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "expr": "container_cpu_load_average_10s{id=~\"/docker/[a-f0-9]{12,}\"}",
-          "legendFormat": "{{id}}",
+          "expr": "rate(node_network_receive_bytes_total{device!~\"lo|docker.*|br-.*|veth.*\"}[5m])",
+          "legendFormat": "↓ {{device}}",
           "refId": "A"
+        },
+        {
+          "expr": "rate(node_network_transmit_bytes_total{device!~\"lo|docker.*|br-.*|veth.*\"}[5m])",
+          "legendFormat": "↑ {{device}}",
+          "refId": "B"
         }
       ],
-      "title": "Container CPU Usage",
-      "type": "timeseries"
+      "title": "Host Network I/O",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      }
     },
     {
       "datasource": {
@@ -336,7 +346,15 @@
           "color": {
             "mode": "palette-classic"
           },
-          "mappings": [],
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "DOWN", "color": "red" },
+                "1": { "text": "UP",   "color": "green" }
+              }
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -367,7 +385,8 @@
           ],
           "fields": "",
           "values": false
-        }
+        },
+        "colorMode": "background"
       },
       "pluginVersion": "11.2.2",
       "targets": [

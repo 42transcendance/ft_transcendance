@@ -1,0 +1,18 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: discord
+  group_by:
+    - alertname
+    - cluster
+    - service
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+  - name: discord
+    discord_configs:
+      - webhook_url: https://discord.com/api/webhooks/1502216308207652966/qQDdftxNBdDMPEL4vGkIH_FCJRzfiNS03juqV2n7_pZOEC65yfHRVgsOKMlle1DHPYZD
+        send_resolved: true
