@@ -62,7 +62,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-      - ./monitoring/alertmanager/discord_template.tmpl:/etc/alertmanager/discord_template.tmpl:ro
     networks:
       - backend
 

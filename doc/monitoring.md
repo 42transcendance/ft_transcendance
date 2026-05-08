@@ -1,5 +1,22 @@
 # Monitoring module: Prometheus + Grafana
 
+## Major module checklist
+
+| Exigence | Statut | Implémentation |
+|---|---|---|
+| Set up Prometheus to collect metrics | Fait | Scrape jobs Prometheus/app/node-exporter/postgres-exporter + rules + alertmanager routing |
+| Configure exporters and integrations | Fait | Node Exporter, PostgreSQL Exporter, instrumentation app via prom-client, Alertmanager Discord |
+| Create custom Grafana dashboards | Fait | Dashboard custom Transcendence Overview provisionne avec panels CPU/RAM/latence/reseau/DB |
+| Set up alerting rules | Fait | 5 alertes Prometheus + envoi Discord via Alertmanager |
+| Secure access to Grafana | Fait | Grafana derriere Nginx HTTPS + Basic Auth, endpoint metrics public bloque |
+
+Fichiers de reference:
+- `monitoring/prometheus/prometheus.yml`
+- `monitoring/prometheus/alert_rules.yml`
+- `monitoring/grafana/dashboards/transcendence-overview.json`
+- `monitoring/alertmanager/alertmanager.yml`
+- `security/nginx/nginx.conf`
+
 ## Architecture
 
 ```
@@ -91,6 +108,26 @@ Fichiers:
 - `secrets/monitoring.env` — credentials Grafana et Basic Auth Nginx
 
 Le webhook Discord est référencé dans la configuration Alertmanager actuelle. Recommandation production: injecter l'URL via variable d'environnement ou fichier secret plutôt que la laisser en clair.
+
+## Secret management (Vault)
+
+Etat actuel:
+- `secrets/monitoring.env` contient les credentials Grafana admin et Basic Auth Nginx.
+- Le webhook Discord est configure dans Alertmanager.
+
+Recommandation pour production:
+- Ne pas versionner de mots de passe ou de webhook en clair dans le repo.
+- Stocker les secrets dans Vault puis les injecter au runtime (entrypoint, template, ou sidecar).
+- Faire transiter au minimum ces secrets via Vault:
+  - login/mot de passe Grafana admin
+  - login/mot de passe Basic Auth Nginx pour `/grafana/`
+  - URL du webhook Discord Alertmanager
+
+Approche cible:
+1. Ecrire les secrets dans Vault (KV v2), par exemple `secret/monitoring`.
+2. Recuperer ces secrets au demarrage des conteneurs (Nginx/Grafana/Alertmanager).
+3. Exporter en variables d'environnement uniquement en memoire (pas de fichier committe).
+4. Redemarrer les services avec les nouvelles variables.
 
 ## Secure access model for Grafana
 
