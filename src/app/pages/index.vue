@@ -18,11 +18,9 @@ onUnmounted(() => {
 		<div class="flex sm:items-center w-full min-h-full h-full">
 			<h1 class="font-gasoek text-6xl sm:text-9xl uppercase">Pixel, <br>fight!</h1>
 		</div>
-		<canvas class="webgl block absolute top-14 w-full left-0 sm:left-1/2 sm:w-1/2 left-0.5 h-[calc(100%-3.5rem)] overflow-hidden"></canvas>
+		<canvas class="webgl block absolute top-14 w-full left-0 sm:left-1/3 sm:w-2/3 h-[calc(100%-3.5rem)] overflow-hidden"></canvas>
 	</div>
-	<NuxtLink 
-	to="/game" :class="[
-			'font-gasoek border border-white bg-blue-800 hover:bg-white text-4xl text-center uppercase inline-flex items-center justify-center h-20 absolute bottom-32 left-1/2 -translate-x-1/2 rounded-md w-52 pt-2.5 pb-2.5 pl-9 pr-9',
+	<NuxtLink to="/game" :class="['font-gasoek border border-white bg-blue-800 hover:bg-white text-4xl text-center uppercase inline-flex items-center justify-center h-20 absolute bottom-32 left-1/2 -translate-x-1/2 rounded-md w-52 pt-2.5 pb-2.5 pl-9 pr-9',
 			isHovered ? 'text-blue-800' : 'text-white'
 		]"
 		@mouseenter="isHovered = true"

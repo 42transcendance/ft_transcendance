@@ -1,4 +1,6 @@
 <script setup lang="ts">
+	import FormField from '~/components/Form/FormField.vue'
+
 	const { login } = useAuth()
 	const username = ref('')
 	const password = ref('')
@@ -21,47 +23,13 @@
 </script>
 
 <template>
-	<div>
-		<h1 class="title">Log in</h1>
-		<form @submit.prevent="handleLogin" class="global-form">
-			<input
-				v-model="username"
-				type="text"
-				placeholder="Username"
-				class="user-input">
-			<input
-				v-model="password"
-				type="password"
-				placeholder="Password"
-				class="pswd-input">
-			<button type="submit" class="login-btn">Connect</button>
-		</form>
-	</div>
+	<Card title="Login">
+	<form @submit.prevent="handleLogin" class="flex flex-col gap-3">
+		<FormField v-model="username" label="Username" placeholder="johndoe" type="text"/>
+		<FormField v-model="password" label="Password" placeholder="" type="password"/>
+		<FormButton label="Connect"/>
+	</form>
+	</Card>
 </template>
-
 <style scoped>
-	.title {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.global-form {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 15px;
-	}
-
-	.user-input {
-		padding: 10px 20px;
-	}
-
-	.pswd-input {
-		padding: 10px 20px;
-	}
-
-	.login-btn {
-
-	}
 </style>

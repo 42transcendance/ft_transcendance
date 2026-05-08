@@ -1,4 +1,6 @@
 <script setup lang="ts">
+	import FormField from '~/components/Form/FormField.vue'
+
 	const { create } = useAuth()
 	const createEmail = ref('')
 	const createUsername = ref('')
@@ -23,71 +25,17 @@
 </script>
 
 <template>
-	<div>
-		<h1 class="title">Create User</h1>
-		<form @submit.prevent="handleCreate" class="global-form">
-			<input
-				v-model="createEmail"
-				type="email"
-				placeholder="Email"
-				class="email-input"
-				pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
-				title="You must enter a valid email"
-				required>
-			<input
-				v-model="createUsername"
-				type="text"
-				placeholder="Username"
-				class="user-input"
-				required>
-			<input
-				v-model="createPassword"
-				id="password"
-				type="password"
-				placeholder="Password"
-				class="pswd-input"
-				required>
-			<input
-				v-model="confirmPassword"
-				type="password"
-				id="confirmPassword"
-				placeholder="Comfirm password"
-				class="pswd-input"
-				required>
-			<button type="submit" class="create-btn">Create</button>
+	<Card title="Signup">
+		<form @submit.prevent="handleCreate" class="flex flex-col gap-3">
+			<FormField v-model="createEmail" label="Email" placeholder="john@example.com" type="email"/>
+			<FormField v-model="createUsername" label="Username" placeholder="johndoe" type="text"/>
+			<FormField v-model="createPassword" label="Password" placeholder="Enter password" type="password"/>
+			<FormField v-model="confirmPassword" label="Confirm Password" placeholder="Confirm password" type="password"/>
+			<FormButton label="Sign up"/>
 		</form>
-	</div>
+	</Card>
 </template>
 
 <style scoped>
-	.title {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.global-form {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 15px;
-	}
-
-
-	.email-input {
-		padding: 10px 20px;
-	}
-
-	.user-input {
-		padding: 10px 20px;
-	}
-
-	.pswd-input {
-		padding: 10px 20px;
-	}
-
-	.create-btn {
-
-	}
 </style>
 
