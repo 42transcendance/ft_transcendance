@@ -5,30 +5,48 @@
 
 	definePageMeta({ middleware: 'auth' })
 
+
 	const { data, error } = await useFetch('/api/users/auth')
 	if (error.value || !data.value)
 		await navigateTo('/login')
 
 	const { currentUser, logout } = useAuth()
 	const { updateProfile, deleteProfile } = useSettings()
+	const { pendingUsernameUpdate } = useOnlineStatus()
+
+
+	watch(pendingUsernameUpdate, (update) => {
+		if (update && currentUser.value?.id === update.userId) {
+			currentUser.value = {
+				...currentUser.value,
+				username: update.username,
+			}
+		}
+	})
 
 	// Avatar
 	const fileInput = ref<HTMLInputElement | null>(null)
 	const previewImage = ref<string | null>(currentUser?.value?.avatarUrl || null)
 	const uploadError = ref('')
+	const uploadSuccess = ref(false)
+
 
 	function onFileSelected(event: Event) {
 		const target = event.target as HTMLInputElement
 		const file = target.files?.[0]
-		if (!file)
+		if (!file) {
+			uploadSuccess.value = false
 			return
+		}
 
 		if (file.size > 2 * 1024 * 1024) {
+			uploadSuccess.value = false
 			uploadError.value = 'File is too big (max 2MB)!'
 			return
 		}
 
 		if (!file.type.startsWith('image/')) {
+			uploadSuccess.value = false
 			uploadError.value = 'File must be an image!'
 			return
 		}
@@ -43,8 +61,10 @@
 
 	async function uploadAvatar() {
 		const file = fileInput.value?.files?.[0]
-		if (!file)
+		if (!file) {
+			uploadSuccess.value = false
 			return
+		}
 
 		const formData = new FormData()
 		formData.append('avatar', file)
@@ -55,8 +75,9 @@
 			})
 			if (currentUser.value)
 				currentUser.value.avatarUrl = response.avatarUrl
-			alert('Avatar updated!')
+			uploadSuccess.value = true
 		} catch (e: any) {
+			uploadSuccess.value = false
 			uploadError.value = e.statusText || 'Upload failed.'
 		}
 	}
@@ -66,14 +87,17 @@
 	const newUsername = ref('')
 	const usernamePassword = ref('')
 	const usernameError = ref('')
+	const usernameSuccess = ref(false)
 
 	async function submitUsername() {
 		usernameError.value = ''
 		if (!newUsername.value) {
+			usernameSuccess.value = false
 			usernameError.value = 'Please enter a username'
 			return
 		}
 		if (!usernamePassword.value) {
+			usernameSuccess.value = false
 			usernameError.value = 'Please enter your password'
 			return
 		}
@@ -87,8 +111,9 @@
 			showUsernamePopup.value = false
 			newUsername.value = ''
 			usernamePassword.value = ''
-			alert('Username updated!')
+			usernameSuccess.value = true
 		} else {
+			usernameSuccess.value = false
 			usernameError.value = error
 		}
 	}
@@ -99,19 +124,23 @@
 	const newPassword = ref('')
 	const confirmPassword = ref('')
 	const passwordError = ref('')
+	const passwordSuccess = ref(false)
 
 	async function submitPassword() {
 		passwordError.value = ''
 		if (!currentPassword.value) {
+			passwordSuccess.value = false
 			passwordError.value = 'Please enter your current password'
 			return
 		}
 		if (!newPassword.value) {
+			passwordSuccess.value = false
 			passwordError.value = 'Please enter a new password'
 			return
 		}
 
 		if (newPassword.value !== confirmPassword.value) {
+			passwordSuccess.value = false
 			passwordError.value = "Passwords don't match!"
 			return
 		}
@@ -126,8 +155,9 @@
 			currentPassword.value = ''
 			newPassword.value = ''
 			confirmPassword.value = ''
-			alert('Password updated!')
+			passwordSuccess.value = true
 		} else {
+			passwordSuccess.value = false
 			passwordError.value = error
 		}
 	}
@@ -171,6 +201,7 @@
             <button @click="fileInput?.click()" class="btn">Change Avatar</button>
             <button v-if="fileInput?.files?.length" @click="uploadAvatar" class="btn">Save Avatar</button>
             <p v-if="uploadError" class="error">{{ uploadError }}</p>
+			<UpdateSuccess v-if="uploadSuccess" label="Avatar Updated !" />
         </section>
 
         <!-- Username -->
@@ -178,12 +209,14 @@
             <h2>Username</h2>
             <p class="current-value">Current : {{ currentUser?.username }}</p>
             <button @click="showUsernamePopup = true" class="btn">Change Username</button>
+			<UpdateSuccess v-if="usernameSuccess" label="Username Updated !" />
         </section>
 
         <!-- Password -->
         <section class="section">
             <h2>Password</h2>
             <button @click="showPasswordPopup = true" class="btn">Change Password</button>
+			<UpdateSuccess v-if="passwordSuccess" label="Password Updated !" />
         </section>
 
         <!-- Delete account -->

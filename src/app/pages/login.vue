@@ -8,32 +8,36 @@
 	const { login } = useAuth()
 	const username = ref('')
 	const password = ref('')
+	const userLoginError = ref('')
 
 	const handleLogin = async () => {
 		if (!username.value || !password.value) {
-			alert('Please fill in all fields.')
+			userLoginError.value = 'Please fill in all fields'
 			return
 		}
 
-		const loginSuccess = await login(username.value, password.value)
+		const { success, error } = await login(username.value, password.value)
 
-		if (loginSuccess) {
+		if (success) {
+			userLoginError.value = ''
 			await navigateTo('/')
 		}
 		else {
-			alert('Wrong username or password.')
+			userLoginError.value = 'Wrong username or password'
 		}
 	}
 </script>
 
 <template>
 	<Card title="Login">
-	<form @submit.prevent="handleLogin" class="flex flex-col gap-3">
-		<FormField v-model="username" label="Username" placeholder="johndoe" type="text"/>
-		<FormField v-model="password" label="Password" placeholder="" type="password"/>
-		<FormButton label="Connect"/>
-	</form>
+		<form @submit.prevent="handleLogin" class="flex flex-col gap-3">
+			<FormField v-model="username" label="Username" placeholder="johndoe" type="text"/>
+			<FormField v-model="password" label="Password" placeholder="" type="password"/>
+			<FormButton label="Connect"/>
+			<FormError v-if="userLoginError" :label="userLoginError" />
+		</form>
 	</Card>
 </template>
+
 <style scoped>
 </style>
