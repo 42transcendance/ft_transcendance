@@ -136,38 +136,38 @@
 
 <template>
 	<Card title="Settings">
-		<div class="flex flex-col gap-4 w-full">
+		<div class="flex flex-col gap-8 w-full">
 
 			<!-- Avatar -->
-			<section class="flex flex-col items-center gap-3 border border-blue-100 rounded-md p-5">
+			<section class="flex flex-col items-center gap-2">
 				<h2 class="text-blue-800 font-semibold text-base">Avatar</h2>
 				<img :src="previewImage || '/default-avatar.jpg'" alt="Avatar" class="w-24 h-24 rounded-full object-cover border-2 border-blue-200" />
 				<input type="file" ref="fileInput" accept="image/png, image/jpeg" @change="onFileSelected" class="hidden" />
-				<button type="button" @click="fileInput?.click()" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Change Avatar</button>
-				<button v-if="fileInput?.files?.length" type="button" @click="uploadAvatar" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Save Avatar</button>
+				<button type="button" @click="fileInput?.click()" class="bg-blue-600 outline outline-blue-800 rounded-md p-2 hover:bg-blue-700 hover:cursor-pointer">Change Avatar</button>
+				<button v-if="fileInput?.files?.length" type="button" @click="uploadAvatar" class="bg-blue-600 outline outline-blue-800 rounded-md p-2 hover:bg-blue-700 hover:cursor-pointer">Save Avatar</button>
 				<FormError v-if="uploadError" :label="uploadError" />
 				<UpdateSuccess v-if="uploadSuccess" label="Avatar Updated !" />
 			</section>
 
 			<!-- Username -->
-			<section class="flex flex-col items-center gap-3 border border-blue-100 rounded-md p-5">
+			<section class="flex flex-col items-center gap-2">
 				<h2 class="text-blue-800 font-semibold text-base">Username</h2>
 				<p class="text-blue-400 text-sm">Current: {{ currentUser?.username }}</p>
-				<button type="button" @click="showUsernamePopup = true" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Change Username</button>
+				<button type="button" @click="showUsernamePopup = true" class="bg-blue-600 outline outline-blue-800 rounded-md p-2 hover:bg-blue-700 hover:cursor-pointer">Change Username</button>
 				<UpdateSuccess v-if="usernameSuccess" label="Username Updated !" />
 			</section>
 
 			<!-- Password -->
-			<section class="flex flex-col items-center gap-3 border border-blue-100 rounded-md p-5">
+			<section class="flex flex-col items-center gap-2">
 				<h2 class="text-blue-800 font-semibold text-base">Password</h2>
-				<button type="button" @click="showPasswordPopup = true" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Change Password</button>
+				<button type="button" @click="showPasswordPopup = true" class="bg-blue-600 outline outline-blue-800 rounded-md p-2 hover:bg-blue-700 hover:cursor-pointer">Change Password</button>
 				<UpdateSuccess v-if="passwordSuccess" label="Password Updated !" />
 			</section>
 
 			<!-- Delete account -->
-			<section class="flex flex-col items-center gap-3 border border-blue-100 rounded-md p-5">
+			<section class="flex flex-col items-center gap-2">
 				<h2 class="text-blue-800 font-semibold text-base">Account</h2>
-				<button type="button" @click="showDeletePopup = true" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Delete Account</button>
+				<button type="button" @click="showDeletePopup = true" class="bg-blue-600 outline outline-blue-800 rounded-md p-2 hover:bg-blue-700 hover:cursor-pointer">Delete Account</button>
 			</section>
 		</div>
 	</Card>
@@ -177,11 +177,11 @@
 		<div class="bg-blue-50 p-8 rounded-md flex flex-col gap-4 w-80">
 			<h3 class="text-blue-900 text-center font-semibold text-base">Change Username</h3>
 			<form @submit.prevent="submitUsername" class="flex flex-col gap-4">
-				<FormField v-model="newUsername" label="New username" placeholder="johndoe" type="text" />
-				<FormField v-model="usernamePassword" label="Password" placeholder="" type="password" />
+				<FormField v-model="newUsername" label="New username" placeholder="john_doe92" type="text" />
+				<FormField v-model="usernamePassword" label="Password" placeholder="••••••••" type="password" />
 				<FormError v-if="usernameError" :label="usernameError" />
 				<div class="flex justify-between gap-3">
-					<button type="button" @click="showUsernamePopup = false" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Cancel</button>
+					<button type="button" @click="showUsernamePopup = false" class="bg-blue-600 outline outline-blue-700 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Cancel</button>
 					<FormButton label="Confirm" />
 				</div>
 			</form>
@@ -198,7 +198,7 @@
 				<FormField v-model="confirmPassword" label="Confirm new password" placeholder="" type="password" />
 				<FormError v-if="passwordError" :label="passwordError" />
 				<div class="flex justify-between gap-3">
-					<button type="button" @click="showPasswordPopup = false" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Cancel</button>
+					<button type="button" @click="showPasswordPopup = false" class="bg-blue-600 outline outline-blue-700 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Cancel</button>
 					<FormButton label="Confirm" />
 				</div>
 			</form>
@@ -214,8 +214,8 @@
 				<FormField v-model="deletePassword" label="Password" placeholder="" type="password" />
 				<FormError v-if="deleteError" :label="deleteError" />
 				<div class="flex justify-between gap-3">
-					<button type="button" @click="showDeletePopup = false" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Cancel</button>
-					<button type="submit" class="bg-red-700 rounded-md mt-4 p-2 hover:bg-red-800 hover:cursor-pointer">Delete</button>
+					<button type="button" @click="showDeletePopup = false" class="bg-blue-600 outline outline-blue-700 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Cancel</button>
+					<button type="submit" class="bg-red-700 rounded-md p-2 hover:bg-red-800 hover:cursor-pointer">Delete</button>
 				</div>
 			</form>
 		</div>
