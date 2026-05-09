@@ -6,20 +6,23 @@
 	const createUsername = ref('')
 	const createPassword = ref('')
 	const confirmPassword = ref('')
-	
+	const userCreationError = ref('')
+
+
 	const handleCreate = async () => {
 		if (createPassword.value != confirmPassword.value) {
-			alert('Passwords don\'t match !')
+			userCreationError.value = 'Passwords don\'t match !'
 			return
 		}
 
-		const createSuccess = await create(createEmail.value, createUsername.value, createPassword.value)
+		const { success, error } = await create(createEmail.value, createUsername.value, createPassword.value)
 
-		if (createSuccess) {
+		if (success) {
+			userCreationError.value = ''
 			await navigateTo('/')
 		}
 		else {
-			alert('Creation failed !')
+			userCreationError.value = error
 		}
 	}
 </script>
@@ -32,6 +35,7 @@
 			<FormField v-model="createPassword" label="Password" placeholder="Enter password" type="password"/>
 			<FormField v-model="confirmPassword" label="Confirm Password" placeholder="Confirm password" type="password"/>
 			<FormButton label="Sign up"/>
+			<FormError v-if="userCreationError" :label="userCreationError" />
 		</form>
 	</Card>
 </template>

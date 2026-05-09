@@ -13,11 +13,10 @@ export const useAuth = () => {
 				body: {username, password}
 			})
 			currentUser.value = data.safeUser
-			return true
+			return { success: true }
 		}
 		catch (e) {
-			console.error("Failed request : ", e.data?.message ?? e.statusText)
-			return false
+			return { success: false, error: e.data?.message || 'Login failed' }
 		}
 	}
 
@@ -36,11 +35,10 @@ export const useAuth = () => {
 				body: {email, username, password}
 			})
 			currentUser.value = data.safeUser
-			return true
+			return { success: true }
 		}
 		catch (e) {
-			console.error("Failed request : ", e.data?.message ?? e.statusText)
-			return false
+			return { success: false, error: e.data?.message || 'Creation failed' }
 		}
 
 	}
