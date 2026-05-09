@@ -29,7 +29,8 @@ export default defineNuxtConfig({
 
 	app: {
 		head: {
-		titleTemplate: '%s | Pixel Fight!'
+		titleTemplate: '%s | Pixel, Fight!',
+		htmlAttrs: { lang: 'en' }
 		}
 	},
 })

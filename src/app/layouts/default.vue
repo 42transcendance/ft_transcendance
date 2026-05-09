@@ -5,11 +5,11 @@ import RightCardProfile from '~/components/RightCardProfile.vue';
 
 <template>
 	<ClientOnly>
-		<div class="h-full w-full flex flex-col">
+		<div class="min-h-screen w-full flex flex-col">
 			<Navbar />
 			<RightCardProfile />
 			<NavBtnsNotifBtn />
-			<main class="flex-1 p-8 pt-16 text-white h-full">
+			<main class="flex-1 p-8 pt-16 text-white flex items-center justify-center">
 				<slot />
 			</main>
 			<footer
@@ -21,6 +21,3 @@ import RightCardProfile from '~/components/RightCardProfile.vue';
 		</div>
 	</ClientOnly>
 </template>
-
-<style scoped>
-</style>
