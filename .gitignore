@@ -28,3 +28,4 @@ logs
 !.env.example
 *.env
 node_modules
+uploads_storage
