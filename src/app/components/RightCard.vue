@@ -9,9 +9,9 @@ defineEmits<{
 </script>
 
 <template>
-	<div class="fixed top-0 right-0 z-1 bg-white/90 transition-transform duration-300 ease-in-out h-full w-[25%] max-w-100 min-w-72" :class="isOpen ? 'translate-x-0' : 'translate-x-full'">
+	<div class="fixed top-0 right-0 z-3 bg-white transition-transform duration-300 ease-in-out h-full w-[25%] max-w-100 min-w-72" :class="isOpen ? 'translate-x-0' : 'translate-x-full'">
 		<button
-			class="absolute top-14 left-4 text-3xl border-none bg-transparent cursor-pointer text-gray-400 hover:text-gray-700 leading-none"
+			class="absolute top-8 left-8 text-3xl border-none bg-transparent cursor-pointer text-gray-400 hover:text-gray-700 leading-none"
 			@click="$emit('close')">
 			×
 		</button>
