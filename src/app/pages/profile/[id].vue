@@ -1,4 +1,8 @@
 <script setup lang="ts">
+	useHead({
+		title: 'Profile'
+	})
+
 	definePageMeta({ middleware: 'auth' })
 
 	const route = useRoute()

@@ -32,6 +32,10 @@
 </template>
 
 <script setup lang="ts">
+useHead({
+	title: 'Chat'
+})
+
 definePageMeta({
   middleware: 'auth'
 })

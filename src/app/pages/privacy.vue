@@ -77,6 +77,10 @@
 </template>
 
 <script setup>
+useHead({
+	title: 'Privacy'
+})
+
 useSeoMeta({
   title: 'Privacy Policy — YourProject',
 })

@@ -1,4 +1,8 @@
 <script setup lang="ts">
+	useHead({
+		title: 'Settings'
+	})
+
 	definePageMeta({ middleware: 'auth' })
 
 	const { data, error } = await useFetch('/api/users/auth')

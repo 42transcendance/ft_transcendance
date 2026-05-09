@@ -1,4 +1,8 @@
 <script setup lang="ts">
+	useHead({
+		title: 'Log in'
+	})
+
 	import FormField from '~/components/Form/FormField.vue'
 
 	const { login } = useAuth()

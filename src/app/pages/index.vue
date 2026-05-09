@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { initThreejs, cleanupThreejs } from '~/threejs/index/index.ts'
+	useHead({
+		title: 'Home'
+	})
 
-const isHovered = ref(false)
+	import { ref, onMounted, onUnmounted } from 'vue'
+	import { initThreejs, cleanupThreejs } from '~/threejs/index/index.ts'
 
-onMounted(() => {
-	initThreejs()
-})
+	const isHovered = ref(false)
 
-onUnmounted(() => {
-	cleanupThreejs()
+	onMounted(() => {
+		initThreejs()
+	})
+
+	onUnmounted(() => {
+		cleanupThreejs()
 })
 
 </script>

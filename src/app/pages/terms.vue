@@ -66,6 +66,10 @@
 </template>
 
 <script setup>
+useHead({
+	title: 'Terms'
+})
+
 useSeoMeta({
   title: 'Terms of Service — YourProject',
 })
