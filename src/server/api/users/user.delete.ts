@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
 				unlinkSync(oldFilePath);
 				console.log(`Old avatar deleted : ${oldFileName}`);
 			} catch (err) {
-				console.error("Error while deleting old avatar :", err);
+				throw createError({ statusCode: 400, message: err })
 			}
 		}
 	}

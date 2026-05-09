@@ -1,5 +1,5 @@
 <template>
-  <main class="legal-page">
+  <main class="legal">
     <h1>Privacy Policy</h1>
     <p class="last-updated">Last updated: June 2026</p>
 
@@ -77,7 +77,15 @@
 </template>
 
 <script setup>
+useHead({
+	title: 'Privacy'
+})
+
 useSeoMeta({
   title: 'Privacy Policy — YourProject',
 })
 </script>
+
+<style scoped>
+  @import '../assets/css/legal.css'
+</style>

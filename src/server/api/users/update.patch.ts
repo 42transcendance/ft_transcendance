@@ -67,6 +67,7 @@ export default defineEventHandler(async (event) => {
         // Code P2002 = username taken
         if (error.code === 'P2002')
             throw createError({ statusCode: 409, message: 'Username already taken' })
-        throw createError({ statusCode: 500, message: 'Database error' })
+		else
+			throw createError({ statusCode: 500, message: 'Database error' })
     }
 })

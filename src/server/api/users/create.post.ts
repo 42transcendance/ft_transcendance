@@ -63,6 +63,7 @@ export default defineEventHandler(async (event) => {
 		}
 
 	} catch (e) {
+		console.error("ERREUR PRISMA DETECTEE :", e)
 		if (e instanceof Prisma.PrismaClientKnownRequestError) {
             if (e.code === 'P2002') {
                 throw createError({
@@ -70,11 +71,11 @@ export default defineEventHandler(async (event) => {
                     message: 'This email or username is already taken.'
                 })
             }
-        }
-
-        throw createError({
-            statusCode: 500,
-            message: 'An unexpected error occurred during registration.'
-        })
+        } else {
+			throw createError({
+				statusCode: 500,
+				message: 'An unexpected error occurred during registration.'
+			})
+		}
 	}
 });

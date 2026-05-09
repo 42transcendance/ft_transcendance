@@ -1,5 +1,5 @@
 <template>
-  <main class="legal-page">
+  <main class="legal">
     <h1>Terms of Service</h1>
     <p class="last-updated">Last updated: June 2026</p>
 
@@ -66,7 +66,15 @@
 </template>
 
 <script setup>
+useHead({
+	title: 'Terms'
+})
+
 useSeoMeta({
   title: 'Terms of Service — YourProject',
 })
 </script>
+
+<style scoped>
+  @import '../assets/css/legal.css'
+</style>

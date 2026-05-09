@@ -1,93 +1,49 @@
 <script setup lang="ts">
+	useHead({
+		title: 'Sign up'
+	})
+
+	import FormField from '~/components/Form/FormField.vue'
+
 	const { create } = useAuth()
 	const createEmail = ref('')
 	const createUsername = ref('')
 	const createPassword = ref('')
 	const confirmPassword = ref('')
-	
+	const userCreationError = ref('')
+
+
 	const handleCreate = async () => {
 		if (createPassword.value != confirmPassword.value) {
-			alert('Passwords don\'t match !')
+			userCreationError.value = 'Passwords don\'t match !'
 			return
 		}
 
-		const createSuccess = await create(createEmail.value, createUsername.value, createPassword.value)
+		const { success, error } = await create(createEmail.value, createUsername.value, createPassword.value)
 
-		if (createSuccess) {
+		if (success) {
+			userCreationError.value = ''
 			await navigateTo('/')
 		}
 		else {
-			alert('Creation failed !')
+			userCreationError.value = error
 		}
 	}
 </script>
 
 <template>
-	<div>
-		<h1 class="title">Create User</h1>
-		<form @submit.prevent="handleCreate" class="global-form">
-			<input
-				v-model="createEmail"
-				type="email"
-				placeholder="Email"
-				class="email-input"
-				pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
-				title="You must enter a valid email"
-				required>
-			<input
-				v-model="createUsername"
-				type="text"
-				placeholder="Username"
-				class="user-input"
-				required>
-			<input
-				v-model="createPassword"
-				id="password"
-				type="password"
-				placeholder="Password"
-				class="pswd-input"
-				required>
-			<input
-				v-model="confirmPassword"
-				type="password"
-				id="confirmPassword"
-				placeholder="Comfirm password"
-				class="pswd-input"
-				required>
-			<button type="submit" class="create-btn">Create</button>
+	<Card title="Signup">
+		<form @submit.prevent="handleCreate" class="flex flex-col gap-3">
+			<FormField v-model="createEmail" label="Email" placeholder="john@example.com" type="email"/>
+			<FormField v-model="createUsername" label="Username" placeholder="john_doe92" type="text"/>
+			<FormField v-model="createPassword" label="Password" placeholder="••••••••••••" type="password"/>
+			<FormField v-model="confirmPassword" label="Confirm Password" placeholder="••••••••••••" type="password"/>
+			<FormButton label="Sign up"/>
+			<FormError v-if="userCreationError" :label="userCreationError" />
 		</form>
-	</div>
+	</Card>
 </template>
 
 <style scoped>
-	.title {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.global-form {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 15px;
-	}
-
-
-	.email-input {
-		padding: 10px 20px;
-	}
-
-	.user-input {
-		padding: 10px 20px;
-	}
-
-	.pswd-input {
-		padding: 10px 20px;
-	}
-
-	.create-btn {
-
-	}
 </style>
 
