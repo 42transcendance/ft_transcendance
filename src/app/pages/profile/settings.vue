@@ -5,7 +5,6 @@
 
 	definePageMeta({ middleware: 'auth' })
 
-
 	const { data, error } = await useFetch('/api/users/auth')
 	if (error.value || !data.value)
 		await navigateTo('/login')
@@ -14,13 +13,9 @@
 	const { updateProfile, deleteProfile } = useSettings()
 	const { pendingUsernameUpdate } = useOnlineStatus()
 
-
 	watch(pendingUsernameUpdate, (update) => {
 		if (update && currentUser.value?.id === update.userId) {
-			currentUser.value = {
-				...currentUser.value,
-				username: update.username,
-			}
+			currentUser.value = { ...currentUser.value, username: update.username }
 		}
 	})
 
@@ -30,51 +25,36 @@
 	const uploadError = ref('')
 	const uploadSuccess = ref(false)
 
-
 	function onFileSelected(event: Event) {
 		const target = event.target as HTMLInputElement
 		const file = target.files?.[0]
-		if (!file) {
-			uploadSuccess.value = false
-			return
-		}
+		if (!file) { uploadSuccess.value = false; return }
 
 		if (file.size > 2 * 1024 * 1024) {
 			uploadSuccess.value = false
 			uploadError.value = 'File is too big (max 2MB)!'
 			return
 		}
-
 		if (!file.type.startsWith('image/')) {
 			uploadSuccess.value = false
 			uploadError.value = 'File must be an image!'
 			return
 		}
-
 		uploadError.value = ''
 		const reader = new FileReader()
-		reader.onload = (e) => {
-			previewImage.value = e.target?.result as string
-		}
+		reader.onload = (e) => { previewImage.value = e.target?.result as string }
 		reader.readAsDataURL(file)
 	}
 
 	async function uploadAvatar() {
 		const file = fileInput.value?.files?.[0]
-		if (!file) {
-			uploadSuccess.value = false
-			return
-		}
+		if (!file) { uploadSuccess.value = false; return }
 
 		const formData = new FormData()
 		formData.append('avatar', file)
 		try {
-			const response = await $fetch('/api/users/upload-avatar', {
-				method: 'POST',
-				body: formData
-			})
-			if (currentUser.value)
-				currentUser.value.avatarUrl = response.avatarUrl
+			const response = await $fetch('/api/users/upload-avatar', { method: 'POST', body: formData })
+			if (currentUser.value) currentUser.value.avatarUrl = response.avatarUrl
 			uploadSuccess.value = true
 		} catch (e: any) {
 			uploadSuccess.value = false
@@ -91,22 +71,10 @@
 
 	async function submitUsername() {
 		usernameError.value = ''
-		if (!newUsername.value) {
-			usernameSuccess.value = false
-			usernameError.value = 'Please enter a username'
-			return
-		}
-		if (!usernamePassword.value) {
-			usernameSuccess.value = false
-			usernameError.value = 'Please enter your password'
-			return
-		}
+		if (!newUsername.value) { usernameSuccess.value = false; usernameError.value = 'Please enter a username'; return }
+		if (!usernamePassword.value) { usernameSuccess.value = false; usernameError.value = 'Please enter your password'; return }
 
-		const { success, error } = await updateProfile({
-			username: newUsername.value,
-			currentPassword: usernamePassword.value
-		})
-
+		const { success, error } = await updateProfile({ username: newUsername.value, currentPassword: usernamePassword.value })
 		if (success) {
 			showUsernamePopup.value = false
 			newUsername.value = ''
@@ -128,28 +96,11 @@
 
 	async function submitPassword() {
 		passwordError.value = ''
-		if (!currentPassword.value) {
-			passwordSuccess.value = false
-			passwordError.value = 'Please enter your current password'
-			return
-		}
-		if (!newPassword.value) {
-			passwordSuccess.value = false
-			passwordError.value = 'Please enter a new password'
-			return
-		}
+		if (!currentPassword.value) { passwordSuccess.value = false; passwordError.value = 'Please enter your current password'; return }
+		if (!newPassword.value) { passwordSuccess.value = false; passwordError.value = 'Please enter a new password'; return }
+		if (newPassword.value !== confirmPassword.value) { passwordSuccess.value = false; passwordError.value = "Passwords don't match!"; return }
 
-		if (newPassword.value !== confirmPassword.value) {
-			passwordSuccess.value = false
-			passwordError.value = "Passwords don't match!"
-			return
-		}
-
-		const { success, error } = await updateProfile({
-			currentPassword: currentPassword.value,
-			newPassword: newPassword.value
-		})
-
+		const { success, error } = await updateProfile({ currentPassword: currentPassword.value, newPassword: newPassword.value })
 		if (success) {
 			showPasswordPopup.value = false
 			currentPassword.value = ''
@@ -162,7 +113,6 @@
 		}
 	}
 
-
 	// Popup delete
 	const showDeletePopup = ref(false)
 	const deletePassword = ref('')
@@ -170,13 +120,9 @@
 
 	async function submitDelete() {
 		deleteError.value = ''
-		if (!deletePassword.value) {
-			deleteError.value = 'Please enter your current password to confirm'
-			return
-		}
+		if (!deletePassword.value) { deleteError.value = 'Please enter your current password to confirm'; return }
 
 		const { success, error } = await deleteProfile(deletePassword.value)
-
 		if (success) {
 			showDeletePopup.value = false
 			deletePassword.value = ''
@@ -186,201 +132,92 @@
 			deleteError.value = error
 		}
 	}
-
 </script>
 
 <template>
-    <div class="settings-wrapper">
-        <h1>Settings</h1>
+	<Card title="Settings">
+		<div class="flex flex-col gap-4 w-full">
 
-        <!-- Avatar -->
-        <section class="section">
-            <h2>Avatar</h2>
-            <img :src="previewImage || '/default-avatar.jpg'" alt="Avatar" class="avatar-preview" />
-            <input type="file" ref="fileInput" accept="image/png, image/jpeg" @change="onFileSelected" class="hidden" />
-            <button @click="fileInput?.click()" class="btn">Change Avatar</button>
-            <button v-if="fileInput?.files?.length" @click="uploadAvatar" class="btn">Save Avatar</button>
-            <p v-if="uploadError" class="error">{{ uploadError }}</p>
-			<UpdateSuccess v-if="uploadSuccess" label="Avatar Updated !" />
-        </section>
+			<!-- Avatar -->
+			<section class="flex flex-col items-center gap-3 border border-blue-100 rounded-md p-5">
+				<h2 class="text-blue-800 font-semibold text-base">Avatar</h2>
+				<img :src="previewImage || '/default-avatar.jpg'" alt="Avatar" class="w-24 h-24 rounded-full object-cover border-2 border-blue-200" />
+				<input type="file" ref="fileInput" accept="image/png, image/jpeg" @change="onFileSelected" class="hidden" />
+				<button type="button" @click="fileInput?.click()" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Change Avatar</button>
+				<button v-if="fileInput?.files?.length" type="button" @click="uploadAvatar" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Save Avatar</button>
+				<FormError v-if="uploadError" :label="uploadError" />
+				<UpdateSuccess v-if="uploadSuccess" label="Avatar Updated !" />
+			</section>
 
-        <!-- Username -->
-        <section class="section">
-            <h2>Username</h2>
-            <p class="current-value">Current : {{ currentUser?.username }}</p>
-            <button @click="showUsernamePopup = true" class="btn">Change Username</button>
-			<UpdateSuccess v-if="usernameSuccess" label="Username Updated !" />
-        </section>
+			<!-- Username -->
+			<section class="flex flex-col items-center gap-3 border border-blue-100 rounded-md p-5">
+				<h2 class="text-blue-800 font-semibold text-base">Username</h2>
+				<p class="text-blue-400 text-sm">Current: {{ currentUser?.username }}</p>
+				<button type="button" @click="showUsernamePopup = true" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Change Username</button>
+				<UpdateSuccess v-if="usernameSuccess" label="Username Updated !" />
+			</section>
 
-        <!-- Password -->
-        <section class="section">
-            <h2>Password</h2>
-            <button @click="showPasswordPopup = true" class="btn">Change Password</button>
-			<UpdateSuccess v-if="passwordSuccess" label="Password Updated !" />
-        </section>
+			<!-- Password -->
+			<section class="flex flex-col items-center gap-3 border border-blue-100 rounded-md p-5">
+				<h2 class="text-blue-800 font-semibold text-base">Password</h2>
+				<button type="button" @click="showPasswordPopup = true" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Change Password</button>
+				<UpdateSuccess v-if="passwordSuccess" label="Password Updated !" />
+			</section>
 
-        <!-- Delete account -->
-		<button @click="showDeletePopup = true" class="delete-btn">Delete Account</button>
+			<!-- Delete account -->
+			<section class="flex flex-col items-center gap-3 border border-blue-100 rounded-md p-5">
+				<h2 class="text-blue-800 font-semibold text-base">Account</h2>
+				<button type="button" @click="showDeletePopup = true" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Delete Account</button>
+			</section>
+		</div>
+	</Card>
 
-        <!-- Popup username -->
-        <div v-if="showUsernamePopup" class="overlay" @click.self="showUsernamePopup = false">
-            <div class="popup">
-                <h3>Change Username</h3>
-                <input v-model="newUsername" type="text" placeholder="New username" class="input" />
-                <input v-model="usernamePassword" type="password" placeholder="Your password" class="input" />
-                <p v-if="usernameError" class="error">{{ usernameError }}</p>
-                <div class="popup-actions">
-                    <button @click="showUsernamePopup = false" class="btn-cancel">Cancel</button>
-                    <button @click="submitUsername" class="btn">Confirm</button>
-                </div>
-            </div>
-        </div>
+	<!-- Popup username -->
+	<div v-if="showUsernamePopup" class="fixed inset-0 bg-black/30 flex items-center justify-center z-[3000]" @click.self="showUsernamePopup = false">
+		<div class="bg-blue-50 p-8 rounded-md flex flex-col gap-4 w-80">
+			<h3 class="text-blue-900 text-center font-semibold text-base">Change Username</h3>
+			<form @submit.prevent="submitUsername" class="flex flex-col gap-4">
+				<FormField v-model="newUsername" label="New username" placeholder="johndoe" type="text" />
+				<FormField v-model="usernamePassword" label="Password" placeholder="" type="password" />
+				<FormError v-if="usernameError" :label="usernameError" />
+				<div class="flex justify-between gap-3">
+					<button type="button" @click="showUsernamePopup = false" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Cancel</button>
+					<FormButton label="Confirm" />
+				</div>
+			</form>
+		</div>
+	</div>
 
-        <!-- Popup password -->
-        <div v-if="showPasswordPopup" class="overlay" @click.self="showPasswordPopup = false">
-            <div class="popup">
-                <h3>Change Password</h3>
-                <input v-model="currentPassword" type="password" placeholder="Current password" class="input" />
-                <input v-model="newPassword" type="password" placeholder="New password" class="input" />
-                <input v-model="confirmPassword" type="password" placeholder="Confirm new password" class="input" />
-                <p v-if="passwordError" class="error">{{ passwordError }}</p>
-                <div class="popup-actions">
-                    <button @click="showPasswordPopup = false" class="btn-cancel">Cancel</button>
-                    <button @click="submitPassword" class="btn">Confirm</button>
-                </div>
-            </div>
-        </div>
+	<!-- Popup password -->
+	<div v-if="showPasswordPopup" class="fixed inset-0 bg-black/30 flex items-center justify-center z-[3000]" @click.self="showPasswordPopup = false">
+		<div class="bg-blue-50 p-8 rounded-md flex flex-col gap-4 w-80">
+			<h3 class="text-blue-900 text-center font-semibold text-base">Change Password</h3>
+			<form @submit.prevent="submitPassword" class="flex flex-col gap-4">
+				<FormField v-model="currentPassword" label="Current password" placeholder="" type="password" />
+				<FormField v-model="newPassword" label="New password" placeholder="" type="password" />
+				<FormField v-model="confirmPassword" label="Confirm new password" placeholder="" type="password" />
+				<FormError v-if="passwordError" :label="passwordError" />
+				<div class="flex justify-between gap-3">
+					<button type="button" @click="showPasswordPopup = false" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Cancel</button>
+					<FormButton label="Confirm" />
+				</div>
+			</form>
+		</div>
+	</div>
 
-        <!-- Popup delete -->
-        <div v-if="showDeletePopup" class="overlay" @click.self="showDeletePopup = false">
-            <div class="popup">
-                <h3>Delete account</h3>
-                <input v-model="deletePassword" type="password" placeholder="Current password" class="input" />
-                <p v-if="deleteError" class="error">{{ passwordError }}</p>
-                <div class="popup-actions">
-                    <button @click="showDeletePopup = false" class="btn-cancel">Cancel</button>
-                    <button @click="submitDelete" class="btn">Confirm</button>
-                </div>
-            </div>
-        </div>
-
-    </div>
+	<!-- Popup delete -->
+	<div v-if="showDeletePopup" class="fixed inset-0 bg-black/30 flex items-center justify-center z-[3000]" @click.self="showDeletePopup = false">
+		<div class="bg-blue-50 p-8 rounded-md flex flex-col gap-4 w-80">
+			<h3 class="text-blue-900 text-center font-semibold text-base">Delete Account</h3>
+			<p class="text-blue-400 text-sm text-center">This action is irreversible. Please enter your password to confirm.</p>
+			<form @submit.prevent="submitDelete" class="flex flex-col gap-4">
+				<FormField v-model="deletePassword" label="Password" placeholder="" type="password" />
+				<FormError v-if="deleteError" :label="deleteError" />
+				<div class="flex justify-between gap-3">
+					<button type="button" @click="showDeletePopup = false" class="bg-blue-800 outline outline-blue-800 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Cancel</button>
+					<button type="submit" class="bg-red-700 rounded-md mt-4 p-2 hover:bg-red-800 hover:cursor-pointer">Delete</button>
+				</div>
+			</form>
+		</div>
+	</div>
 </template>
-
-<style scoped>
-	.settings-wrapper {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 30px;
-		padding: 20px;
-		max-width: 500px;
-		margin: 0 auto;
-	}
-
-	.section {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 12px;
-		width: 100%;
-		padding: 20px;
-		border: 1px solid #eee;
-		border-radius: 10px;
-	}
-
-	.current-value {
-		color: #888;
-		font-size: 0.9rem;
-	}
-
-	.avatar-preview {
-		width: 120px;
-		height: 120px;
-		border-radius: 50%;
-		object-fit: cover;
-		border: 3px solid #ddd;
-	}
-
-	.hidden { display: none; }
-
-	.btn {
-		background-color: #BABABA;
-		color: white;
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: background-color 0.3s;
-	}
-	.btn:hover { background-color: #42b883; }
-
-	.btn-cancel {
-		background-color: transparent;
-		color: #888;
-		border: 1px solid #ddd;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-	}
-	.btn-cancel:hover {
-		background-color: #f5f5f5;
-	}
-
-	.delete-btn {
-		background-color: #BABABA;
-		color: white;
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: background-color 0.3s;
-	}
-	.delete-btn:hover { background-color: #E32B2B; }
-
-	.overlay {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.4);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 3000;
-	}
-
-	.popup {
-		background: white;
-		padding: 30px;
-		border-radius: 12px;
-		display: flex;
-		flex-direction: column;
-		gap: 15px;
-		width: 340px;
-		box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-	}
-
-	.popup h3 {
-		text-align: center;
-		margin: 0;
-	}
-
-	.input {
-		padding: 10px;
-		border: 1px solid #ddd;
-		border-radius: 5px;
-		width: 100%;
-		box-sizing: border-box;
-	}
-
-	.popup-actions {
-		display: flex;
-		justify-content: space-between;
-		gap: 10px;
-	}
-
-	.error {
-		color: red;
-		font-size: 0.85rem;
-		text-align: center;
-	}
-</style>

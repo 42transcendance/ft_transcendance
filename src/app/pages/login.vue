@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	useHead({
-		title: 'Log in'
+		title: 'Login'
 	})
 
 	import FormField from '~/components/Form/FormField.vue'
@@ -32,7 +32,7 @@
 	<Card title="Login">
 		<form @submit.prevent="handleLogin" class="flex flex-col gap-3">
 			<FormField v-model="username" label="Username" placeholder="johndoe" type="text"/>
-			<FormField v-model="password" label="Password" placeholder="" type="password"/>
+			<FormField v-model="password" label="Password" placeholder="••••••••••••" type="password"/>
 			<FormButton label="Connect"/>
 			<FormError v-if="userLoginError" :label="userLoginError" />
 		</form>

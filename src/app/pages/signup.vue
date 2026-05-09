@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	useHead({
-		title: 'Sign Up'
+		title: 'Sign up'
 	})
 
 	import FormField from '~/components/Form/FormField.vue'
@@ -35,9 +35,9 @@
 	<Card title="Signup">
 		<form @submit.prevent="handleCreate" class="flex flex-col gap-3">
 			<FormField v-model="createEmail" label="Email" placeholder="john@example.com" type="email"/>
-			<FormField v-model="createUsername" label="Username" placeholder="johndoe" type="text"/>
-			<FormField v-model="createPassword" label="Password" placeholder="Enter password" type="password"/>
-			<FormField v-model="confirmPassword" label="Confirm Password" placeholder="Confirm password" type="password"/>
+			<FormField v-model="createUsername" label="Username" placeholder="john_doe92" type="text"/>
+			<FormField v-model="createPassword" label="Password" placeholder="••••••••••••" type="password"/>
+			<FormField v-model="confirmPassword" label="Confirm Password" placeholder="••••••••••••" type="password"/>
 			<FormButton label="Sign up"/>
 			<FormError v-if="userCreationError" :label="userCreationError" />
 		</form>
