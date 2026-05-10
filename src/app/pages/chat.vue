@@ -17,12 +17,12 @@
         type="text"
         placeholder="Écris un message..."
         maxlength="500"
-        :disabled="!connected"
+        :disabled="!isConnected"
         class="flex-1 border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder:text-gray-500 disabled:text-gray-500"
       />
       <button
         type="submit"
-        :disabled="!connected || !newMessage.trim()"
+        :disabled="!isConnected || !newMessage.trim()"
         class="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-6 py-2 rounded-lg"
       >
         Envoyer
@@ -44,6 +44,8 @@ const { data, error } = await useFetch('/api/users/auth')
 if (error.value || !data.value)
     await navigateTo('/login')
 
+const { send, isConnected, pendingChatMessage } = useSocket()
+
 interface ChatMessage {
   id: string
   content: string
@@ -55,9 +57,40 @@ interface ChatMessage {
 
 const messages = ref<ChatMessage[]>([])
 const newMessage = ref('')
-const connected = ref(false)
 const messagesEl = ref<HTMLElement | null>(null)
-let ws: WebSocket | null = null
+
+watch(pendingChatMessage, (payload) => {
+    if (!payload)
+		return
+
+    if (payload.type === 'message') {
+        messages.value.push({
+			...payload.data,
+			isDeleted: false
+		})
+        nextTick(() => scrollToBottom())
+    }
+
+    if (payload.type === 'user_deleted') {
+        const existingDeletedLabels = new Set(
+            messages.value
+				.filter(m => m.isDeleted)
+				.map(m => m.username)
+        )
+        let label = 'USER DELETE'
+        let counter = 1
+        while (existingDeletedLabels.has(label)) {
+            label = `USER DELETE ${counter}`
+            counter++
+        }
+        messages.value = messages.value.map(m => {
+            if (m.username === payload.data.oldUsername && !m.isDeleted)
+                return { ...m, username: label, senderId: null, isDeleted: true }
+            return m
+        })
+    }
+})
+
 
 async function loadHistory() {
   try {
@@ -69,76 +102,20 @@ async function loadHistory() {
   }
 }
 
-function connect() {
-  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-  ws = new WebSocket(`${protocol}//${location.host}/ws/chat`)
-
-  ws.onopen = () => {
-    connected.value = true
-  }
-
-  ws.onmessage = (event) => {
-    const payload = JSON.parse(event.data)
-    
-    if (payload.type === 'message') {
-      messages.value.push({
-        ...payload.data,
-        isDeleted: false
-      })
-      nextTick(() => scrollToBottom())
-    }
-    
-    // ← NOUVEAU : un user a été supprimé, on met à jour ses messages
-    if (payload.type === 'user_deleted') {
-      const oldUsername = payload.data.oldUsername
-      
-      // Trouve un label "USER DELETE N" qui n'est pas déjà utilisé
-      const existingDeletedLabels = new Set(
-        messages.value
-          .filter(m => m.isDeleted)
-          .map(m => m.username)
-      )
-      
-      let label = 'USER DELETE'
-      let counter = 1
-      while (existingDeletedLabels.has(label)) {
-        label = `USER DELETE ${counter}`
-        counter++
-      }
-      
-      // Met à jour tous les messages de l'utilisateur supprimé
-      messages.value = messages.value.map(m => {
-        if (m.username === oldUsername && !m.isDeleted) {
-          return { ...m, username: label, senderId: null, isDeleted: true }
-        }
-        return m
-      })
-    }
-  }
-
-  ws.onclose = () => {
-    connected.value = false
-  }
-}
-
 function sendMessage() {
-  if (!newMessage.value.trim() || !ws) return
-  ws.send(JSON.stringify({ type: 'message', content: newMessage.value }))
-  newMessage.value = ''
+	if (!newMessage.value.trim())
+		return
+	send({ type: 'message', content: newMessage.value })
+	newMessage.value = ''
 }
 
 function scrollToBottom() {
-  if (messagesEl.value) {
-    messagesEl.value.scrollTop = messagesEl.value.scrollHeight
-  }
+	if (messagesEl.value) {
+		messagesEl.value.scrollTop = messagesEl.value.scrollHeight
+	}
 }
 
 onMounted(async () => {
-  await loadHistory()
-  connect()
-})
-
-onUnmounted(() => {
-  if (ws) ws.close()
+	await loadHistory()
 })
 </script>
