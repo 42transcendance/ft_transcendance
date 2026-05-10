@@ -21,5 +21,5 @@ COPY modsecurity/modsecurity.conf /etc/modsecurity/modsecurity.conf
 COPY modsecurity/exclusions.conf /etc/modsecurity/exclusions.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 80 443
-CMD ["sh", "-c", "printf '%s:%s\\n' \"${GRAFANA_BASIC_AUTH_USER:-admin}\" \"$(openssl passwd -apr1 \"${GRAFANA_BASIC_AUTH_PASSWORD:-ChangeMe_42!}\")\" > /etc/nginx/.grafana_htpasswd && exec nginx -g 'daemon off;'"]
+EXPOSE 80 443 9443 9444
+CMD ["nginx", "-g", "daemon off;"]

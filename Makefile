@@ -43,7 +43,10 @@ logs-db:
 	$(COMPOSE) logs -f $(DB)
 
 logs-monitoring:
-	$(COMPOSE) logs -f prometheus grafana node-exporter cadvisor postgres-exporter
+	$(COMPOSE) logs -f prometheus grafana node-exporter postgres-exporter alertmanager
+
+logs-elk:
+	$(COMPOSE) logs -f elasticsearch logstash kibana filebeat elastic-init
 
 # ==============================================================
 # BUILD
@@ -132,6 +135,7 @@ help:
 	@echo "  $(YELLOW)make logs-app$(RESET)      → logs du serveur Node"
 	@echo "  $(YELLOW)make logs-db$(RESET)       → logs de PostgreSQL"
 	@echo "  $(YELLOW)make logs-monitoring$(RESET) → logs Prometheus/Grafana/exporters"
+	@echo "  $(YELLOW)make logs-elk$(RESET)      → logs Elasticsearch/Logstash/Kibana/Filebeat"
 	@echo ""
 	@echo "  $(YELLOW)make migrate$(RESET)       → applique les migrations"
 	@echo "  $(YELLOW)make migrate-dev$(RESET)   → crée une nouvelle migration"
@@ -147,6 +151,6 @@ help:
 	@echo "  $(YELLOW)make re$(RESET)            → clean + up"
 	@echo ""
 
-.PHONY: all up down restart logs logs-app logs-db logs-monitoring build rebuild \
+.PHONY: all up down restart logs logs-app logs-db logs-monitoring logs-elk build rebuild \
         migrate migrate-dev generate studio db-shell db-reset \
         status health clean fclean re help
