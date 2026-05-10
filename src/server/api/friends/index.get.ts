@@ -17,8 +17,8 @@ export default defineEventHandler(async (event) => {
 			]
 		},
 		include: {
-			sender: { select: { id: true, username: true, avatarUrl: true, isOnline: true } },
-            receiver: { select: { id: true, username: true, avatarUrl: true, isOnline: true } }
+			sender: { select: { id: true, username: true, avatarUrl: true, isOnline: true, lastSeenAt: true } },
+            receiver: { select: { id: true, username: true, avatarUrl: true, isOnline: true, lastSeenAt: true } }
 		}
 	})
 
