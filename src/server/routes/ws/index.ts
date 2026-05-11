@@ -149,6 +149,22 @@ export default defineWebSocketHandler({
             return
         }
 
+		if (data.type === 'leave_queue') {
+			const currRoom = peerRoom.get(peer.ctx.userId)
+			if (!currRoom || currRoom.states !== 'waiting')
+				return
+
+			currRoom.remove_player(peer)
+			peerRoom.delete(peer.ctx.userId)
+
+			const idx = rooms.indexOf(currRoom)
+			if (idx !== -1 && currRoom.currPlayer === 0)
+				rooms.splice(idx, 1)
+
+			peer.send(JSON.stringify({ type: 'no_game' }))
+			return
+		}
+
         // Jeu — ready et paint
         if (data.type === 'ready' || data.type === 'paint') {
             const currRoom = peerRoom.get(peer.ctx.userId)

@@ -9,6 +9,7 @@ import RightCardProfile from '~/components/RightCardProfile.vue';
 			<Navbar />
 			<RightCardProfile />
 			<NavBtnsNotifBtn />
+			<GameQueuePopup />
 			<main class="flex-1 p-8 pt-16 text-white flex items-center justify-center">
 				<slot />
 			</main>
