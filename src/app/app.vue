@@ -26,7 +26,7 @@
 			notifyAvatarUpdate(message.userId, message.avatarUrl)
 
 		if (['waiting', 'starting', 'playing', 'finished', 'stats',
-				'cell_init', 'cell_update'].includes(message.type)) {
+				'cell_init', 'cell_update', 'sync_state'].includes(message.type)) {
 			pendingGameMessage.value = message
 		}
 

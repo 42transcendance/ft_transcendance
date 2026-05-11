@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { connectedPeers } from '../../utils/peers'
 import { Room } from '../../game/room'
-import { GAME } from '~shared/game/constants'
+import { GAME, TIMER } from '~shared/game/constants'
 import { ServerMessage, ClientMessage } from '~shared/game/type'
 
 const secret = process.env.NUXT_JWT_SECRET
@@ -135,7 +135,7 @@ export default defineWebSocketHandler({
                 rooms.push(currRoom)
             }
             currRoom.add_player(peer)
-            peerRoom.set(peer.id, currRoom)
+			peerRoom.set(peer.ctx.userId, currRoom)
 
             let server_msg: ServerMessage
             if (currRoom.currPlayer === GAME.PLAYERS) {
@@ -151,7 +151,7 @@ export default defineWebSocketHandler({
 
         // Jeu — ready et paint
         if (data.type === 'ready' || data.type === 'paint') {
-            const currRoom = peerRoom.get(peer.id)
+            const currRoom = peerRoom.get(peer.ctx.userId)
             const playerId = currRoom?.get_id(peer)
             if (!currRoom)
 				return
@@ -182,6 +182,40 @@ export default defineWebSocketHandler({
                 }
             }
         }
+		if (data.type === 'sync_game') {
+			const currRoom = peerRoom.get(peer.ctx.userId)
+			if (currRoom) {
+				currRoom.playerPeers.set(peer.ctx.userId, peer);
+				
+				const response: any = {
+					type: 'sync_state',
+					gameState: currRoom.states,
+				}
+
+				 if (currRoom.states === 'starting' && currRoom.startedAt) {
+					const elapsed = Math.floor((Date.now() - currRoom.startedAt) / 1000);
+					response.launchingTimer = Math.max(0, TIMER.LAUNCHING - elapsed);
+				}
+
+				if (currRoom.states === 'playing' && currRoom.gameStartedAt) {
+					const elapsed = Math.floor((Date.now() - currRoom.gameStartedAt) / 1000);
+					response.gameTimer = Math.max(0, TIMER.GAME - elapsed);
+				}
+
+				if (currRoom.game) {
+					response.cells = currRoom.game.board.grid.flat()
+				}
+
+				if (currRoom.game?.state === 'over') {
+					response.winner = currRoom.game.get_winner()
+				}
+
+				peer.send(JSON.stringify(response))
+			} else {
+				peer.send(JSON.stringify({ type: 'no_game' }))
+			}
+			return
+		}
     },
 
     async close(peer) {
@@ -214,16 +248,9 @@ export default defineWebSocketHandler({
         connectedPeers.delete(`chat:${userId}`)
 
         // ---- Logique jeu ----
-        const currRoom = peerRoom.get(peer.id)
+        const currRoom = peerRoom.get(peer.ctx.userId)
         if (currRoom) {
-            currRoom.remove_player(peer)
-            if (currRoom.currPlayer === 0) {
-                rooms.splice(rooms.indexOf(currRoom), 1)
-            } else if (currRoom.game && currRoom.states !== 'finished') {
-                currRoom.game.actualize()
-                currRoom.end_game()
-            }
-            peerRoom.delete(peer.id)
+			currRoom.playerPeers.delete(peer.ctx.userId)
         }
 
         console.log(`User ${userId} disconnected`)

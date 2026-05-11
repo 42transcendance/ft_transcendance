@@ -12,8 +12,11 @@ export class Room {
 	private startTimer: ReturnType<typeof setTimeout> | null = null;
 	private gameTimer: ReturnType<typeof setTimeout> | null = null;
 	readonly maxPlayer: number;
+	public startedAt: number | null = null;
+    public gameStartedAt: number | null = null;
 
-	playerSockets: Peer[] = [];
+	playerPeers = new Map<string, Peer>();
+	userIds: string[] = [];
 	currPlayer: number = 0;
 	states: "waiting" | "starting" |  "playing" | "finished";
 	game: Game | null;
@@ -35,7 +38,7 @@ export class Room {
      * @returns Index du joueur, ou -1 s'il n'est pas dans la room
      */
 	get_id(peer: Peer): number {
-		return (this.playerSockets.indexOf(peer));
+		return this.userIds.indexOf(peer.ctx.userId);
 	}
 
 	/**
@@ -59,14 +62,15 @@ export class Room {
      *
      * @param player - Socket du joueur à ajouter
      */
-	add_player(player: Peer) {
-		if (this.currPlayer < this.maxPlayer) {
-			this.currPlayer++;
-			this.playerSockets.push(player);
-		}
-
-		this.update_room_state();
-	}
+	add_player(peer: Peer) {
+        const userId = peer.ctx.userId;
+        if (!this.userIds.includes(userId) && this.currPlayer < this.maxPlayer) {
+            this.userIds.push(userId);
+            this.currPlayer++;
+        }
+        this.playerPeers.set(userId, peer);
+        this.update_room_state();
+    }
 
     /**
      * Retire un joueur de la room.
@@ -92,7 +96,29 @@ export class Room {
 		}
 		this.update_room_state();
 	}
+
+	remove_player(player: Peer) {
+    const userId = player.ctx.userId
+    const id = this.userIds.indexOf(userId)
+    if (id >= 0) {
+        if (this.game)
+            this.game.kill_player(id)
+        if (this.states === "starting" && this.startTimer) {
+            clearTimeout(this.startTimer)
+            this.startTimer = null
+            this.broadcast({ type: 'waiting' })
+        }
+        this.userIds.splice(id, 1)
+        this.playerPeers.delete(userId)
+        this.currPlayer--
+    }
+    this.update_room_state()
+}
 	
+	handle_disconnect(userId: string) {
+        this.playerPeers.delete(userId);
+    }
+
     /**
      * Met à jour l'état de la room en fonction du nombre de joueurs présents.
      * Passe en "waiting" si la room n'est pas pleine,
@@ -113,11 +139,14 @@ export class Room {
      * @param message - Objet à envoyer (sera sérialisé en JSON)
      */
 	broadcast(message: any) {
-		for (const peer of this.playerSockets) {
-			peer.send(JSON.stringify(message))
+		const payload = JSON.stringify(message);
+		for (const userId of this.userIds) {
+			const peer = connectedPeers.get(userId);
+			if (peer) {
+				peer.send(payload);
+			}
 		}
 	}
-
     /**
      * Démarre le compte à rebours de 10 secondes avant le lancement de la partie.
      * À la fin du timer, crée l'instance Game, l'initialise, et notifie les joueurs.
@@ -129,8 +158,10 @@ export class Room {
 		}
 		console.log("starting game in few secs !")
 
+		this.startedAt = Date.now();
 		this.startTimer = setTimeout(() => {
 			console.log("starting game !");
+			this.startedAt = null;
 			const newGame = new Game(this.maxPlayer);
 			newGame.init_game();
 			this.game = newGame;
@@ -154,6 +185,7 @@ export class Room {
 		if (this.states !== "playing")
 			return ;
 
+		this.gameStartedAt = Date.now();
 		this.gameTimer = setTimeout(() => {
 			this.game.state = "over";
 			this.end_game();
@@ -164,18 +196,18 @@ export class Room {
      * Vérifie si la partie est terminée et notifie les joueurs si c'est le cas.
      */
 	end_game() {
-		if (this.game && this.game.state === "over") {
-			this.states = "finished";
-			const winner_id = this.game.get_winner();
-			const end_msg: ServerMessage = {
-				type: 'finished',
-				winner: winner_id,
-			}
-			this.broadcast(end_msg);
-			//Envoie des stats
-			for (const peer of this.playerSockets) {
-				peer.send(JSON.stringify(this.get_stats(peer)));
-			}
-		}
-	}
+    if (this.game && this.game.state === "over") {
+        this.states = "finished"
+        const winner_id = this.game.get_winner()
+        const end_msg: ServerMessage = {
+            type: 'finished',
+            winner: winner_id,
+        }
+        this.broadcast(end_msg)
+
+        for (const [userId, peer] of this.playerPeers) {
+            peer.send(JSON.stringify(this.get_stats(peer)))
+        }
+    }
+}
 }

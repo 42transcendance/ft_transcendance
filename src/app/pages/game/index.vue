@@ -8,10 +8,10 @@ import { GRID_INFO, TIMER } from '~shared/game/constants'
 
 definePageMeta({ middleware: 'auth' })
 
-const { send, pendingGameMessage } = useSocket()
+const { send, isConnected, pendingGameMessage } = useSocket()
 
 
-const gameState = ref<"waiting" | "starting" | "playing" | "finished">("waiting");
+const gameState = ref<"join_game" | "waiting" | "starting" | "playing" | "finished">("join_game");
 const launchingTimer = ref(TIMER.LAUNCHING);
 let starting: ReturnType<typeof setInterval> | null = null;
 
@@ -25,10 +25,50 @@ const clicked = ref<number | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null)
 let ctx: CanvasRenderingContext2D | null = null;
 
+onMounted(() => {
+    if (isConnected.value) {
+        send({ type: 'sync_game' });
+    }
+});
 
-watch(pendingGameMessage, (state) => {
+watch(isConnected, (connected) => {
+    if (connected) {
+        send({ type: 'sync_game' })
+    }
+})
+
+watch(pendingGameMessage, async (state) => {
     if (!state)
 		return
+
+	if (state.type === 'no_game') {
+        gameState.value = 'join_game'
+        return
+    }
+
+    if (state.type === 'sync_state') {
+		if (state.gameState === 'starting' && state.launchingTimer !== undefined)
+			launchingTimer.value = state.launchingTimer
+		if (state.gameState === 'playing' && state.gameTimer !== undefined)
+			gameTimer.value = state.gameTimer
+
+		gameState.value = state.gameState
+
+        if (state.gameState === 'playing' || state.gameState === 'finished') {
+            await nextTick()
+            if (canvas.value) {
+                ctx = canvas.value.getContext('2d')!
+                fillBackground(ctx)
+                if (state.cells)
+                    render(ctx, { type: 'cell_init', cells: state.cells })
+            }
+        }
+        return
+    }
+
+
+    if (state.type === "join_game")
+		gameState.value = "join_game"
     if (state.type === "waiting")
 		gameState.value = "waiting"
     if (state.type === "starting")
@@ -44,11 +84,7 @@ watch(pendingGameMessage, (state) => {
         clicked.value = state.clicked
     }
     if (ctx)
-	render(ctx, state)
-})
-
-onMounted(() => {
-	send({ type: 'join_game' })
+		render(ctx, state)
 })
 
 /**
@@ -61,12 +97,15 @@ watch(gameState, async (newState) => {
 		starting = null;
 		launchingTimer.value = TIMER.LAUNCHING;
 	}
-	if (newState === "starting")
-		timer(starting, launchingTimer);
+	if (newState === "starting") {
+		if (!starting)
+			starting = timer(starting, launchingTimer);
+	}
 	if (newState === "playing")
 	{
 		await nextTick();
-		timer(gaming, gameTimer);
+		if (!gaming)
+			gaming = timer(gaming, gameTimer);
 		ctx = canvas.value!.getContext('2d')!
 
 		fillBackground(ctx)
@@ -85,11 +124,11 @@ watch(gameState, async (newState) => {
 /**
  * Lance un compte à rebours en secondes affiché à l'écran.
  */
-function timer(timer: any, seconds: any) {
-	timer = setInterval(() => {
+function timer(refTimer: any, seconds: any) {
+	return setInterval(() => {
 		seconds.value--;
 		if (seconds.value <= 0) {
-			clearInterval(timer);
+			clearInterval(refTimer);
 		}
 	}, 1000);
 }
@@ -116,10 +155,17 @@ const minutes = computed(() => {
 	return String(Math.floor(gameTimer.value / 60)).padStart(2, '0')
 })
 
+function handleFindMatch() {
+	send({ type: 'join_game' })
+}
+
 </script>
 
 <template>
   <div>
+	<div v-if="gameState === 'join_game'">
+		<button @click="handleFindMatch">Find a match !</button>
+	</div>
 	<div v-if="gameState === 'waiting'">
 		En attente d'un autre joueur...
 	</div>
