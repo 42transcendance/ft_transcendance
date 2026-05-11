@@ -146,98 +146,11 @@ Credentials: `secrets/monitoring.env` — **changer avant mise en production**
 | App (HTTPS) | `https://localhost:8443` | ✅ public | via Nginx, TLS 1.2/1.3 |
 | App (HTTP) | `http://localhost:8080` | ✅ redirige | 301 → HTTPS automatique |
 | Grafana | `https://localhost:9443` | ✅ restreint | Basic Auth + HTTPS obligatoire |
-| Kibana | `https://localhost:9444` | ✅ restreint | Basic Auth Nginx + login Elasticsearch |
 | Prometheus | interne uniquement | ❌ non exposé | scrape Docker network uniquement |
 | Node Exporter | interne uniquement | ❌ non exposé | `backend` network uniquement |
 | PostgreSQL Exporter | interne uniquement | ❌ non exposé | `backend` network uniquement |
-| Elasticsearch | interne uniquement | ❌ non exposé | auth activée + accès Docker network |
-| Logstash (Beats) | interne uniquement | ❌ non exposé | collecte via Filebeat sur `5044` intra-Docker |
 | Vault | `http://localhost:8200` | ⚠️ à supprimer | exposé pour dev, supprimer en prod |
 | PostgreSQL | `localhost:5432` | ⚠️ à supprimer | exposé pour dev, supprimer en prod |
 | `/api/metrics` (app) | `https://localhost:8443/api/metrics` | ❌ bloqué | Nginx retourne 403 |
 
----
 
-# Logging module: ELK (Elasticsearch + Logstash + Kibana)
-
-## Major module checklist
-
-| Exigence | Statut | Implémentation |
-|---|---|---|
-| Elasticsearch to store and index logs | Fait | service `elasticsearch` avec volume persistant + sécurité activée |
-| Logstash to collect and transform logs | Fait | input Beats (Filebeat) + pipeline de normalisation + sortie Elasticsearch |
-| Kibana for visualization and dashboards | Fait | service `kibana` proxifié en HTTPS via Nginx sur port dédié |
-| Implement log retention and archiving policies | Fait | ILM (hot/warm/delete) + snapshots SLM quotidiens |
-| Secure access to all components | Fait | Elasticsearch non exposé + auth activée; Kibana derrière Nginx Basic Auth + HTTPS |
-
-Fichiers de reference:
-- `docker-compose.yml`
-- `monitoring/elk/logstash/pipeline/logstash.conf`
-- `monitoring/elk/init/init-elastic.sh`
-- `security/nginx/nginx.conf`
-- `secrets/monitoring.env`
-
-## Architecture ELK
-
-```
-Docker networks:
-
-frontend:
-  app, nginx, grafana, kibana, logstash
-
-backend:
-  app, postgres, vault, prometheus, postgres-exporter, logstash
-
-monitoring:
-  prometheus, alertmanager, grafana, node-exporter, postgres-exporter,
-  elasticsearch, logstash, kibana, elastic-init, postgres, app
-
-Flux logs:
-  fichiers logs Docker -> Filebeat -> logstash:5044/tcp
-  logstash -> elasticsearch (indexation)
-  kibana -> elasticsearch (exploration / dashboards)
-```
-
-## Rétention et archivage
-
-Politiques appliquees automatiquement au demarrage via `elastic-init`:
-
-1. ILM `transcendence-logs-policy`
-- `hot`: rollover journalier ou a 5GB/shard
-- `warm`: apres 7 jours
-- `delete`: purge apres 30 jours
-
-2. SLM `transcendence-daily-snapshots`
-- snapshot quotidien a 02:30
-- repository local `/snapshots`
-- retention snapshots: 30 jours (min 7, max 60)
-
-## Sécurisation ELK
-
-1. Elasticsearch
-- `xpack.security.enabled=true`
-- mot de passe `elastic` injecte via `ELASTIC_PASSWORD`
-- aucun port Elasticsearch publie sur l'hote
-
-2. Logstash
-- non expose a l'hote
-- input Beats (Filebeat) seulement intra-reseaux Docker
-
-3. Kibana
-- non expose directement
-- acces uniquement via Nginx HTTPS (`https://localhost:9444`)
-- Basic Auth Nginx + authentification Kibana/Elasticsearch
-
-## Commandes utiles
-
-1. Lancer la stack complete:
-`make up`
-
-2. Suivre les logs ELK:
-`make logs-elk`
-
-3. Verifier les policies ILM:
-`docker compose exec elasticsearch curl -u elastic:$ELASTIC_PASSWORD http://localhost:9200/_ilm/policy/transcendence-logs-policy`
-
-4. Verifier les snapshots:
-`docker compose exec elasticsearch curl -u elastic:$ELASTIC_PASSWORD http://localhost:9200/_slm/policy/transcendence-daily-snapshots`

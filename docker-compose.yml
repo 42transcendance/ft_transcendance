@@ -116,104 +116,6 @@ services:
       - monitoring
       - backend
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
-    container_name: transcendence_elasticsearch
-    restart: unless-stopped
-    env_file:
-      - ./secrets/monitoring.env
-    environment:
-      discovery.type: single-node
-      xpack.security.enabled: "true"
-      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-      - ./monitoring/elk/snapshots:/snapshots
-    networks:
-      - monitoring
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health >/dev/null"]
-      interval: 20s
-      timeout: 10s
-      retries: 10
-
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.15.3
-    container_name: transcendence_logstash
-    restart: unless-stopped
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    env_file:
-      - ./secrets/monitoring.env
-    environment:
-      ELASTIC_HOSTS: http://elasticsearch:9200
-      ELASTIC_USERNAME: elastic
-      LS_JAVA_OPTS: "-Xms256m -Xmx256m"
-    volumes:
-      - ./monitoring/elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
-    expose:
-      - "5044"
-    networks:
-      - frontend
-      - backend
-      - monitoring
-
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:8.15.3
-    container_name: transcendence_filebeat
-    restart: unless-stopped
-    depends_on:
-      - logstash
-    command: ["filebeat", "-e", "--strict.perms=false"]
-    volumes:
-      - ./monitoring/elk/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ${DOCKER_DATA_ROOT:-/var/lib/docker}/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - filebeat_data:/usr/share/filebeat/data
-    networks:
-      - monitoring
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.15.3
-    container_name: transcendence_kibana
-    restart: unless-stopped
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    env_file:
-      - ./secrets/monitoring.env
-    environment:
-      SERVER_NAME: kibana
-      SERVER_PUBLICBASEURL: https://localhost:9444
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-      ELASTICSEARCH_USERNAME: kibana_system
-    networks:
-      - monitoring
-      - frontend
-
-  elastic-init:
-    image: docker.io/curlimages/curl:8.8.0
-    container_name: transcendence_elastic_init
-    restart: "no"
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-      kibana:
-        condition: service_started
-    env_file:
-      - ./secrets/monitoring.env
-    environment:
-      ELASTIC_HOSTS: http://elasticsearch:9200
-      ELASTIC_USERNAME: elastic
-      KIBANA_URL: http://kibana:5601
-    entrypoint: ["/bin/sh", "/scripts/init-elastic.sh"]
-    volumes:
-      - ./monitoring/elk/init/init-elastic.sh:/scripts/init-elastic.sh:ro
-      - ./monitoring/elk/init/dashboard.ndjson:/scripts/dashboard.ndjson:ro
-    networks:
-      - monitoring
-
 
   nginx:
     build:
@@ -263,8 +165,6 @@ volumes:
   vault_data:
   prometheus_data:
   grafana_data:
-  elasticsearch_data:
-  filebeat_data:
 
 networks:
   frontend:

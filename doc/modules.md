@@ -70,8 +70,7 @@ _2 Major · 1 Minor_
 
 | # | Type | Module | Owner(s) | Pts |
 |---|------|--------|----------|-----|
-| 14 | 🔴 Major | ELK log management | DBH | 2 |
-| 15 | 🔴 Major | Prometheus & Grafana monitoring | DBH | 2 |
+| 14 | 🔴 Major | Prometheus & Grafana monitoring | DBH | 2 |
 | 16 | 🟡 Minor | Health check, backups & disaster recovery | DBH | 1 |
 
 ### Bonus Subtotal
