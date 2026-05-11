@@ -84,6 +84,12 @@
 			}
 		}
 	})
+
+	async function handleOpenProfile(userId: string) {
+		const data = await $fetch(`/api/users/${userId}`)
+		if (data)
+			openProfile(data)
+	}
 </script>
 
 <template>
@@ -109,9 +115,8 @@
 						<div
 							v-for="friend in friends"
 							:key="friend.friendshipId"
-							dv
-							sù 		class="flex flex-col items-center gap-2 p-3 cursor-pointer hover:bg-gray-100 rounded transition"
-							@click="openProfile({ safeUser: friend.user })"
+							class="flex flex-col items-center gap-2 p-3 cursor-pointer hover:bg-gray-100 rounded transition"
+							@click="handleOpenProfile(friend.user.id)"
 						>
 						<div class="relative">
 							<img
