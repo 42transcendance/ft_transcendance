@@ -1,45 +1,53 @@
-
 <style>
-#erd svg { width: 100%; height: auto; }
+  #erd svg {
+    width: 100%;
+    height: auto;
+  }
 </style>
 <div id="erd" style="padding: 8px 0"></div>
 <script type="module">
-import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
-const dark = matchMedia('(prefers-color-scheme: dark)').matches;
-await document.fonts.ready;
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'base',
-  fontFamily: '"Anthropic Sans", sans-serif',
-  themeVariables: {
-    darkMode: dark,
-    fontSize: '13px',
+  import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  await document.fonts.ready;
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
     fontFamily: '"Anthropic Sans", sans-serif',
-    lineColor: dark ? '#9c9a92' : '#73726c',
-    textColor: dark ? '#c2c0b6' : '#3d3d3a',
-    primaryColor: dark ? '#2a2860' : '#EEEDFE',
-    primaryBorderColor: dark ? '#534AB7' : '#534AB7',
-    primaryTextColor: dark ? '#c2c0b6' : '#26215C',
-  },
-});
-const diagram = `erDiagram
-  User ||--o{ Friendship : "sends/receives"
-  User ||--o{ Block : "blocks/blocked by"
+    themeVariables: {
+      darkMode: dark,
+      fontSize: '13px',
+      fontFamily: '"Anthropic Sans", sans-serif',
+      lineColor: dark ? '#9c9a92' : '#73726c',
+      textColor: dark ? '#c2c0b6' : '#3d3d3a',
+      primaryColor: dark ? '#2a2860' : '#EEEDFE',
+      primaryBorderColor: dark ? '#534AB7' : '#534AB7',
+      primaryTextColor: dark ? '#c2c0b6' : '#26215C',
+    },
+  });
+  const diagram = `erDiagram
+  User ||--o{ Friendship : "sender"
+  User ||--o{ Friendship : "receiver"
+  User ||--o{ Block : "initiator"
+  User ||--o{ Block : "target"
   User ||--o{ Participant : "joins"
   User ||--o{ Message : "sends"
-  User ||--|| UserStats : "has"
-  User ||--o{ Match : "plays as p1"
-  User ||--o{ Match : "plays as p2"
-  Conversation ||--o{ Participant : "has"
-  Conversation ||--o{ Message : "contains"
+  User ||--o| UserStats : "has stats"
+  User ||--o{ Match : "player1"
+  User ||--o{ Match : "player2"
+  User ||--o{ Match : "player3"
+  User ||--o{ Match : "player4"
+  User o|--o{ GlobalMessage : "sends"
+  Conversation ||--o{ Participant : "has participants"
+  Conversation ||--o{ Message : "contains messages"
 
   User {
     uuid id PK
     string email
     string username
+    string displayName
     string password
     string avatarUrl
-    bool isOnline
+    int isOnline
     datetime lastSeenAt
   }
   Friendship {
@@ -74,11 +82,15 @@ const diagram = `erDiagram
   }
   Match {
     uuid id PK
+    string gameMode
     uuid player1Id FK
     uuid player2Id FK
+    uuid player3Id FK
+    uuid player4Id FK
     int score1
     int score2
-    uuid winnerId FK
+    int score3
+    int score4
     enum status
   }
   UserStats {
@@ -86,35 +98,41 @@ const diagram = `erDiagram
     uuid userId FK
     int wins
     int losses
-    float winRate
     int level
     int xp
   }
-`;
-const { svg } = await mermaid.render('erd-svg', diagram);
-document.getElementById('erd').innerHTML = svg;
-
-document.querySelectorAll('#erd svg .node').forEach(node => {
-  const firstPath = node.querySelector('path[d]');
-  if (!firstPath) return;
-  const d = firstPath.getAttribute('d');
-  const nums = d.match(/-?[\d.]+/g)?.map(Number);
-  if (!nums || nums.length < 8) return;
-  const xs = [nums[0], nums[2], nums[4], nums[6]];
-  const ys = [nums[1], nums[3], nums[5], nums[7]];
-  const x = Math.min(...xs), y = Math.min(...ys);
-  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
-  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  rect.setAttribute('x', x); rect.setAttribute('y', y);
-  rect.setAttribute('width', w); rect.setAttribute('height', h);
-  rect.setAttribute('rx', '8');
-  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
-    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  GlobalMessage {
+    uuid id PK
+    string content
+    uuid senderId FK
+    string senderUsername
+    datetime createdAt
   }
-  firstPath.replaceWith(rect);
-});
+`;
+  const { svg } = await mermaid.render('erd-svg', diagram);
+  document.getElementById('erd').innerHTML = svg;
 
-document.querySelectorAll('#erd svg .row-rect-odd path, #erd svg .row-rect-even path').forEach(p => {
-  p.setAttribute('stroke', 'none');
-});
+  document.querySelectorAll('#erd svg .node').forEach(node => {
+    const firstPath = node.querySelector('path[d]');
+    if (!firstPath) return;
+    const d = firstPath.getAttribute('d');
+    const nums = d.match(/-?[\d.]+/g)?.map(Number);
+    if (!nums || nums.length < 8) return;
+    const xs = [nums[0], nums[2], nums[4], nums[6]];
+    const ys = [nums[1], nums[3], nums[5], nums[7]];
+    const x = Math.min(...xs), y = Math.min(...ys);
+    const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', x); rect.setAttribute('y', y);
+    rect.setAttribute('width', w); rect.setAttribute('height', h);
+    rect.setAttribute('rx', '8');
+    for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+      if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+    }
+    firstPath.replaceWith(rect);
+  });
+
+  document.querySelectorAll('#erd svg .row-rect-odd path, #erd svg .row-rect-even path').forEach(p => {
+    p.setAttribute('stroke', 'none');
+  });
 </script>
