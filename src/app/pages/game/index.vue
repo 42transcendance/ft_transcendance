@@ -1,4 +1,8 @@
 <script setup lang="ts">
+useHead({
+	title: 'Game'
+})
+
 import { fillBackground, render } from '~/game/render'
 import { GRID_INFO, TIMER } from '~shared/game/constants'
 

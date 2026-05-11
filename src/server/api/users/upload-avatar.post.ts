@@ -96,7 +96,6 @@ export default defineEventHandler(async (event) => {
 		return { avatarUrl }
 
 	} catch (error) {
-		console.error("Upload error:", error)
-		throw createError({ statusCode: 500, message: "Failed to save file." })
+		throw createError({ statusCode: 500, message: error })
 	}
 })

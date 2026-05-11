@@ -29,17 +29,16 @@
 </script>
 
 <template>
-	<div class="search-wrapper">
-		<form @submit.prevent="searchUser" class="search-form">
+	<div class="w-full max-w-96">
+		<form @submit.prevent="searchUser" class="flex flex-row gap-2">
 			<input 
+			class="outline-1 outline-blue-800 p-2 pt-1 pb-1 rounded-md w-full"
 			v-model="searchQuery" 
 			type="text" 
 			:placeholder="profile.errorMessage.value || 'Search a user...'"
 			:class="['search-input', { 'put-error': profile.errorMessage.value }]"
 			/>
-			<button type="submit" class="search-button">Search</button>
+			<button type="submit" class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit p-0">Search</button>
 		</form>
 	</div>
 </template>
-
-<style scoped></style>

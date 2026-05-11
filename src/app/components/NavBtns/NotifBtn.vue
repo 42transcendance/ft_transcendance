@@ -25,6 +25,13 @@
 		dismissing.value.delete(friendshipId)
 	}
 
+	async function handleOpenFromNotif(userId: string) {
+		showPopup.value = false
+		const data = await $fetch(`/api/users/${userId}`)
+		if (data)
+			openProfile(data)
+	}
+
 	watch(pendingUsernameUpdate, (update) => {
 		if (update) {
 			const pend = pendingReceived.value.find(p => p.user.id === update.userId)
@@ -75,11 +82,11 @@
                         <img
                             :src="req.user.avatarUrl || '/default-avatar.jpg'"
                             class="req-avatar"
-                            @click="showPopup = false; openProfile({ safeUser: req.user })"
+                            @click="handleOpenFromNotif(req.user.id)"
                         />
                         <span
                             class="req-username"
-                            @click="showPopup = false; openProfile({ safeUser: req.user })">
+                            @click="handleOpenFromNotif(req.user.id)">
                             {{ req.user.username }}
                         </span>
                         <div class="req-actions">

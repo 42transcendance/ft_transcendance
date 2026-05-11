@@ -8,7 +8,7 @@ export default defineNuxtConfig({
 	css: ['./app/assets/css/main.css'],
 	vite: {
 		plugins: [
-			tailwindcss(),
+			tailwindcss(), // Probleme de sourcemap : https://github.com/tailwindlabs/tailwindcss/discussions/16119#discussioncomment-12017344
 		],
 	},
 	//srcDir: 'src/app',
@@ -26,6 +26,13 @@ export default defineNuxtConfig({
 	//Shared files for game server and client side
 	alias: {
         '~shared': fileURLToPath(new URL('./shared', import.meta.url))
+	},
+
+	app: {
+		head: {
+		titleTemplate: '%s | Pixel, Fight!',
+		htmlAttrs: { lang: 'en' }
+		}
 	},
 })
 

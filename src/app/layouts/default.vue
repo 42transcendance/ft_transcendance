@@ -1,16 +1,19 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import RightCardProfile from '~/components/RightCardProfile.vue';
+
+</script>
 
 <template>
 	<ClientOnly>
-		<div class="h-screen w-screen flex flex-col">
+		<div class="min-h-screen w-full flex flex-col">
 			<Navbar />
-			<Profile />
+			<RightCardProfile />
 			<NavBtnsNotifBtn />
-			<main class="flex-1 p-8 text-white h-full">
+			<main class="flex-1 p-8 pt-16 text-white flex items-center justify-center">
 				<slot />
 			</main>
 			<footer
-				class="text-center py-3 text-sm text-white border-t border-blue-600 flex flex-col sm:flex-row justify-center gap-4 flex-wrap">
+				class="text-center py-3 text-sm text-white border-t bg-blue-800 border-white/10 flex flex-col sm:flex-row justify-center gap-4 flex-wrap z-2">
 				<NuxtLink to="/privacy" class="text-blue-100 no-underline hover:underline">Privacy Policy</NuxtLink>
 				<span class="hidden sm:inline">·</span>
 				<NuxtLink to="/terms" class="text-blue-100 no-underline hover:underline">Terms of Service</NuxtLink>
@@ -18,6 +21,3 @@
 		</div>
 	</ClientOnly>
 </template>
-
-<style scoped>
-</style>
