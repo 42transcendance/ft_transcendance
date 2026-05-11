@@ -14,15 +14,10 @@ let ctx: CanvasRenderingContext2D | null = null
 
 const gameState = gameQueueState
 
-onMounted(() => {
-    if (isConnected.value)
-        send({ type: 'sync_game' })
-})
-
 watch(isConnected, (connected) => {
     if (connected)
         send({ type: 'sync_game' })
-})
+}, { immediate: true })
 
 watch(pendingGameMessage, async (state) => {
     if (!state)

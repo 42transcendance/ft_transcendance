@@ -4,7 +4,16 @@ const winner = ref<number | null>(null)
 const painted = ref<number | null>(null)
 const clicked = ref<number | null>(null)
 
-const gameQueueState = ref<'idle' | 'waiting' | 'starting' | 'playing' | 'finished'>('idle')
+function getInitialState(): 'idle' | 'waiting' | 'starting' | 'playing' | 'finished' {
+    if (import.meta.client) {
+        const saved = sessionStorage.getItem('gameState')
+        if (saved && ['waiting', 'starting', 'playing', 'finished'].includes(saved))
+            return saved as any
+    }
+    return 'idle'
+}
+
+const gameQueueState = ref<'idle' | 'waiting' | 'starting' | 'playing' | 'finished'>(getInitialState())
 const launchingTimer = ref(TIMER.LAUNCHING)
 const gameTimer = ref(TIMER.GAME)
 
@@ -57,6 +66,9 @@ export const useGameQueue = () => {
     })
 
     watch(gameQueueState, (newState) => {
+		if (import.meta.client)
+			sessionStorage.setItem('gameState', newState)
+
         if (newState === 'waiting') {
             clearInterval(startingInterval ?? undefined)
             startingInterval = null
@@ -96,6 +108,8 @@ export const useGameQueue = () => {
 
 	function resetToIdle() {
 		gameQueueState.value = 'idle'
+		if (import.meta.client)
+			sessionStorage.removeItem('gameState')
 		gameTimer.value = TIMER.GAME
 		launchingTimer.value = TIMER.LAUNCHING
 	}
