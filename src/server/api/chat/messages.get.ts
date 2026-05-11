@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
       
       if (!deletedUsersMap.has(oldUsername)) {
         // Premier message d'un user supprimé
-        const label = deletedCounter === 0 ? 'USER DELETE' : `USER DELETE ${deletedCounter}`
+        const label = deletedCounter === 0 ? 'USER DELETED' : `USER DELETED ${deletedCounter}`
         deletedUsersMap.set(oldUsername, label)
         deletedCounter++
       }

@@ -4,9 +4,14 @@
 
     <div ref="messagesEl" class="h-96 overflow-y-auto border rounded-lg p-4 bg-gray-50 text-gray-900 mb-4">
       <div v-for="msg in messages" :key="msg.id" class="py-1 border-b border-gray-200 last:border-0">
-        <strong :class="{ 'text-gray-400 italic': msg.isDeleted }">
+        <span v-if="!msg.isDeleted"
+			@click="handleOpenProfile(msg.senderId)"
+            class="font-bold hover:text-blue-500 cursor-pointer transition-colors duration-150">
           {{ msg.username }}:
-        </strong>
+        </span>
+		<span v-else class="text-gray-400 italic">
+          {{ msg.username }}:
+		</span>
         <span class="ml-2">{{ msg.content }}</span>
       </div>
     </div>
@@ -45,6 +50,8 @@ if (error.value || !data.value)
     await navigateTo('/login')
 
 const { send, isConnected, pendingChatMessage } = useSocket()
+const { openProfile } = useProfile()
+const { pendingUsernameUpdate } = useOnlineStatus()
 
 interface ChatMessage {
   id: string
@@ -77,10 +84,10 @@ watch(pendingChatMessage, (payload) => {
 				.filter(m => m.isDeleted)
 				.map(m => m.username)
         )
-        let label = 'USER DELETE'
+        let label = 'USER DELETED'
         let counter = 1
         while (existingDeletedLabels.has(label)) {
-            label = `USER DELETE ${counter}`
+            label = `USER DELETED ${counter}`
             counter++
         }
         messages.value = messages.value.map(m => {
@@ -118,4 +125,25 @@ function scrollToBottom() {
 onMounted(async () => {
 	await loadHistory()
 })
+
+async function handleOpenProfile(userId: string) {
+	const data = await $fetch(`/api/users/${userId}`)
+	if (data)
+		openProfile(data)
+}
+
+watch(pendingUsernameUpdate, (update) => {
+    if (update) {
+        messages.value = messages.value.map(m => {
+            if (m.senderId === update.userId) {
+                return { 
+                    ...m, 
+                    username: update.username 
+                }
+            }
+            return m
+        })
+    }
+})
+
 </script>

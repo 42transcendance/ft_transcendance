@@ -98,11 +98,15 @@ export default defineWebSocketHandler({
 				return
 
             try {
+				const user = await prisma.user.findUnique({
+					where: { id: peer.ctx.userId },
+					select: { username: true }
+				})
                 const newMessage = await prisma.globalMessage.create({
                     data: {
                         content: data.content.trim(),
                         senderId: peer.ctx.userId,
-                        senderUsername: peer.ctx.username
+                        senderUsername: user?.username || peer.ctx.username
                     }
                 })
                 const broadcast = JSON.stringify({
@@ -110,7 +114,7 @@ export default defineWebSocketHandler({
                     data: {
                         id: newMessage.id,
                         content: newMessage.content,
-                        username: peer.ctx.username,
+                        username: user?.username || peer.ctx.username,
                         senderId: peer.ctx.userId,
                         createdAt: newMessage.createdAt
                     }
