@@ -54,7 +54,7 @@
 </script>
 
 <template>
-	<div class="fixed top-[70px] right-5 z-2">
+	<div class="fixed top-18 right-5 z-2">
 		<!-- La cloche — visible seulement si demandes en attente -->
 		<Transition name="bounce">
 			<button
@@ -87,8 +87,8 @@
 							{{ req.user.username }}
 						</span>
 						<div class="flex gap-2">
-							<button @click="handleRespond(req.friendshipId, 'ACCEPTED')" class="bg-green-600 text-white border-none rounded px-3 py-1.5 cursor-pointer text-base hover:bg-green-700 transition-colors duration-200">✓</button>
-							<button @click="handleRespond(req.friendshipId, 'DECLINED')" class="bg-red-600 text-white border-none rounded px-3 py-1.5 cursor-pointer text-base hover:bg-red-700 transition-colors duration-200">✗</button>
+							<button @click="handleRespond(req.friendshipId, 'ACCEPTED')" class="bg-green-600 text-white border-none rounded px-3 py-1.5 cursor-pointer text-base hover:bg-green-700 transition-colors duration-200">Accept</button>
+							<button @click="handleRespond(req.friendshipId, 'DECLINED')" class="bg-red-600 text-white border-none rounded px-3 py-1.5 cursor-pointer text-base hover:bg-red-700 transition-colors duration-200">Refuse</button>
 						</div>
 					</div>
 				</TransitionGroup>
@@ -97,28 +97,3 @@
 		</div>
 	</div>
 </template>
-
-<style scoped>
-/* Animation de la cloche — bounce depuis la gauche */
-.bounce-enter-active {
-	animation: bounce-in 0.5s;
-}
-.bounce-leave-active {
-	animation: bounce-in 0.3s reverse;
-}
-@keyframes bounce-in {
-	0%   { transform: translateX(-30px); opacity: 0; }
-	60%  { transform: translateX(6px);   opacity: 1; }
-	80%  { transform: translateX(-3px); }
-	100% { transform: translateX(0); }
-}
-
-/* Animation de disparition des cartes — glissement droite */
-.slide-out-leave-active {
-	transition: all 0.3s ease;
-}
-.slide-out-leave-to {
-	transform: translateX(120%);
-	opacity: 0;
-}
-</style>

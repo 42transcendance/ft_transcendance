@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import RightCardProfile from '~/components/RightCardProfile.vue';
-
+import RightCardChat from '~/components/RightCardChat.vue';
 </script>
 
 <template>
@@ -8,6 +8,7 @@ import RightCardProfile from '~/components/RightCardProfile.vue';
 		<div class="min-h-screen w-full flex flex-col">
 			<Navbar />
 			<RightCardProfile />
+			<RightCardChat />
 			<NavBtnsNotifBtn />
 			<main class="flex-1 p-8 pt-16 text-white flex items-center justify-center">
 				<slot />

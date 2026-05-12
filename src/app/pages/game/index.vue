@@ -8,6 +8,9 @@ import { GRID_INFO, TIMER } from '~shared/game/constants'
 
 definePageMeta({ middleware: 'auth' })
 
+const { send, pendingGameMessage } = useSocket()
+
+
 const gameState = ref<"waiting" | "starting" | "playing" | "finished">("waiting");
 const launchingTimer = ref(TIMER.LAUNCHING);
 let starting: ReturnType<typeof setInterval> | null = null;
@@ -21,38 +24,31 @@ const clicked = ref<number | null>(null);
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let ctx: CanvasRenderingContext2D | null = null;
-let ws: WebSocket | null = null
 
-/**
- * Établit la connexion WebSocket au montage du composant.
- * Met en place l'écouteur de messages qui pilote les transitions d'état
- * et délègue le rendu graphique à la fonction `render`.
- */
-onMounted(() => {
-  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-  ws = new WebSocket(`${protocol}//${location.host}/ws/game/1`)
-  ws.addEventListener("message", (event) => {
-    const state = JSON.parse(event.data)
 
-	if (state.type === "waiting")
+watch(pendingGameMessage, (state) => {
+    if (!state)
+		return
+    if (state.type === "waiting")
 		gameState.value = "waiting"
-	if (state.type === "starting")
+    if (state.type === "starting")
 		gameState.value = "starting"
-	if (state.type === "playing")
+    if (state.type === "playing")
 		gameState.value = "playing"
-	if (state.type === "finished")
-	{
-		gameState.value = "finished"
-		winner.value = state.winner;
-	}
-	if (state.type === "stats")
-	{
-		painted.value = state.painted;
-		clicked.value = state.clicked;
-	}
-	if (ctx)
-		render(ctx, state);
-  })
+    if (state.type === "finished") {
+        gameState.value = "finished"
+        winner.value = state.winner
+    }
+    if (state.type === "stats") {
+        painted.value = state.painted
+        clicked.value = state.clicked
+    }
+    if (ctx)
+	render(ctx, state)
+})
+
+onMounted(() => {
+	send({ type: 'join_game' })
 })
 
 /**
@@ -74,7 +70,7 @@ watch(gameState, async (newState) => {
 		ctx = canvas.value!.getContext('2d')!
 
 		fillBackground(ctx)
-		ws?.send(JSON.stringify({ type: 'ready'}));
+		send({ type: 'ready' })
 	}
 	if (newState === "finished") {
 		ctx = null;
@@ -98,15 +94,13 @@ function timer(timer: any, seconds: any) {
 	}, 1000);
 }
 
-/** Ferme proprement la connexion WebSocket à la destruction du composant */
-onUnmounted(() => ws?.close())
 
 /**
  * Envoie une action de peinture au serveur.
  * Le serveur déterminera quelle case sera effectivement peinte.
  */
 const paint = () => {
-  ws?.send(JSON.stringify({ type: 'paint' }))
+	send({ type: 'paint' })
 }
 
 /**

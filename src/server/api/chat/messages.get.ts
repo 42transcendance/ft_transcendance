@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   // Tri chronologique
   const sortedMessages = [...messages].reverse()
 
-  // Numérote chaque user supprimé : "USER DELETE", "USER DELETE 1", "USER DELETE 2"...
+  // Numérote chaque user supprimé : "DELETED USER", "DELETED USER 1", "DELETED USER 2"...
   const deletedUsersMap = new Map<string, string>()  // senderUsername (ancien) → display name
   let deletedCounter = 0
 
@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
       
       if (!deletedUsersMap.has(oldUsername)) {
         // Premier message d'un user supprimé
-        const label = deletedCounter === 0 ? 'USER DELETE' : `USER DELETE ${deletedCounter}`
+        const label = deletedCounter === 0 ? 'Deleted user' : `Deleted user ${deletedCounter}`
         deletedUsersMap.set(oldUsername, label)
         deletedCounter++
       }
