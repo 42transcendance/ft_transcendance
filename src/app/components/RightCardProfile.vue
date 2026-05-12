@@ -164,7 +164,7 @@ watch(pendingAvatarUpdate, (update) => {
 </script>
 
 <template>
-	<RightCard :isOpen="isProfileOpen" @close="closeProfile">
+	<RightCard :isOpen="isProfileOpen" :z-index="4" @close="closeProfile">
 		<div v-show="selectedUser" class="flex flex-col items-center gap-8">
 			<div class="flex flex-col items-center gap-2">
 				<h2 class="text-2xl font-bold">{{ selectedUser?.safeUser?.username }}</h2>
