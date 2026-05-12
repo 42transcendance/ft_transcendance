@@ -1,5 +1,6 @@
 <script setup lang="ts">
 	const { currentUser, logout} = useAuth()
+	const { toggleChat } = useChat()
 
 </script>
 
@@ -16,7 +17,7 @@
       <div class="flex gap-2">
         <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit" v-if="!currentUser" to="/login">Login</NuxtLink>
         <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit" v-if="!currentUser" to="/signup">Sign up</NuxtLink>
-        <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit" v-if="currentUser" to="/chat">Chat</NuxtLink>
+        <button class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit" v-if="currentUser" @click="toggleChat">Chat</button>
         <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit" v-if="currentUser" :to="`/profile/${currentUser?.id}`">Profile</NuxtLink>
         <button v-if="currentUser" @click="logout" class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit p-0">Logout</button>
       </div>
