@@ -1,15 +1,13 @@
 import jwt from 'jsonwebtoken'
-import { connectedPeers } from '../../utils/peers'
+import { addPeer, removePeer, getPeers, hasConnectedPeers, sendToUser, connectedPeers } from '../../utils/peers'
 import { Room } from '../../game/room'
 import { GAME, TIMER } from '~shared/game/constants'
 import { ServerMessage, ClientMessage } from '~shared/game/type'
+import { rooms, peerRoom } from '../../utils/gameState'
 
 const secret = process.env.NUXT_JWT_SECRET
 if (!secret)
     throw new Error('NUXT_JWT_SECRET is not defined')
-
-const rooms: Room[] = []
-const peerRoom = new Map<string, Room>()
 
 // Parsing des cookies — extrait en utilitaire pour éviter la duplication
 function parseCookies(header: string): Record<string, string> {
@@ -47,10 +45,9 @@ export default defineWebSocketHandler({
             }
 
             // Stocke les infos communes
-            peer.ctx = { userId: user.id, username: user.username }
+            addPeer(user.id, peer)
 
             // ---- Logique global (statut online) ----
-            connectedPeers.set(user.id, peer)
             peer.subscribe('status')
             peer.subscribe(`user:${user.id}`)
             await prisma.user.update({
@@ -64,7 +61,6 @@ export default defineWebSocketHandler({
             }))
 
             // ---- Logique chat ----
-            connectedPeers.set(`chat:${user.id}`, peer)
             peer.subscribe('chat')
 
             // ---- Logique jeu ----
@@ -129,6 +125,13 @@ export default defineWebSocketHandler({
 
         // Jeu — rejoindre une room
         if (data.type === 'join_game') {
+			const existingRoom = peerRoom.get(peer.ctx.userId)
+
+			if (existingRoom) {
+				sendToUser(userId, { type: existingRoom.states })
+				return
+			}
+
             let currRoom = rooms.find(r => r.states === 'waiting')
             if (!currRoom) {
                 currRoom = new Room(GAME.PLAYERS)
@@ -137,15 +140,13 @@ export default defineWebSocketHandler({
             currRoom.add_player(peer)
 			peerRoom.set(peer.ctx.userId, currRoom)
 
-            let server_msg: ServerMessage
             if (currRoom.currPlayer === GAME.PLAYERS) {
                 server_msg = { type: 'starting' }
                 currRoom.broadcast(server_msg)
                 currRoom.start_game()
             } else {
-                server_msg = { type: 'waiting' }
+				sendToUser(userId, { type: 'waiting' })
             }
-            peer.send(JSON.stringify(server_msg))
             return
         }
 
@@ -154,37 +155,60 @@ export default defineWebSocketHandler({
 			if (!currRoom || currRoom.states !== 'waiting')
 				return
 
-			currRoom.remove_player(peer)
 			peerRoom.delete(peer.ctx.userId)
 
-			const idx = rooms.indexOf(currRoom)
-			if (idx !== -1 && currRoom.currPlayer === 0)
-				rooms.splice(idx, 1)
+            const anyoneLeft = currRoom.userIds.some(id => peerRoom.get(id) === currRoom)
 
-			peer.send(JSON.stringify({ type: 'no_game' }))
+			if (!anyoneLeft) {
+                const idx = rooms.indexOf(currRoom)
+                if (idx !== -1)
+					rooms.splice(idx, 1)
+            }
+            sendToUser(userId, { type: 'no_game' })
+            return
+		}
+
+		if (data.type === 'leave_game') {
+			const currRoom = peerRoom.get(userId)
+			if (!currRoom || currRoom.states !== 'finished')
+				return
+
+			peerRoom.delete(peer.ctx.userId)
+
+			const anyoneLeft = currRoom.userIds.some(id => peerRoom.get(id) === currRoom)
+			if (!anyoneLeft) {
+				const idx = rooms.indexOf(currRoom)
+				if (idx !== -1)
+					rooms.splice(idx, 1)
+			}
+
+			sendToUser(userId, { type: 'no_game' })
 			return
 		}
 
         // Jeu — ready et paint
         if (data.type === 'ready' || data.type === 'paint') {
-            const currRoom = peerRoom.get(peer.ctx.userId)
-            const playerId = currRoom?.get_id(peer)
+            const currRoom = peerRoom.get(userId)
             if (!currRoom)
 				return
+            const playerId = currRoom.get_id_by_userId(userId)
 
-            if (currRoom.game && data.type === 'ready') {
+            if (data.type === 'ready') {
+				if (!currRoom.game)
+					return
+
                 const init_board: ServerMessage = {
                     type: 'cell_init',
                     cells: currRoom.game.board.grid.flat()
                 }
-                peer.send(JSON.stringify(init_board))
+				sendToUser(userId, init_board)
                 return
             }
 
             if (data.type === 'paint') {
                 if (!currRoom.game)
 					return
-                if (playerId < currRoom.maxPlayer && currRoom.game.state === 'on-going') {
+                if (playerId >= 0 && playerId < currRoom.maxPlayer && currRoom.game.state === 'on-going') {
                     const cell = currRoom.game.players[playerId].paint(currRoom.game.board, currRoom.game)
 
                     const broadcast: ServerMessage = {
@@ -199,37 +223,40 @@ export default defineWebSocketHandler({
             }
         }
 		if (data.type === 'sync_game') {
-			const currRoom = peerRoom.get(peer.ctx.userId)
-			if (currRoom) {
-				currRoom.playerPeers.set(peer.ctx.userId, peer);
-				
-				const response: any = {
-					type: 'sync_state',
-					gameState: currRoom.states,
-				}
-
-				 if (currRoom.states === 'starting' && currRoom.startedAt) {
-					const elapsed = Math.floor((Date.now() - currRoom.startedAt) / 1000);
-					response.launchingTimer = Math.max(0, TIMER.LAUNCHING - elapsed);
-				}
-
-				if (currRoom.states === 'playing' && currRoom.gameStartedAt) {
-					const elapsed = Math.floor((Date.now() - currRoom.gameStartedAt) / 1000);
-					response.gameTimer = Math.max(0, TIMER.GAME - elapsed);
-				}
-
-				if (currRoom.game) {
-					response.cells = currRoom.game.board.grid.flat()
-				}
-
-				if (currRoom.game?.state === 'over') {
-					response.winner = currRoom.game.get_winner()
-				}
-
-				peer.send(JSON.stringify(response))
-			} else {
+			const currRoom = peerRoom.get(userId)
+			if (!currRoom){
 				peer.send(JSON.stringify({ type: 'no_game' }))
+                return
 			}
+
+			const response: any = {
+				type: 'sync_state',
+				gameState: currRoom.states,
+			}
+
+			if (currRoom.states === 'starting' && currRoom.startedAt) {
+				const elapsed = Math.floor((Date.now() - currRoom.startedAt) / 1000);
+				response.launchingTimer = Math.max(0, TIMER.LAUNCHING - elapsed);
+			}
+
+			if (currRoom.states === 'playing' && currRoom.gameStartedAt) {
+				const elapsed = Math.floor((Date.now() - currRoom.gameStartedAt) / 1000);
+				response.gameTimer = Math.max(0, TIMER.GAME - elapsed);
+			}
+
+			if (currRoom.game) {
+				response.cells = currRoom.game.board.grid.flat()
+			}
+
+			if (currRoom.game?.state === 'over') {
+				response.winner = currRoom.game.get_winner()
+
+				const stats = currRoom.get_stats_by_userId(userId)
+				response.painted = stats.painted
+				response.clicked = stats.clicked
+			}
+
+			peer.send(JSON.stringify(response))
 			return
 		}
     },
@@ -241,16 +268,16 @@ export default defineWebSocketHandler({
 
         // ---- Logique global ----
         try {
+			removePeer(userId)
             await prisma.user.update({
                 where: { id: userId },
                 data: { isOnline: { decrement: 1 }, lastSeenAt: new Date() }
             })
-            const updatedUser = await prisma.user.findUnique({ where: { id: userId } })
-            if (updatedUser?.isOnline === 0) {
-                connectedPeers.delete(userId)
+
+			if (!hasConnectedPeers(userId)) {
                 peer.publish('status', JSON.stringify({
                     type: 'STATUS_CHANGE',
-                    userId: userId,
+                    userId,
                     isOnline: false,
                     lastSeenAt: new Date()
                 }))

@@ -20,7 +20,7 @@ watch(isConnected, (connected) => {
 }, { immediate: true })
 
 watch(pendingGameMessage, async (state) => {
-    if (!state)
+	if (!state)
 		return
 
     if (state.type === 'sync_state') {
@@ -36,15 +36,8 @@ watch(pendingGameMessage, async (state) => {
         return
     }
 
-    if (state.type === 'finished') {
-        winner.value = state.winner
-    }
-    if (state.type === 'stats') {
-        painted.value = state.painted
-        clicked.value = state.clicked
-    }
-
-    if (ctx) render(ctx, state)
+    if (ctx)
+		render(ctx, state)
 })
 
 watch(gameState, async (newState) => {
