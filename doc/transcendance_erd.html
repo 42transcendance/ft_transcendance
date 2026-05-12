@@ -27,24 +27,12 @@
   const diagram = `erDiagram
   User ||--o{ Friendship : "sender"
   User ||--o{ Friendship : "receiver"
-  User ||--o{ Block : "initiator"
-  User ||--o{ Block : "target"
-  User ||--o{ Participant : "joins"
-  User ||--o{ Message : "sends"
-  User ||--o| UserStats : "has stats"
-  User ||--o{ Match : "player1"
-  User ||--o{ Match : "player2"
-  User ||--o{ Match : "player3"
-  User ||--o{ Match : "player4"
   User o|--o{ GlobalMessage : "sends"
-  Conversation ||--o{ Participant : "has participants"
-  Conversation ||--o{ Message : "contains messages"
 
   User {
     uuid id PK
     string email
     string username
-    string displayName
     string password
     string avatarUrl
     int isOnline
@@ -55,51 +43,6 @@
     uuid senderId FK
     uuid receiverId FK
     enum status
-  }
-  Block {
-    uuid id PK
-    uuid initiatorId FK
-    uuid targetId FK
-  }
-  Conversation {
-    uuid id PK
-    string name
-    bool isGroup
-  }
-  Participant {
-    uuid id PK
-    uuid userId FK
-    uuid conversationId FK
-    datetime lastReadAt
-  }
-  Message {
-    uuid id PK
-    string content
-    uuid senderId FK
-    uuid conversationId FK
-    datetime editedAt
-    datetime deletedAt
-  }
-  Match {
-    uuid id PK
-    string gameMode
-    uuid player1Id FK
-    uuid player2Id FK
-    uuid player3Id FK
-    uuid player4Id FK
-    int score1
-    int score2
-    int score3
-    int score4
-    enum status
-  }
-  UserStats {
-    uuid id PK
-    uuid userId FK
-    int wins
-    int losses
-    int level
-    int xp
   }
   GlobalMessage {
     uuid id PK

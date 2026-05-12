@@ -67,7 +67,7 @@ The work was split by module ownership and feature area, with each member coveri
 
 ### Database
 
-- **PostgreSQL** was chosen because the project needs structured relational data with strong consistency: users, friendships, blocks, conversations, messages, matches, and stats.
+- **PostgreSQL** was chosen because the project needs structured relational data with strong consistency: users, friendships, and global chat messages.
 - **Prisma** provides type-safe access, migrations, and a clean schema layer.
 
 ### Infrastructure / DevOps
@@ -122,23 +122,14 @@ The database schema is defined in `src/prisma/schema.prisma`.
 
 | Table | Purpose | Key fields / notes |
 |---|---|---|
-| `User` | Main user account entity | `id`, `email`, `username`, `displayName`, `password`, `avatarUrl`, `isOnline`, `lastSeenAt` |
+| `User` | Main user account entity | `id`, `email`, `username`, `password`, `avatarUrl`, `isOnline`, `lastSeenAt` |
 | `Friendship` | Friend requests and relations | `senderId`, `receiverId`, `status` (`PENDING`, `ACCEPTED`, `DECLINED`) |
-| `Block` | Blocking relations | `initiatorId`, `targetId` |
-| `Conversation` | Chat rooms and private conversations | `name`, `isGroup` |
-| `Participant` | Link between users and conversations | `userId`, `conversationId`, `lastReadAt` |
-| `Message` | Conversation messages | `content`, `senderId`, `conversationId`, `editedAt`, `deletedAt` |
-| `Match` | Game sessions | `gameMode`, player references, `score1..score4`, `status` |
-| `UserStats` | Player progression | `wins`, `losses`, `level`, `xp` |
 | `GlobalMessage` | Global chat messages | `content`, `senderUsername`, `createdAt` |
 
 ### Relationship summary
 
 - One user can send and receive many friendships.
-- One user can block and be blocked by other users.
-- A conversation can contain many participants and many messages.
-- A user can author many messages and participate in many matches.
-- Each user can have one stats record.
+- A user can author many global chat messages.
 
 ## Features List
 
@@ -147,7 +138,7 @@ The database schema is defined in `src/prisma/schema.prisma`.
 | Authentication | nbacconn, dbhujoo | Sign-up, login, logout, and token-based session handling |
 | User profile management | nbacconn, dbhujoo | Profile viewing, updates, avatar upload, and account data |
 | Friends system | nbacconn | Send, accept, reject, and remove friend relationships |
-| Chat | nbacconn, ebenoist | Conversation history, messaging, and real-time message exchange |
+| Chat | nbacconn, ebenoist | Global chat history and real-time message exchange |
 | Realtime gameplay | tcros, nbacconn | Match session handling and WebSocket-based game interactions |
 | Frontend UI / SSR | ocgraf | Application layout, component structure, and server-side rendering |
 | Security layer | ebenoist | WAF / ModSecurity and Vault-backed secret handling |
