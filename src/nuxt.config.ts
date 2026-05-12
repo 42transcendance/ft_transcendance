@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 export default defineNuxtConfig({
 	compatibilityDate: '2025-07-15',
-	debug: true,
+	// debug: true,
 	css: ['./app/assets/css/main.css'],
 	vite: {
 		plugins: [
