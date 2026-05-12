@@ -32,7 +32,7 @@
 </script>
 
 <template>
-	<Card title="Signup">
+	<Card title="Sign up">
 		<form @submit.prevent="handleCreate" class="flex flex-col gap-3">
 			<FormField v-model="createEmail" label="Email" placeholder="john@example.com" type="email"/>
 			<FormField v-model="createUsername" label="Username" placeholder="john_doe92" type="text"/>
