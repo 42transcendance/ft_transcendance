@@ -1,10 +1,12 @@
 import { getCookie } from 'h3'  // ← ajoute cet import
 
-export default defineNuxtRouteMiddleware((to) => {
-  if (import.meta.server) {
-    const event = useRequestEvent()
-    const token = getCookie(event!, 'auth_token')
-    if (!token) return navigateTo('/login')
+export default defineNuxtRouteMiddleware(async (to) => {
+  try {
+    const { data } = await useFetch('/api/users/auth')
+    if (!data.value) {
+      return navigateTo('/login')
+    }
+  } catch (e) {
+    return navigateTo('/login')
   }
-  // TODO: ajouter vérification côté client quand on gère le refresh token
 })
