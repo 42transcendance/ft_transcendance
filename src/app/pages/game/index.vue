@@ -14,10 +14,22 @@ let ctx: CanvasRenderingContext2D | null = null
 
 const gameState = gameQueueState
 
-watch(isConnected, (connected) => {
-    if (connected)
+onMounted(() => {
+	console.log('[game] onMounted, isConnected:', isConnected.value)
+    console.log('[game] pendingGameMessage:', pendingGameMessage.value)
+    pendingGameMessage.value = null
+    if (isConnected.value)
         send({ type: 'sync_game' })
-}, { immediate: true })
+})
+
+watch(isConnected, (connected) => {
+	console.log('[game] isConnected changed:', connected)
+	if (connected) {
+		pendingGameMessage.value = null
+        send({ type: 'sync_game' })
+	}
+})
+
 
 watch(pendingGameMessage, async (state) => {
 	if (!state)
@@ -61,6 +73,9 @@ function handleFindMatch() {
 
 <template>
   <div>
+	<div v-if="gameState === 'syncing'">
+        Connexion...
+    </div>
     <div v-if="gameState === 'idle'">
         <button @click="handleFindMatch">Find a match !</button>
     </div>

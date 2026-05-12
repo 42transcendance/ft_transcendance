@@ -16,6 +16,7 @@ export class Room {
 	readonly maxPlayer: number;
 	public startedAt: number | null = null;
     public gameStartedAt: number | null = null;
+	public waitStartedAt: number | null = null
 
 	userIds: string[] = [];
 	currPlayer: number = 0;
@@ -79,6 +80,9 @@ export class Room {
             this.userIds.push(userId);
             this.currPlayer++;
         }
+		if (this.currPlayer === 1 && !this.waitStartedAt) {
+            this.waitStartedAt = Date.now()
+        }
         this.update_room_state();
     }
 
@@ -89,7 +93,7 @@ export class Room {
      *
      * @param player - Socket du joueur à retirer
      */
-	remove_player(player: Peer) {
+	remove_player(userId: string) {
 		const id = this.userIds.indexOf(userId)
 		if (id >= 0) {
 			if (this.game)
@@ -140,6 +144,7 @@ export class Room {
 		}
 		console.log("starting game in few secs !")
 
+		this.waitStartedAt = null
 		this.startedAt = Date.now();
 		this.startTimer = setTimeout(() => {
 			console.log("starting game !");

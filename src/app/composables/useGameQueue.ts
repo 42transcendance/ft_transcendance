@@ -1,7 +1,11 @@
 import { TIMER } from '~shared/game/constants'
 
 const winner = ref<number | null>(
-    import.meta.client ? Number(sessionStorage.getItem('winner')) || null : null
+    import.meta.client
+        ? (sessionStorage.getItem('winner') !== null
+            ? Number(sessionStorage.getItem('winner'))
+            : null)
+        : null
 )
 const painted = ref<number | null>(
     import.meta.client ? Number(sessionStorage.getItem('painted')) || null : null
@@ -13,52 +17,127 @@ const clicked = ref<number | null>(
 function setWinner(value: number | null) {
     winner.value = value
     if (import.meta.client)
-        value !== null ? sessionStorage.setItem('winner', String(value)) : sessionStorage.removeItem('winner')
+        value !== null
+            ? sessionStorage.setItem('winner', String(value))
+            : sessionStorage.removeItem('winner')
 }
 function setPainted(value: number | null) {
     painted.value = value
     if (import.meta.client)
-        value !== null ? sessionStorage.setItem('painted', String(value)) : sessionStorage.removeItem('painted')
+        value !== null
+            ? sessionStorage.setItem('painted', String(value))
+            : sessionStorage.removeItem('painted')
 }
 function setClicked(value: number | null) {
     clicked.value = value
     if (import.meta.client)
-        value !== null ? sessionStorage.setItem('clicked', String(value)) : sessionStorage.removeItem('clicked')
+        value !== null
+            ? sessionStorage.setItem('clicked', String(value))
+            : sessionStorage.removeItem('clicked')
 }
 
-const gameQueueState = ref<'idle' | 'waiting' | 'starting' | 'playing' | 'finished'>('idle')
+const gameQueueState = ref<'syncing' | 'idle' | 'waiting' | 'starting' | 'playing' | 'finished'>('syncing')
 const launchingTimer = ref(TIMER.LAUNCHING)
 const gameTimer = ref(TIMER.GAME)
 
 let startingInterval: ReturnType<typeof setInterval> | null = null
 let gamingInterval: ReturnType<typeof setInterval> | null = null
 
+const waitStartedAt = ref<number | null>(
+    import.meta.client
+        ? (sessionStorage.getItem('waitStartedAt')
+            ? Number(sessionStorage.getItem('waitStartedAt'))
+            : null)
+        : null
+)
+
+function setWaitStartedAt(value: number | null) {
+    waitStartedAt.value = value
+    if (import.meta.client)
+        value !== null
+            ? sessionStorage.setItem('waitStartedAt', String(value))
+            : sessionStorage.removeItem('waitStartedAt')
+}
+
+function clearAllIntervals() {
+    clearInterval(startingInterval ?? undefined)
+    clearInterval(gamingInterval ?? undefined)
+    startingInterval = null
+    gamingInterval = null
+}
 
 export const useGameQueue = () => {
     const { send, pendingGameMessage } = useSocket()
 
     watch(pendingGameMessage, (state) => {
+		console.log('[useGameQueue] pendingGameMessage:', state)
         if (!state) return
 
         if (state.type === 'no_game') {
+            clearAllIntervals()
             gameQueueState.value = 'idle'
             return
         }
+
         if (state.type === 'sync_state') {
-            if (state.gameState === 'starting' && state.launchingTimer !== undefined)
+            clearAllIntervals()
+
+			if (state.gameState === 'waiting' && state.waitStartedAt !== undefined) {
+				setWaitStartedAt(state.waitStartedAt)
+			}
+
+            if (state.gameState === 'starting' && state.launchingTimer !== undefined) {
                 launchingTimer.value = state.launchingTimer
-            if (state.gameState === 'playing' && state.gameTimer !== undefined)
+                if (state.launchingTimer > 0) {
+                    startingInterval = setInterval(() => {
+                        launchingTimer.value--
+                        if (launchingTimer.value <= 0) {
+                            clearInterval(startingInterval!)
+                            startingInterval = null
+                        }
+                    }, 1000)
+                }
+            }
+
+            if (state.gameState === 'playing' && state.gameTimer !== undefined) {
                 gameTimer.value = state.gameTimer
+                if (state.gameTimer > 0) {
+                    gamingInterval = setInterval(() => {
+                        gameTimer.value--
+                        if (gameTimer.value <= 0) {
+                            clearInterval(gamingInterval!)
+                            gamingInterval = null
+                        }
+                    }, 1000)
+                }
+            }
+
             if (state.winner !== undefined) setWinner(state.winner)
             if (state.painted !== undefined) setPainted(state.painted)
             if (state.clicked !== undefined) setClicked(state.clicked)
+
             gameQueueState.value = state.gameState
             return
         }
-        if (state.type === 'waiting')  gameQueueState.value = 'waiting'
-        if (state.type === 'starting') gameQueueState.value = 'starting'
-        if (state.type === 'playing')  gameQueueState.value = 'playing'
+
+        if (state.type === 'waiting') {
+            clearAllIntervals()
+            launchingTimer.value = TIMER.LAUNCHING
+			setWaitStartedAt(Date.now())
+            gameQueueState.value = 'waiting'
+        }
+        if (state.type === 'starting') {
+            clearAllIntervals()
+            launchingTimer.value = TIMER.LAUNCHING
+            gameQueueState.value = 'starting'
+        }
+        if (state.type === 'playing') {
+            clearAllIntervals()
+            gameTimer.value = TIMER.GAME
+            gameQueueState.value = 'playing'
+        }
         if (state.type === 'finished') {
+            clearAllIntervals()
             setWinner(state.winner)
             if (state.painted !== undefined) setPainted(state.painted)
             if (state.clicked !== undefined) setClicked(state.clicked)
@@ -70,12 +149,6 @@ export const useGameQueue = () => {
     })
 
     watch(gameQueueState, (newState) => {
-        // ← plus de sessionStorage ici
-        if (newState === 'waiting') {
-            clearInterval(startingInterval ?? undefined)
-            startingInterval = null
-            launchingTimer.value = TIMER.LAUNCHING
-        }
         if (newState === 'starting' && !startingInterval) {
             startingInterval = setInterval(() => {
                 launchingTimer.value--
@@ -94,15 +167,8 @@ export const useGameQueue = () => {
                 }
             }, 1000)
         }
-        if (newState === 'finished') {
-            clearInterval(gamingInterval ?? undefined)
-            gamingInterval = null
-        }
         if (newState === 'idle') {
-            clearInterval(startingInterval ?? undefined)
-            clearInterval(gamingInterval ?? undefined)
-            startingInterval = null
-            gamingInterval = null
+            clearAllIntervals()
             gameTimer.value = TIMER.GAME
             launchingTimer.value = TIMER.LAUNCHING
         }
@@ -110,6 +176,8 @@ export const useGameQueue = () => {
 
     function resetToIdle() {
         send({ type: 'leave_game' })
+        clearAllIntervals()
+		setWaitStartedAt(null)
         gameQueueState.value = 'idle'
         setWinner(null)
         setPainted(null)
@@ -120,6 +188,8 @@ export const useGameQueue = () => {
 
     function cancelQueue() {
         send({ type: 'leave_queue' })
+        clearAllIntervals()
+		setWaitStartedAt(null)
         gameQueueState.value = 'idle'
     }
 
@@ -139,5 +209,6 @@ export const useGameQueue = () => {
         gameTimerFormatted,
         cancelQueue,
         resetToIdle,
+		waitStartedAt,
     }
 }

@@ -33,10 +33,6 @@
 		if (['message', 'user_deleted'].includes(message.type)) {
 			pendingChatMessage.value = message
 		}
-		if (message.type === 'duplicate_session') {
-			disconnect()
-			alert('Vous êtes connecté ailleurs. Cet onglet a été déconnecté.')
-		}
 	}
 
 	//check if there is a change in currentUser

@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { notifyUser } from '../../utils/notifyUser'
+import { sendToUser } from '../../utils/peers'
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 				{ id: body.friendshipId }
 		})
 
-		notifyUser(friendship.senderId, { type: 'FRIEND_UPDATE' })
+		sendToUser(friendship.senderId, { type: 'FRIEND_UPDATE' })
 
         return { success: true, action: 'DECLINED' }
     } else {
@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
 			data: { status: 'ACCEPTED' }
 		})
 
-		notifyUser(friendship.senderId, { type: 'FRIEND_UPDATE' })
+		sendToUser(friendship.senderId, { type: 'FRIEND_UPDATE' })
 
 		return { success: true, action: 'ACCEPTED', friendship: updated }
 	}

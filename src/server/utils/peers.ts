@@ -8,7 +8,8 @@ export function addPeer(userId: string, peer: any) {
 
 export function removePeer(userId: string, peer: any) {
     const peers = connectedPeers.get(userId)
-    if (!peers) return
+    if (!peers)
+		return
     peers.delete(peer)
     if (peers.size === 0)
         connectedPeers.delete(userId)
@@ -26,6 +27,15 @@ export function sendToUser(userId: string, message: any) {
 
 export function hasConnectedPeers(userId: string): boolean {
     return (connectedPeers.get(userId)?.size ?? 0) > 0
+}
+
+export function broadcastAll(message: object) {
+    const payload = JSON.stringify(message)
+    for (const peers of connectedPeers.values()) {
+        for (const peer of peers) {
+            try { peer.send(payload) } catch {}
+        }
+    }
 }
 
 export { connectedPeers }
