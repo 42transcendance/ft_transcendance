@@ -1,4 +1,4 @@
-import { GRID_INFO, GAME } from "~shared/game/constants"
+import { CANVAS } from "~shared/game/constants"
 import { ServerMessage } from "~shared/game/type"
 import { Cell } from "~shared/game/cell"
 
@@ -9,10 +9,15 @@ import { Cell } from "~shared/game/cell"
  */
 export function fillBackground(ctx: any) {
 	ctx.fillStyle = "black";
-	ctx.fillRect(0, 0, GRID_INFO.WIDTH + 10, GRID_INFO.HEIGHT + 10);
+	ctx.fillRect(0, 0, CANVAS.WIDTH, CANVAS.HEIGHT);
 
 	ctx.fillStyle = "lightgray";
-	ctx.fillRect(5, 5, GRID_INFO.WIDTH, GRID_INFO.HEIGHT);
+	ctx.fillRect(
+		CANVAS.BORDER,
+		CANVAS.BORDER,
+		CANVAS.WIDTH - CANVAS.BORDER * 2,
+		CANVAS.HEIGHT - CANVAS.BORDER * 2,
+	);
 }
 
 /**
