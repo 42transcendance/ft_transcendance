@@ -214,6 +214,7 @@ Points are calculated as required: **Major = 2 pts**, **Minor = 1 pt**.
 - Implemented the game logic and multiplayer behavior
 - Worked on real-time gameplay synchronization
 - Contributed to player-session and match-related features
+- Implemented client-side rendering
 
 ## Instructions
 
