@@ -82,7 +82,7 @@ useHead({
 })
 
 useSeoMeta({
-  title: 'Privacy Policy — YourProject',
+  title: 'Privacy Policy',
 })
 </script>
 

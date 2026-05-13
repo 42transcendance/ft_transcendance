@@ -37,8 +37,9 @@
 			type="text" 
 			:placeholder="profile.errorMessage.value || 'Search a user...'"
 			:class="['search-input', { 'put-error': profile.errorMessage.value }]"
+			aria-label="Search for a user"
 			/>
-			<button type="submit" class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit p-0">Search</button>
+			<button type="submit" class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-950 p-0" aria-label="Search user"><span class="sm:hidden"><i class="fa-solid fa-magnifying-glass"></i></span><span class="hidden sm:inline">Search</span></button>
 		</form>
 	</div>
 </template>

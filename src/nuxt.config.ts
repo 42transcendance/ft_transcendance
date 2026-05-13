@@ -31,7 +31,15 @@ export default defineNuxtConfig({
 	app: {
 		head: {
 		titleTemplate: '%s | Pixel, Fight!',
-		htmlAttrs: { lang: 'en' }
+		htmlAttrs: { lang: 'en' },
+		script: [
+			{
+				src: 'https://kit.fontawesome.com/16cbe44e48.js',
+				crossorigin: 'anonymous',
+				async: true,
+				defer: true
+			}
+		]
 		}
 	},
 })

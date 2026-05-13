@@ -18,8 +18,8 @@
 
 </script>
 <template>
-	<div class="flex w-full h-full flex-col sm:flex-row">
-		<div class="flex sm:items-center w-full min-h-full h-full">
+	<div class="flex w-full h-full flex-col sm:flex-row items-start sm:items-center self-start sm:self-auto">
+		<div class="flex w-full min-h-full h-full">
 			<h1 class="font-gasoek text-6xl sm:text-9xl uppercase">Pixel, <br>fight!</h1>
 		</div>
 		<canvas class="webgl block absolute top-14 w-full left-0 sm:left-2/5 sm:w-3/5 h-[calc(100%-3.5rem)] overflow-hidden"></canvas>

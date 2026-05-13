@@ -71,7 +71,7 @@ useHead({
 })
 
 useSeoMeta({
-  title: 'Terms of Service — YourProject',
+  title: 'Terms of Service',
 })
 </script>
 

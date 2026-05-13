@@ -30,7 +30,7 @@
 
 <template>
 	<Card title="Login">
-		<form @submit.prevent="handleLogin" class="flex flex-col gap-3">
+		<form @submit.prevent="handleLogin" class="flex flex-col w-full gap-3">
 			<FormField v-model="username" label="Username" placeholder="johndoe" type="text"/>
 			<FormField v-model="password" label="Password" placeholder="••••••••••••" type="password"/>
 			<FormButton label="Connect"/>

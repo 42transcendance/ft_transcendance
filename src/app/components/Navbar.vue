@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const { currentUser, logout } = useAuth()
 const { toggleChat } = useChat()
-
 </script>
 
 <template>
@@ -9,7 +8,7 @@ const { toggleChat } = useChat()
     <div class="flex flex-row sm:justify-between justify-center items-center gap-2 flex-wrap sm:flex-nowrap order-3 sm:order-none">
       <div class="flex flex-row gap-8 items-center order-1 sm:order-1">
         <NuxtLink class="w-12 h-12 flex items-center justify-center" to="/">
-          <svg class="w-full h-full fill-blue-800 hover:fill-blue-900" viewBox="0 0 56 27"
+          <svg alt="Logo" class="w-full h-full fill-blue-800 hover:fill-blue-900" viewBox="0 0 56 27"
             xmlns="http://www.w3.org/2000/svg">
             <g transform="matrix(1,0,0,1,-399.87985,-646.740975)">
               <g transform="matrix(4.463317,0,0,4.641442,-585.149718,-2444.719592)">
@@ -23,21 +22,28 @@ const { toggleChat } = useChat()
             </g>
           </svg>
         </NuxtLink>
-        <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit" to="/game">
-          Play</NuxtLink>
+        <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-950" to="/game" aria-label="Go to game">
+          <span class="sm:hidden"><i class="fa-solid fa-gamepad"></i></span>
+          <span class="hidden sm:inline">Play</span>
+        </NuxtLink>
       </div>
 
       <div class="flex gap-2 order-2 sm:order-3">
-        <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit"
-          v-if="!currentUser" to="/login">Login</NuxtLink>
-        <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit"
-          v-if="!currentUser" to="/signup">Sign up</NuxtLink>
-        <button class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit"
-          v-if="currentUser" @click="toggleChat">Chat</button>
-        <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit"
-          v-if="currentUser" :to="`/profile/${currentUser?.id}`">Profile</NuxtLink>
-        <button v-if="currentUser" @click="logout"
-          class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-inherit p-0">Logout</button>
+        <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-950"
+          v-if="!currentUser" to="/login" aria-label="Login page"><span class="sm:hidden"><i class="fa-solid fa-arrow-right-to-bracket"></i></span>
+          <span class="hidden sm:inline">Login</span></NuxtLink>
+        <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-950"
+          v-if="!currentUser" to="/signup" aria-label="Sign up page"><span class="sm:hidden"><i class="fa-solid fa-user-plus"></i></span>
+          <span class="hidden sm:inline">Sign up</span></NuxtLink>
+        <button class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-950"
+          v-if="currentUser" @click="toggleChat" aria-label="Toggle chat"><span class="sm:hidden"><i class="fa-solid fa-comment"></i></span>
+          <span class="hidden sm:inline">Chat</span></button>
+        <NuxtLink class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-950"
+          v-if="currentUser" :to="`/profile/${currentUser?.id}`" aria-label="Go to profile"><span class="sm:hidden"><i class="fa-solid fa-circle-user"></i></span>
+          <span class="hidden sm:inline">Profile</span></NuxtLink>
+        <button v-if="currentUser" @click="logout" aria-label="Logout"
+          class="p-4 pt-1 pb-1 rounded-md bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-950 p-0"><span class="sm:hidden"><i class="fa-solid fa-arrow-right-from-bracket"></i></span>
+          <span class="hidden sm:inline">Logout</span></button>
       </div>
 
       <NavBtnsSearchBar v-if="currentUser" class="search-bar order-3 sm:order-2 w-full sm:w-auto" />

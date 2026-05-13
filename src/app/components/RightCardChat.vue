@@ -108,7 +108,7 @@ watch(isChatOpen, (isOpen) => {
                     <span v-else class="text-red-700 decoration-1">
                         <s>{{ msg.username }}</s>:
                     </span>
-                    <span class="ml-1 text-shadow-blue-900 break-words whitespace-normal">{{ msg.content }}</span>
+                    <span class="ml-1 -shadow-blue-900 break-words whitespace-normal">{{ msg.content }}</span>
                 </div>
             </div>
 
@@ -118,12 +118,10 @@ watch(isChatOpen, (isOpen) => {
                     type="text"
                     placeholder="Écris un message..."
                     maxlength="500"
-                    :disabled="!isConnected"
                     class="border rounded-lg px-3 py-2 bg-white text-blue-900 placeholder:text-gray-500 disabled:text-gray-500"
                 />
                 <button
                     type="submit"
-                    :disabled="!isConnected || !newMessage.trim()"
                     class="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-6 py-2 rounded-lg"
                 >
                     Envoyer
