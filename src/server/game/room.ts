@@ -16,7 +16,9 @@ export class Room {
 	readonly maxPlayer: number;
 	public startedAt: number | null = null;
     public gameStartedAt: number | null = null;
-	public waitStartedAt: number | null = null
+	public waitStartedAt: number | null = null;
+	public usernames = new Map<string, string>();
+
 
 	userIds: string[] = [];
 	currPlayer: number = 0;
@@ -78,6 +80,7 @@ export class Room {
         const userId = peer.ctx.userId;
         if (!this.userIds.includes(userId) && this.currPlayer < this.maxPlayer) {
             this.userIds.push(userId);
+			this.usernames.set(userId, peer.ctx.username)
             this.currPlayer++;
         }
 		if (this.currPlayer === 1 && !this.waitStartedAt) {
@@ -186,12 +189,15 @@ export class Room {
 		if (this.game && this.game.state === "over") {
 			this.states = "finished"
 			const winner_id = this.game.get_winner()
+			const winnerUserId = this.userIds[winner_id]
+            const winnerUsername = this.usernames.get(winnerUserId) ?? 'Unknown'
 
 			for (const userId of this.userIds) {
 				const stats = this.get_stats_by_userId(userId)
 				sendToUser(userId, {
 					type: 'finished',
 					winner: winner_id,
+					winnerUsername: winnerUsername,
 					painted: stats.painted,
 					clicked: stats.clicked
 				})

@@ -37,7 +37,7 @@
 
 	//check if there is a change in currentUser
 	watch(currentUser, (newUser) => {
-		if (newUser && !isConnected.value) {
+		if (newUser) {
 			connect(handleMessage)
 			fetchFriends()
 		} else if (!newUser && isConnected.value) {
