@@ -2,7 +2,7 @@
 useHead({ title: 'Game' })
 
 import { fillBackground, render } from '~/game/render'
-import { GRID_INFO } from '~shared/game/constants'
+import { CANVAS } from '~shared/game/constants'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -63,28 +63,28 @@ function handleFindMatch() {
 	<div v-if="gameState === 'syncing'">
         Connexion...
     </div>
-    <div v-if="gameState === 'idle'">
+    <div v-else-if="gameState === 'idle'">
         <button @click="handleFindMatch">Find a match !</button>
     </div>
-    <div v-if="gameState === 'waiting'">
+    <div v-else-if="gameState === 'waiting'">
         Waiting for an opponent...
     </div>
-    <div v-if="gameState === 'starting'">
+    <div v-else-if="gameState === 'starting'">
         <p>The game is starting in {{ launchingTimer }} seconds!</p>
     </div>
-    <div v-if="gameState === 'playing'" class="flex flex-col items-center">
+    <div v-else-if="gameState === 'playing'" class="flex flex-col items-center gap-4 w-full max-w-2xl mx-auto px-4">
 		<canvas
 			ref="canvas"
-			:width="GRID_INFO.WIDTH * 2"
-			:height="GRID_INFO.HEIGHT * 2"
-			class="h-auto w-[100vw] md:w-[60vw] lg:w-[40vw]"
+			:width="CANVAS.WIDTH"
+			:height="CANVAS.HEIGHT"
+			class="w-full h-auto rounded-lg shadow-lg"
 		/>
         <button @click="paint" tabindex="-1">
 			PAINT
 		</button>
         <p>{{ gameTimerFormatted }}</p>
     </div>
-    <div v-if="gameState === 'finished'">
+    <div v-else-if="gameState === 'finished'">
         Result !
         <p>The winner is {{ winnerUsername }} !</p>
         Stats:
