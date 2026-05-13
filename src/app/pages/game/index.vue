@@ -72,7 +72,7 @@ function handleFindMatch() {
 </script>
 
 <template>
-  <div>
+  <div class="w-full flex flex-col items-center">
 	<div v-if="gameState === 'syncing'">
         Connexion...
     </div>
@@ -85,13 +85,16 @@ function handleFindMatch() {
     <div v-if="gameState === 'starting'">
         <p>The game is starting in {{ launchingTimer }} seconds!</p>
     </div>
-    <div v-if="gameState === 'playing'">
-        <canvas
-            ref="canvas"
-            :width="GRID_INFO.WIDTH * 2"
-            :height="GRID_INFO.HEIGHT * 2"
-        />
-        <button @click="paint">Paint</button>
+    <div v-if="gameState === 'playing'" class="flex flex-col items-center">
+		<canvas
+			ref="canvas"
+			:width="GRID_INFO.WIDTH * 2"
+			:height="GRID_INFO.HEIGHT * 2"
+			class="h-auto w-[90vw] md:w-[60vw] lg:w-[40vw]"
+		/>
+        <button @click="paint" class="w-[60vw] md:w-[30vw] lg:w-[15vw] py-3 mt-4 bg-gray-500 hover:bg-gray-700 text-white font-bold rounded-lg text-xl">
+			PAINT
+		</button>
         <p>{{ gameTimerFormatted }}</p>
     </div>
     <div v-if="gameState === 'finished'">
