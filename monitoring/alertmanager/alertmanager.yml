@@ -14,5 +14,5 @@ route:
 receivers:
   - name: discord
     webhook_configs:
-      - url: http://alertmanager-discord:9094
+      - url: http://discord-alertmanager:9094
         send_resolved: true
