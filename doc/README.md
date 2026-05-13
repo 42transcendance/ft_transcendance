@@ -169,17 +169,16 @@ Points are calculated as required: **Major = 2 pts**, **Minor = 1 pt**.
 | 6 | Minor | Design system (10+ components) | ocgraf | 1 | Custom component library and reusable UI structure |
 | 7 | Minor | Additional browser support | ocgraf | 1 | Ensures the app remains usable across browsers |
 | 11 | Major | Remote players (real-time) | tcros, nbacconn | 2 | Multiplayer synchronization across clients |
-| 12 | Major | Multiplayer (3+ players) | tcros | 2 | Extends the game model to more than two players |
-| 13 | Major | Advanced 3D graphics (Three.js / Babylon.js) | ocgraf | 2 | Visual/game rendering layer with 3D-oriented architecture |
-| 14 | Major | Prometheus & Grafana monitoring | dbhujoo | 2 | Observability stack for metrics, dashboards, and alerts |
+| 12 | Major | Advanced 3D graphics (Three.js / Babylon.js) | ocgraf | 2 | Visual/game rendering layer with 3D-oriented architecture |
+| 13 | Major | Prometheus & Grafana monitoring | dbhujoo | 2 | Observability stack for metrics, dashboards, and alerts |
 
 ### Module Totals
 
 | Category | Count | Pts each | Subtotal |
 |---|---|---|---|
-| Major | 11 | 2 | 22 |
+| Major | 9 | 2 | 18 |
 | Minor | 4 | 1 | 4 |
-| **Total** | **15** |  | **26** |
+| **Total** | **13** |  | **22** |
 
 ## Individual Contributions
 
