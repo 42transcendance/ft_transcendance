@@ -1,6 +1,4 @@
-import { CELL_INFO } from "./constants"
-import { GAME } from "./constants"
-import { PLAYER_INFO } from "./constants"
+import { CANVAS, CELL, GAME, PLAYER } from "./constants"
 import { Grid } from "./grid"
 import { Point } from "./type"
 
@@ -20,16 +18,16 @@ export class Cell {
 
 	/**
 	 * @param pos - Position en indices de grille
-	 * @param size - Taille de la case en pixels (défaut : CELL_INFO.SIZE)
-	 * @param color - Couleur initiale (défaut : CELL_INFO.COLOR)
+	 * @param size - Taille de la case en pixels (défaut : CELL.SIZE)
+	 * @param color - Couleur initiale (défaut : CELL.COLOR)
 	 */
 	constructor(pos: Point, size?: number, color?: string) {
 		this.pos = { x: pos.x, y: pos.y }
-		this.size = (size ?? CELL_INFO.SIZE);
-		this.pospx = { x: (pos.x * this.size + 10), y: (pos.y * this.size + 10) };
+		this.size = (size ?? CELL.SIZE);
+		this.pospx = { x: (pos.x * this.size + CANVAS.BORDER), y: (pos.y * this.size + CANVAS.BORDER) };
 		// Permet de rendre visible les intersections de cases size - 3 => 3 pixels de bordure visible.
-		this.size -= 3;
-		this.color = color ?? CELL_INFO.COLOR;
+		this.size -= CELL.GAP;
+		this.color = color ?? CELL.COLOR;
 	}
 
 	/**
