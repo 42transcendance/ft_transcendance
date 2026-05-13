@@ -6,21 +6,20 @@ import { GRID_INFO } from '~shared/game/constants'
 
 definePageMeta({ middleware: 'auth' })
 
-const { send, isConnected, pendingGameMessage } = useSocket()
-const { gameQueueState, launchingTimer, gameTimerFormatted, resetToIdle, winner, painted, clicked } = useGameQueue()
+const { send, whenReady, pendingGameMessage, isConnected } = useSocket()
+const { gameQueueState, launchingTimer, gameTimerFormatted, resetToIdle, winner, painted, clicked, winnerUsername, requestSync } = useGameQueue()
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let ctx: CanvasRenderingContext2D | null = null
 
 const gameState = gameQueueState
 
-watch(isConnected, (connected) => {
-    if (connected)
-        send({ type: 'sync_game' })
-}, { immediate: true })
+onMounted(() => {
+    requestSync()
+})
 
 watch(pendingGameMessage, async (state) => {
-    if (!state)
+	if (!state)
 		return
 
     if (state.type === 'sync_state') {
@@ -36,15 +35,8 @@ watch(pendingGameMessage, async (state) => {
         return
     }
 
-    if (state.type === 'finished') {
-        winner.value = state.winner
-    }
-    if (state.type === 'stats') {
-        painted.value = state.painted
-        clicked.value = state.clicked
-    }
-
-    if (ctx) render(ctx, state)
+    if (ctx)
+		render(ctx, state)
 })
 
 watch(gameState, async (newState) => {
@@ -68,6 +60,9 @@ function handleFindMatch() {
 
 <template>
   <div>
+	<div v-if="gameState === 'syncing'">
+        Connexion...
+    </div>
     <div v-if="gameState === 'idle'">
         <button @click="handleFindMatch">Find a match !</button>
     </div>
@@ -83,12 +78,12 @@ function handleFindMatch() {
             :width="GRID_INFO.WIDTH * 2"
             :height="GRID_INFO.HEIGHT * 2"
         />
-        <button @click="paint">Paint</button>
+        <button @click="paint" tabindex="-1">Paint</button>
         <p>{{ gameTimerFormatted }}</p>
     </div>
     <div v-if="gameState === 'finished'">
         Result !
-        <p>The winner is {{ winner }} !</p>
+        <p>The winner is {{ winnerUsername }} !</p>
         Stats:
         <p>Painted tiles : {{ painted }}</p>
         <p>Click number : {{ clicked }}</p>

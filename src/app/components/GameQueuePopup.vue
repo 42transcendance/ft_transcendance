@@ -1,28 +1,27 @@
 <script setup lang="ts">
-const { gameQueueState, launchingTimer, cancelQueue } = useGameQueue()
-
+const { gameQueueState, launchingTimer, cancelQueue, waitStartedAt, requestSync } = useGameQueue()
 // Chronomètre d'attente (temps écoulé depuis que l'user cherche)
-const waitSeconds = ref(0)
-let waitInterval: ReturnType<typeof setInterval> | null = null
 
-watch(gameQueueState, (state) => {
-    if (state === 'waiting') {
-        waitSeconds.value = 0
-        waitInterval = setInterval(() => waitSeconds.value++, 1000)
-    } else {
-        clearInterval(waitInterval ?? undefined)
-        waitInterval = null
-        if (state === 'idle')
-			waitSeconds.value = 0
-    }
-}, { immediate: true })
-
-onUnmounted(() => clearInterval(waitInterval ?? undefined))
+const tick = ref(0)
+let tickInterval: ReturnType<typeof setInterval> | null = null
 
 const waitFormatted = computed(() => {
-    const m = String(Math.floor(waitSeconds.value / 60)).padStart(2, '0')
-    const s = String(waitSeconds.value % 60).padStart(2, '0')
+	tick.value
+    if (!waitStartedAt.value)
+		return '00:00'
+    const elapsed = Math.floor((Date.now() - waitStartedAt.value) / 1000)
+    const m = String(Math.floor(elapsed / 60)).padStart(2, '0')
+    const s = String(elapsed % 60).padStart(2, '0')
     return `${m}:${s}`
+})
+
+onMounted(() => {
+    tickInterval = setInterval(() => tick.value++, 1000)
+	requestSync()
+})
+
+onUnmounted(() => {
+    clearInterval(tickInterval ?? undefined)
 })
 
 const visible = computed(() =>

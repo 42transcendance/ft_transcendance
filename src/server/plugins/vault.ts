@@ -26,6 +26,25 @@ export default defineNitroPlugin(async () => {
     throw new Error('VAULT_ADDR or VAULT_TOKEN missing')
   }
 
+  async function fetchWithRetry(url: string, maxRetries = 15): Promise<any> {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const response = await $fetch<any>(url, {
+          headers: { 'X-Vault-Token': vaultToken }
+        })
+        return response
+      } catch (e: any) {
+        const status = e?.response?.status || e?.statusCode
+        if (status === 404 && i < maxRetries - 1) {
+          console.log(`[vault] Secret not ready yet, retry ${i + 1}/${maxRetries}...`)
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          continue
+        }
+        throw e
+      }
+    }
+  }
+
   console.log('[vault] Fetching DATABASE_URL from Vault...')
   
   const response = await $fetch<any>(

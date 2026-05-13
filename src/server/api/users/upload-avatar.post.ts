@@ -86,7 +86,7 @@ export default defineEventHandler(async (event) => {
 		})
 	
 		if (avatarUrl) {
-			broadcast({
+			broadcastAll({
 				type: 'AVATAR_UPDATE',
 				userId: userId,
 				avatarUrl: avatarUrl
