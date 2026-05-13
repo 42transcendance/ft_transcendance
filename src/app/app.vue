@@ -18,8 +18,9 @@
 			if (currentUser.value)
 				updateFriendStatus(message.userId, message.isOnline)
 		}
-		if (message.type === 'FRIEND_UPDATE')
+		if (message.type === 'FRIEND_UPDATE') {
 			fetchFriends()
+		}
 		if (message.type === 'USERNAME_UPDATE')
 			notifyUsernameUpdate(message.userId, message.username)
 		if (message.type === 'AVATAR_UPDATE')

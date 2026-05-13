@@ -32,7 +32,9 @@ export default defineEventHandler(async (event) => {
 	const otherUserId = friendship.senderId === decoded.userId 
 		? friendship.receiverId 
 		: friendship.senderId
+
 	sendToUser(otherUserId, { type: 'FRIEND_UPDATE' })
+	sendToUser(decoded.userId, { type: 'FRIEND_UPDATE' })
 
     return { success: true }
 })

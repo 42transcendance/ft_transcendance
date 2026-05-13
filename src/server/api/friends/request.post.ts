@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
     })
 
 	sendToUser(body.receiverId, { type: 'FRIEND_UPDATE' })
+	sendToUser(decoded.userId, { type: 'FRIEND_UPDATE' })
 
     return { friendship }
 })

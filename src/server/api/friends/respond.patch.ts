@@ -37,6 +37,7 @@ export default defineEventHandler(async (event) => {
 		})
 
 		sendToUser(friendship.senderId, { type: 'FRIEND_UPDATE' })
+		sendToUser(decoded.userId, { type: 'FRIEND_UPDATE' })
 
         return { success: true, action: 'DECLINED' }
     } else {
@@ -46,6 +47,7 @@ export default defineEventHandler(async (event) => {
 		})
 
 		sendToUser(friendship.senderId, { type: 'FRIEND_UPDATE' })
+		sendToUser(decoded.userId, { type: 'FRIEND_UPDATE' })
 
 		return { success: true, action: 'ACCEPTED', friendship: updated }
 	}
