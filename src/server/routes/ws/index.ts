@@ -209,7 +209,10 @@ export default defineWebSocketHandler({
                 response.cells = currRoom.game.board.grid.flat()
             }
             if (currRoom.states === 'finished' && currRoom.game) {
-                response.winner = currRoom.game.get_winner()
+				const winner_id = currRoom.game.get_winner()
+				response.winner = winner_id
+				const winnerUserId = currRoom.userIds[winner_id]
+				response.winnerUsername = currRoom.usernames.get(winnerUserId) ?? 'Unknown'
                 const stats = currRoom.get_stats_by_userId(userId)
                 response.painted = stats.painted
                 response.clicked = stats.clicked
@@ -223,11 +226,13 @@ export default defineWebSocketHandler({
 
     async close(peer) {
         const userId = peer.ctx?.userId
-        if (!userId) return
+        if (!userId)
+			return
 
         // ---- Global ----
         try {
             removePeer(userId, peer)
+
             await prisma.user.update({
                 where: { id: userId },
                 data: { isOnline: { decrement: 1 }, lastSeenAt: new Date() }

@@ -7,11 +7,24 @@ const winner = ref<number | null>(
             : null)
         : null
 )
-const painted = ref<number | null>(
-    import.meta.client ? Number(sessionStorage.getItem('painted')) || null : null
-)
+
 const clicked = ref<number | null>(
-    import.meta.client ? Number(sessionStorage.getItem('clicked')) || null : null
+    import.meta.client
+        ? (sessionStorage.getItem('clicked') !== null
+            ? Number(sessionStorage.getItem('clicked'))
+            : null)
+        : null
+)
+const painted = ref<number | null>(
+    import.meta.client
+        ? (sessionStorage.getItem('painted') !== null
+            ? Number(sessionStorage.getItem('painted'))
+            : null)
+        : null
+)
+
+const winnerUsername = ref<string | null>(
+    import.meta.client ? sessionStorage.getItem('winnerUsername') : null
 )
 
 function setWinner(value: number | null) {
@@ -35,8 +48,20 @@ function setClicked(value: number | null) {
             ? sessionStorage.setItem('clicked', String(value))
             : sessionStorage.removeItem('clicked')
 }
+function setWinnerUsername(value: string | null) {
+    winnerUsername.value = value
+    if (import.meta.client)
+        value !== null
+            ? sessionStorage.setItem('winnerUsername', value)
+            : sessionStorage.removeItem('winnerUsername')
+}
 
-const gameQueueState = ref<'syncing' | 'idle' | 'waiting' | 'starting' | 'playing' | 'finished'>('syncing')
+const gameQueueState = ref<'syncing' | 'idle' | 'waiting' | 'starting' | 'playing' | 'finished'>(
+    import.meta.client && sessionStorage.getItem('winner') !== null
+        ? 'finished'
+        : 'syncing'
+)
+
 const launchingTimer = ref(TIMER.LAUNCHING)
 const gameTimer = ref(TIMER.GAME)
 
@@ -67,15 +92,23 @@ function clearAllIntervals() {
 }
 
 export const useGameQueue = () => {
-    const { send, pendingGameMessage } = useSocket()
+    const { send, whenReady, pendingGameMessage } = useSocket()
+
+	function requestSync() {
+        pendingGameMessage.value = null
+        whenReady(() => {
+			send({ type: 'sync_game' })
+		})
+    }
 
     watch(pendingGameMessage, (state) => {
-		console.log('[useGameQueue] pendingGameMessage:', state)
-        if (!state) return
+        if (!state)
+			return
 
         if (state.type === 'no_game') {
             clearAllIntervals()
-            gameQueueState.value = 'idle'
+			if (gameQueueState.value !== 'finished')
+				gameQueueState.value = 'idle'
             return
         }
 
@@ -112,9 +145,14 @@ export const useGameQueue = () => {
                 }
             }
 
-            if (state.winner !== undefined) setWinner(state.winner)
-            if (state.painted !== undefined) setPainted(state.painted)
-            if (state.clicked !== undefined) setClicked(state.clicked)
+            if (state.winner !== undefined)
+				setWinner(state.winner)
+            if (state.painted !== undefined)
+				setPainted(state.painted)
+            if (state.clicked !== undefined)
+				setClicked(state.clicked)
+			if (state.winnerUsername !== undefined)
+				setWinnerUsername(state.winnerUsername)
 
             gameQueueState.value = state.gameState
             return
@@ -139,8 +177,11 @@ export const useGameQueue = () => {
         if (state.type === 'finished') {
             clearAllIntervals()
             setWinner(state.winner)
-            if (state.painted !== undefined) setPainted(state.painted)
-            if (state.clicked !== undefined) setClicked(state.clicked)
+			setWinnerUsername(state.winnerUsername ?? null)
+            if (state.painted !== undefined)
+				setPainted(state.painted)
+            if (state.clicked !== undefined)
+				setClicked(state.clicked)
             gameQueueState.value = 'finished'
         }
         if (state.type === 'error') {
@@ -180,6 +221,7 @@ export const useGameQueue = () => {
 		setWaitStartedAt(null)
         gameQueueState.value = 'idle'
         setWinner(null)
+		setWinnerUsername(null)
         setPainted(null)
         setClicked(null)
         gameTimer.value = TIMER.GAME
@@ -201,6 +243,7 @@ export const useGameQueue = () => {
 
     return {
         winner,
+		winnerUsername,
         painted,
         clicked,
         gameQueueState,
@@ -210,5 +253,6 @@ export const useGameQueue = () => {
         cancelQueue,
         resetToIdle,
 		waitStartedAt,
+		requestSync,
     }
 }

@@ -7,9 +7,15 @@ let retryDelay = 1000
 let retryCount = 0
 const maxRetries = 6
 const isConnected = ref(false)
+const onReadyCallbacks: Array<() => void> = []
+
+function notifyReady() {
+    const cbs = [...onReadyCallbacks]
+    onReadyCallbacks.length = 0
+    cbs.forEach(cb => cb())
+}
 
 export const useSocket = () => {
-    // Envoie un message — utilisable depuis n'importe quel composant
     function send(message: object) {
         if (socket && socket.readyState === WebSocket.OPEN) {
             socket.send(JSON.stringify(message))
@@ -18,9 +24,26 @@ export const useSocket = () => {
         }
     }
 
+	function whenReady(cb: () => void) {
+
+		if (isConnected.value && socket?.readyState === WebSocket.OPEN) {
+			cb()
+		} else {
+			onReadyCallbacks.push(cb)
+		}
+	}
+
     function connect(onMessage: (message: any) => void) {
         if (!import.meta.client)
 			return
+
+		if (socket) {
+			shouldReconnect = false
+			socket.close()
+			socket = null
+			isConnected.value = false
+		}
+		pendingGameMessage.value = null
         shouldReconnect = true
 
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
@@ -31,6 +54,7 @@ export const useSocket = () => {
             console.log("✅ Connected")
             retryDelay = 1000
             retryCount = 0
+			notifyReady()
         }
 
         socket.onclose = (event) => {
@@ -64,6 +88,7 @@ export const useSocket = () => {
 
     function disconnect() {
         shouldReconnect = false
+		onReadyCallbacks.length = 0
         socket?.close()
         socket = null
 		isConnected.value = false
@@ -73,6 +98,7 @@ export const useSocket = () => {
 		connect,
 		disconnect,
 		send,
+		whenReady,
 		isConnected,
 		pendingGameMessage,
 		pendingChatMessage

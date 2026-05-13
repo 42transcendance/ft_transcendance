@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { gameQueueState, launchingTimer, cancelQueue, waitStartedAt } = useGameQueue()
+const { gameQueueState, launchingTimer, cancelQueue, waitStartedAt, requestSync } = useGameQueue()
 // Chronomètre d'attente (temps écoulé depuis que l'user cherche)
 
 const tick = ref(0)
@@ -17,6 +17,7 @@ const waitFormatted = computed(() => {
 
 onMounted(() => {
     tickInterval = setInterval(() => tick.value++, 1000)
+	requestSync()
 })
 
 onUnmounted(() => {

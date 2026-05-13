@@ -6,8 +6,8 @@ import { GRID_INFO } from '~shared/game/constants'
 
 definePageMeta({ middleware: 'auth' })
 
-const { send, isConnected, pendingGameMessage } = useSocket()
-const { gameQueueState, launchingTimer, gameTimerFormatted, resetToIdle, winner, painted, clicked } = useGameQueue()
+const { send, whenReady, pendingGameMessage, isConnected } = useSocket()
+const { gameQueueState, launchingTimer, gameTimerFormatted, resetToIdle, winner, painted, clicked, winnerUsername, requestSync } = useGameQueue()
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let ctx: CanvasRenderingContext2D | null = null
@@ -15,21 +15,8 @@ let ctx: CanvasRenderingContext2D | null = null
 const gameState = gameQueueState
 
 onMounted(() => {
-	console.log('[game] onMounted, isConnected:', isConnected.value)
-    console.log('[game] pendingGameMessage:', pendingGameMessage.value)
-    pendingGameMessage.value = null
-    if (isConnected.value)
-        send({ type: 'sync_game' })
+    requestSync()
 })
-
-watch(isConnected, (connected) => {
-	console.log('[game] isConnected changed:', connected)
-	if (connected) {
-		pendingGameMessage.value = null
-        send({ type: 'sync_game' })
-	}
-})
-
 
 watch(pendingGameMessage, async (state) => {
 	if (!state)
@@ -90,16 +77,16 @@ function handleFindMatch() {
 			ref="canvas"
 			:width="GRID_INFO.WIDTH * 2"
 			:height="GRID_INFO.HEIGHT * 2"
-			class="h-auto w-[90vw] md:w-[60vw] lg:w-[40vw]"
+			class="h-auto w-[100vw] md:w-[60vw] lg:w-[40vw]"
 		/>
-        <button @click="paint" class="w-[60vw] md:w-[30vw] lg:w-[15vw] py-3 mt-4 bg-gray-500 hover:bg-gray-700 text-white font-bold rounded-lg text-xl">
+        <button @click="paint" tabindex="-1">
 			PAINT
 		</button>
         <p>{{ gameTimerFormatted }}</p>
     </div>
     <div v-if="gameState === 'finished'">
         Result !
-        <p>The winner is {{ winner }} !</p>
+        <p>The winner is {{ winnerUsername }} !</p>
         Stats:
         <p>Painted tiles : {{ painted }}</p>
         <p>Click number : {{ clicked }}</p>
