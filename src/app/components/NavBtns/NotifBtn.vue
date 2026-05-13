@@ -54,225 +54,46 @@
 </script>
 
 <template>
-    <div class="notif-wrapper">
-        <!-- La cloche — visible seulement si demandes en attente -->
-        <Transition name="bounce">
+	<div class="fixed top-18 right-5 z-2">
+		<!-- La cloche — visible seulement si demandes en attente -->
+		<Transition name="bounce">
 			<button
 				v-if="pendingCount > 0"
-				class="bell-btn"
+				class="w-12 h-12 p-2 rounded-full bg-white border-none shadow-md cursor-pointer flex items-center justify-center text-2xl hover:shadow-lg transition-shadow duration-200 m-4 right-0"
 				@click="showPopup = true">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-					<path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-				</svg>
-				<span class="badge">{{ pendingCount }}</span>
+				 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="fill-blue-800">!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.<path d="M320 64C302.3 64 288 78.3 288 96L288 99.2C215 114 160 178.6 160 256L160 277.7C160 325.8 143.6 372.5 113.6 410.1L103.8 422.3C98.7 428.6 96 436.4 96 444.5C96 464.1 111.9 480 131.5 480L508.4 480C528 480 543.9 464.1 543.9 444.5C543.9 436.4 541.2 428.6 536.1 422.3L526.3 410.1C496.4 372.5 480 325.8 480 277.7L480 256C480 178.6 425 114 352 99.2L352 96C352 78.3 337.7 64 320 64zM258 528C265.1 555.6 290.2 576 320 576C349.8 576 374.9 555.6 382 528L258 528z"/></svg>
+				<span class="absolute top-3 right-4 bg-blue-200 text-blue-900 rounded-full w-[18px] h-[18px] text-[11px] font-semibold flex items-center justify-center">{{ pendingCount }}</span>
 			</button>
-        </Transition>
+		</Transition>
 
-        <!-- Overlay + Popup -->
-        <div v-if="showPopup" class="overlay" @click.self="showPopup = false">
-            <div class="popup">
-                <h3>Friend Requests</h3>
-                <p v-if="localRequests.length === 0" class="empty">No pending requests</p>
-                <TransitionGroup name="slide-out" tag="div" class="requests-list">
-                    <div
-                        v-for="req in localRequests"
-                        :key="req.friendshipId"
-                        class="request-card">
-                        <img
-                            :src="req.user.avatarUrl || '/default-avatar.jpg'"
-                            class="req-avatar"
-                            @click="handleOpenFromNotif(req.user.id)"
-                        />
-                        <span
-                            class="req-username"
-                            @click="handleOpenFromNotif(req.user.id)">
-                            {{ req.user.username }}
-                        </span>
-                        <div class="req-actions">
-                            <button @click="handleRespond(req.friendshipId, 'ACCEPTED')" class="accept-btn">✓</button>
-                            <button @click="handleRespond(req.friendshipId, 'DECLINED')" class="decline-btn">✗</button>
-                        </div>
-                    </div>
-                </TransitionGroup>
-                <button class="close-popup-btn" @click="showPopup = false">Close</button>
-            </div>
-        </div>
-    </div>
+		<!-- Overlay + Popup -->
+		<div v-if="showPopup" class="fixed inset-0 bg-black/30 flex items-center justify-center z-[4000]" @click.self="showPopup = false">
+			<div class="bg-blue-50 p-8 rounded-md w-[400px] max-h-[500px] overflow-y-auto flex flex-col gap-4 shadow-xl">
+				<h3 class="text-center font-semibold text-base text-blue-900">Friend Requests</h3>
+				<p v-if="localRequests.length === 0" class="text-center text-blue-400 italic text-sm">No pending requests</p>
+				<TransitionGroup name="slide-out" tag="div" class="flex flex-col gap-3 overflow-hidden">
+					<div
+						v-for="req in localRequests"
+						:key="req.friendshipId"
+						class="flex items-center gap-3 p-3 border border-blue-200 rounded-md bg-white hover:bg-blue-100/50 transition-colors duration-150">
+						<img
+							:src="req.user.avatarUrl || '/default-avatar.jpg'"
+							class="w-[42px] h-[42px] rounded-full object-cover cursor-pointer border-2 border-blue-200 flex-shrink-0"
+							@click="handleOpenFromNotif(req.user.id)"
+						/>
+						<span
+							class="flex-grow font-semibold text-blue-900 cursor-pointer hover:text-blue-700 transition-colors"
+							@click="handleOpenFromNotif(req.user.id)">
+							{{ req.user.username }}
+						</span>
+						<div class="flex gap-2">
+							<button @click="handleRespond(req.friendshipId, 'ACCEPTED')" class="bg-green-600 text-white border-none rounded px-3 py-1.5 cursor-pointer text-base hover:bg-green-700 transition-colors duration-200">Accept</button>
+							<button @click="handleRespond(req.friendshipId, 'DECLINED')" class="bg-red-600 text-white border-none rounded px-3 py-1.5 cursor-pointer text-base hover:bg-red-700 transition-colors duration-200">Refuse</button>
+						</div>
+					</div>
+				</TransitionGroup>
+				<button class="bg-blue-600 text-white border-none rounded-md px-2 py-2 cursor-pointer self-center hover:bg-blue-700 transition-colors duration-200" @click="showPopup = false">Close</button>
+			</div>
+		</div>
+	</div>
 </template>
-
-<style scoped>
-.notif-wrapper {
-    position: fixed;
-    top: 70px;
-    left: 20px;
-    z-index: 2500;
-}
-
-.bell-btn {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: white;
-    border: none;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    transition: box-shadow 0.2s;
-}
-
-.bell-btn:hover {
-    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-}
-
-.badge {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    background: #e32b2b;
-    color: white;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-style: normal;
-}
-
-/* Animation de la cloche — bounce depuis la gauche */
-.bounce-enter-active {
-    animation: bounce-in 0.5s;
-}
-.bounce-leave-active {
-    animation: bounce-in 0.3s reverse;
-}
-@keyframes bounce-in {
-    0%   { transform: translateX(-30px); opacity: 0; }
-    60%  { transform: translateX(6px);   opacity: 1; }
-    80%  { transform: translateX(-3px); }
-    100% { transform: translateX(0); }
-}
-
-/* Animation de disparition des cartes — glissement droite */
-.slide-out-leave-active {
-    transition: all 0.3s ease;
-}
-.slide-out-leave-to {
-    transform: translateX(120%);
-    opacity: 0;
-}
-
-.overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 4000;
-}
-
-.popup {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    width: 400px;
-    max-height: 500px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.popup h3 {
-    text-align: center;
-    margin: 0;
-}
-
-.empty {
-    text-align: center;
-    color: #aaa;
-    font-style: italic;
-}
-
-.requests-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow: hidden;  /* nécessaire pour que le glissement ne déborde pas */
-}
-
-.request-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-}
-
-.req-avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    object-fit: cover;
-    cursor: pointer;
-    border: 2px solid #ddd;
-    flex-shrink: 0;
-}
-
-.req-username {
-    flex-grow: 1;
-    font-weight: bold;
-    cursor: pointer;
-}
-.req-username:hover {
-    text-decoration: underline;
-}
-
-.req-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.accept-btn {
-    background: #42b883;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.2s;
-}
-.accept-btn:hover { background: #369a6e; }
-
-.decline-btn {
-    background: #e32b2b;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.2s;
-}
-.decline-btn:hover { background: #b52020; }
-
-.close-popup-btn {
-    background: transparent;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 8px;
-    cursor: pointer;
-    color: #888;
-    align-self: center;
-}
-.close-popup-btn:hover { background: #f5f5f5; }
-</style>

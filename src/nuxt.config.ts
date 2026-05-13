@@ -19,7 +19,8 @@ export default defineNuxtConfig({
 	},
 
 	runtimeConfig: {
-		jwtSecret: ''
+		jwtSecret: '',
+		metricsToken: ''
 	},
 
 	//Shared files for game server and client side

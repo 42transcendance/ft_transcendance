@@ -111,7 +111,7 @@
 						<h3 class="font-semibold text-lg text-center">Friends</h3>
 						<div class="w-4 h-4 text-xs text-center text-white bg-blue-900 rounded-full flex flex-col items-center justify-center">{{ friends.length }}</div>
 					</div>
-					<div v-if="friends.length !== 0" class="flex flex-row max-w-2xl gap-3 flex-wrap">
+					<div v-if="friends.length !== 0" class="flex flex-row max-w-2xl gap-3 flex-wrap justify-center">
 						<div
 							v-for="friend in friends"
 							:key="friend.friendshipId"

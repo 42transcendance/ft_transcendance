@@ -21,5 +21,5 @@ COPY modsecurity/modsecurity.conf /etc/modsecurity/modsecurity.conf
 COPY modsecurity/exclusions.conf /etc/modsecurity/exclusions.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 80 443
+EXPOSE 80 443 9443 9444
 CMD ["nginx", "-g", "daemon off;"]

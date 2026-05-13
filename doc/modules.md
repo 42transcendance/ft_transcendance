@@ -9,32 +9,32 @@ _3 Major · 2 Minor_
 
 | # | Type | Module | Owner(s) | Pts |
 |---|------|--------|----------|-----|
-| 1 | 🔴 Major | Framework frontend & backend | OGR | 2 |
-| 2 | 🔴 Major | Real-time features (WebSockets) | NBA, TCR | 2 |
-| 3 | 🔴 Major | User interaction | NBA, EBE | 2 |
-| 4 | 🟡 Minor | ORM for database | DBH | 1 |
-| 5 | 🟡 Minor | Server-Side Rendering (SSR) | OGR | 1 |
+| 1 | 🔴 Major | Framework frontend & backend | ocgraf | 2 |
+| 2 | 🔴 Major | Real-time features (WebSockets) | nbacconn, tcros | 2 |
+| 3 | 🔴 Major | User interaction | nbacconn, dbhujoo, ebenoist | 2 |
+| 4 | 🟡 Minor | ORM for database | dbhujoo | 1 |
+| 5 | 🟡 Minor | Server-Side Rendering (SSR) | ocgraf, nbacconn | 1 |
 
 ### 👤 User Management  
 _1 Major_
 
 | # | Type | Module | Owner(s) | Pts |
 |---|------|--------|----------|-----|
-| 8 | 🔴 Major | User management & authentication | NBA, DBH | 2 |
+| 8 | 🔴 Major | User management & authentication | nbacconn, dbhujoo | 2 |
 
 ### 🔒 Cybersecurity  
 _1 Major_
 
 | # | Type | Module | Owner(s) | Pts |
 |---|------|--------|----------|-----|
-| 9 | 🔴 Major | WAF/ModSecurity + HashiCorp Vault | EBE | 2 |
+| 9 | 🔴 Major | WAF/ModSecurity + HashiCorp Vault | ebenoist | 2 |
 
 ### 🎮 Gaming  
 _1 Major_
 
 | # | Type | Module | Owner(s) | Pts |
 |---|------|--------|----------|-----|
-| 10 | 🔴 Major | Web-based game (PvP) | TCR | 2 |
+| 10 | 🔴 Major | Web-based game (PvP) | tcros | 2 |
 
 ### Subtotal
 
@@ -53,34 +53,32 @@ _2 Minor_
 
 | # | Type | Module | Owner(s) | Pts |
 |---|------|--------|----------|-----|
-| 6 | 🟡 Minor | Design system (10+ components) | OGR | 1 |
-| 7 | 🟡 Minor | Additional browser support | OGR | 1 |
+| 6 | 🟡 Minor | Design system (10+ components) | ocgraf | 1 |
+| 7 | 🟡 Minor | Additional browser support | ocgraf | 1 |
 
 ### 🎮 Gaming & User Experience  
 _3 Major_
 
 | # | Type | Module | Owner(s) | Pts |
 |---|------|--------|----------|-----|
-| 11 | 🔴 Major | Remote players (real-time) | TCR, NBA | 2 |
-| 12 | 🔴 Major | Multiplayer (3+ players) | TCR | 2 |
-| 13 | 🔴 Major | Advanced 3D graphics (Three.js / Babylon.js) | OGR | 2 |
+| 11 | 🔴 Major | Remote players (real-time) | tcros, nbacconn | 2 |
+| 12 | 🔴 Major | Multiplayer (3+ players) | tcros | 2 |
+| 13 | 🔴 Major | Advanced 3D graphics (Three.js / Babylon.js) | ocgraf | 2 |
 
 ### ⚙️ DevOps  
-_2 Major · 1 Minor_
+_1 Major_
 
 | # | Type | Module | Owner(s) | Pts |
 |---|------|--------|----------|-----|
-| 14 | 🔴 Major | ELK log management | DBH | 2 |
-| 15 | 🔴 Major | Prometheus & Grafana monitoring | DBH | 2 |
-| 16 | 🟡 Minor | Health check, backups & disaster recovery | DBH | 1 |
+| 14 | 🔴 Major | Prometheus & Grafana monitoring | dbhujoo | 2 |
 
 ### Bonus Subtotal
 
 | | Count | Pts each | Subtotal |
 |-|-------|----------|----------|
 | 🔴 Major | 5 | 2 | 10 |
-| 🟡 Minor | 3 | 1 | 3 |
-| **Total** | **8** | | **13** |
+| 🟡 Minor | 2 | 1 | 2 |
+| **Total** | **7** | | **12** |
 
 ---
 
@@ -89,5 +87,5 @@ _2 Major · 1 Minor_
 | | Count | Pts each | Subtotal |
 |-|-------|----------|----------|
 | 🔴 Major | 11 | 2 | 22 |
-| 🟡 Minor | 5 | 1 | 5 |
-| **Total** | **16** | | **27** |
+| 🟡 Minor | 4 | 1 | 4 |
+| **Total** | **15** | | **26** |

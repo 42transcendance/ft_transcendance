@@ -24,8 +24,17 @@ all: up migrate-dev
 
 up:
 	@echo "$(GREEN)Starting services...$(RESET)"
-	$(COMPOSE) up --build -d
+	DOCKER_DATA_ROOT="$$(docker info --format '{{.DockerRootDir}}' 2>/dev/null || true)" $(COMPOSE) up --build -d
 	mkdir -p uploads_storage
+
+up-goinfre:
+	@echo "$(GREEN)Starting services with Docker data-root in goinfre...$(RESET)"
+	DOCKER_DATA_ROOT="$${DOCKER_DATA_ROOT:-$$(docker info --format '{{.DockerRootDir}}' 2>/dev/null || echo /goinfre/$${USER}/docker-data)}" $(COMPOSE) up --build -d
+	mkdir -p uploads_storage
+
+docker-goinfre:
+	@echo "$(GREEN)Configuring Docker data-root in goinfre...$(RESET)"
+	bash scripts/docker-goinfre-setup.sh
 
 down:
 	@echo "$(YELLOW)Stopping services...$(RESET)"
@@ -41,6 +50,11 @@ logs-app:
 
 logs-db:
 	$(COMPOSE) logs -f $(DB)
+
+logs-monitoring:
+	$(COMPOSE) logs -f prometheus grafana node-exporter postgres-exporter alertmanager
+
+
 
 # ==============================================================
 # BUILD
@@ -77,7 +91,7 @@ studio:
 # ==============================================================
 db-shell:
 	@echo "$(GREEN)Connecting to PostgreSQL...$(RESET)"
-	$(COMPOSE) exec $(DB) psql -U $(DB_USER) -d $(DB_NAME)
+	$(COMPOSE) exec $(DB) psql -U $(DB_USER) -d $(DB_NAME)	
 
 db-reset:
 	@echo "$(RED)Resetting database...$(RESET)"
@@ -123,11 +137,15 @@ help:
 	@echo "$(GREEN)ft_transcendence — database service$(RESET)"
 	@echo ""
 	@echo "  $(YELLOW)make$(RESET)              → lance les services"
+	@echo "  $(YELLOW)make docker-goinfre$(RESET) → configure Docker pour stocker dans goinfre"
+	@echo "  $(YELLOW)make up-goinfre$(RESET)    → lance avec DOCKER_DATA_ROOT en goinfre"
 	@echo "  $(YELLOW)make down$(RESET)          → stoppe les services"
 	@echo "  $(YELLOW)make restart$(RESET)       → redémarre tout"
 	@echo "  $(YELLOW)make logs$(RESET)          → affiche tous les logs"
 	@echo "  $(YELLOW)make logs-app$(RESET)      → logs du serveur Node"
 	@echo "  $(YELLOW)make logs-db$(RESET)       → logs de PostgreSQL"
+	@echo "  $(YELLOW)make logs-monitoring$(RESET) → logs Prometheus/Grafana/exporters"
+
 	@echo ""
 	@echo "  $(YELLOW)make migrate$(RESET)       → applique les migrations"
 	@echo "  $(YELLOW)make migrate-dev$(RESET)   → crée une nouvelle migration"
@@ -143,6 +161,6 @@ help:
 	@echo "  $(YELLOW)make re$(RESET)            → clean + up"
 	@echo ""
 
-.PHONY: all up down restart logs logs-app logs-db build rebuild \
+.PHONY: all up up-goinfre docker-goinfre down restart logs logs-app logs-db logs-monitoring build rebuild \
         migrate migrate-dev generate studio db-shell db-reset \
         status health clean fclean re help

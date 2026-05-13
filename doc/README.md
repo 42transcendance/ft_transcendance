@@ -1,198 +1,294 @@
+*This project has been created as part of the 42 curriculum by dbhujoo, ocgraf, nbacconn, ebenoist, tcros.*
 
-# ft_transcendance — Base de données & Prisma
+# ft_transcendance
 
-## Qu'est-ce qu'une base de données ?
+## Description
 
-Une **base de données** est un système permettant de stocker, organiser et gérer des informations de façon structurée. Dans le contexte d'une application web, elle sert à conserver toutes les données importantes : utilisateurs, messages, scores, relations, etc. La base de données permet de retrouver, modifier ou supprimer ces informations rapidement et de façon sécurisée.
+**ft_transcendance** is a multiplayer web platform built around a custom game named Pixel Fight. The project combines a modern frontend, a real-time game layer, a relational database, authentication, social features, and a hardened DevOps stack.
 
-Dans ce projet, la base de données utilisée est **PostgreSQL**, une solution relationnelle robuste et performante.
+### Key features
 
-## Présentation
+- User authentication and profile management
+- Friends system, chat, and presence tracking
+- Real-time multiplayer game sessions
+- Responsive Nuxt 3 frontend with SSR
+- PostgreSQL database with Prisma ORM
+- Security layer with Nginx, ModSecurity, and Vault
+- Monitoring stack with Prometheus, Grafana, Alertmanager, Node Exporter, and PostgreSQL Exporter
 
-Ce projet utilise **PostgreSQL** comme base de données relationnelle et **Prisma** comme ORM pour Node.js.
+## Team Information
 
-### Qu'est-ce qu'un ORM ?
+| Role | Person(s) | Key responsibilities |
+|---|---|---|
+| Product Owner | tcros | Product vision, backlog prioritization, feature validation, evaluator-facing contact |
+| Project Manager | ocgraf | Team coordination, deadline tracking, blocker management |
+| Technical Lead | ebenoist, dbhujoo | Technical architecture, stack decisions, critical code reviews |
+| Dev Lead | nbacconn | Cross-feature implementation leadership and ownership of development scope |
+| Developers | All team members | Implementation, testing, documentation |
 
-Un **ORM** (Object-Relational Mapping, ou « mapping objet-relationnel ») est un outil qui fait le lien entre la base de données (tables, lignes) et le code (objets, classes). Il permet de manipuler les données de la base comme des objets dans le code, sans écrire de SQL brut. Cela simplifie les requêtes, la gestion des relations et la maintenance du code.
+## Project Management
 
-Prisma facilite la gestion des données, des relations et des migrations, tout en offrant un client typé pour interagir avec la base.
+The work was split by module ownership and feature area, with each member covering a clearly identified part of the stack. Integration happened through shared branches and incremental merges, so each service could be validated independently before being assembled in the full compose stack.
 
----
+### Organization
 
-## Installation & Configuration
+- Tasks were distributed by domain: frontend, realtime, security, database, monitoring, and game logic.
+- Modules were tracked in `doc/modules.md` and used as the basis for the points/ownership breakdown.
+- The stack was validated service by service, then as a full environment.
+- The team held two weekly meetings with written reports (comptes rendus) to track decisions, progress, and next actions.
 
-1. **Installer les dépendances** :
-   ```bash
-   npm install @prisma/client
-   npm install --save-dev prisma
-   ```
+### Tools used
 
-2. **Initialiser Prisma** :
-   ```bash
-   npx prisma init
-   ```
-   Cela crée le dossier `prisma/` avec le fichier `schema.prisma` et un fichier `.env` pour la variable `DATABASE_URL`.
+- Git / GitHub for version control and coordination
+- Podman / Podman Compose for local container execution
+- Makefile for launch, migration, and maintenance commands
+- Prisma for schema management and migrations
 
-3. **Configurer la base de données** :
-   - Modifier la variable `DATABASE_URL` dans `.env` pour pointer vers votre instance PostgreSQL.
+### Communication
 
----
+- Discord for day-to-day coordination and quick validation checks
+- Shared discussions around implementation choices and integration issues
 
-## Schéma de la base de données
+## Technical Stack
 
-Le schéma est défini dans `prisma/schema.prisma`. Les principales entités sont :
+### Frontend
 
-- **User** : Utilisateur (email, username, mot de passe, avatar, stats, etc.)
-- **Friendship** : Relations d’amitié (statut : pending, accepted, declined)
-- **Block** : Utilisateurs bloqués
-- **Conversation** & **Participant** : Conversations (groupes ou privées) et participants
-- **Message** : Messages envoyés dans les conversations
-- **Match** : Parties de jeu (joueurs, scores, statut)
-- **UserStats** : Statistiques utilisateur (victoires, défaites, niveau, xp)
+- **Nuxt 3** for the application framework
+- **Vue 3** for component-based UI
+- **TypeScript** for typed application code
+- SSR enabled for better rendering and routing behavior
 
-Les relations sont gérées via des clés étrangères et des tables de liaison.
+### Backend
 
----
+- **Nitro / Nuxt server routes** for API endpoints
+- **WebSockets** for realtime gameplay and chat flows
+- **Prisma Client** for database access
+- **Vault** for secret management
 
-## Migrations & Génération du client
+### Database
 
-- **Créer une migration** :
-  ```bash
-  npx prisma migrate dev
-  ```
-- **Générer le client Prisma** :
-  ```bash
-  npx prisma generate
-  ```
+- **PostgreSQL** was chosen because the project needs structured relational data with strong consistency: users, friendships, and global chat messages.
+- **Prisma** provides type-safe access, migrations, and a clean schema layer.
 
----
+### Infrastructure / DevOps
 
-## Utilisation dans le code
+- **Podman** for container execution
+- **Nginx** as reverse proxy and HTTPS entry point
+- **ModSecurity + OWASP CRS** as WAF layer
+- **Prometheus** for metrics collection
+- **Grafana** for dashboards
+- **Alertmanager** for alert routing
+- **Node Exporter** and **Postgres Exporter** for host and database metrics
 
-Exemple d’utilisation du client Prisma :
-```js
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+## Architecture
 
-// Récupérer un utilisateur par email
-const user = await prisma.user.findUnique({
-  where: { email: 'test@test.com' }
-});
+```text
++--------------------------------------------------------------+
+|                       WAF (ModSecurity)                       |
+|                 HTTPS termination + OWASP CRS                 |
++--------------------------------------------------------------+
+										|
+										v
++--------------------------------------------------------------+
+|                        API Gateway / Nginx                    |
+|            Reverse proxy, WebSocket, TLS, access control     |
++--------------------------------------------------------------+
+					  |                         |                    |
+					  v                         v                    v
++---------------------------+   +------------------------+   +-------------------+
+|        App Nuxt 3         |   |        Grafana        |   |       Vault       |
+|    Frontend + API routes  |   |   Monitoring dashboard |   |   Secrets store   |
++---------------------------+   +------------------------+   +-------------------+
+					  |
+					  v
++---------------------------+   +------------------------+
+|      PostgreSQL DB        |   |   Monitoring Stack     |
+|   Users, chat, games...   |   | Prometheus, Alertman.  |
++---------------------------+   | Node Exporter, PG Exp. |
+										  +------------------------+
+
+Prometheus scrape targets:
+  - App /api/metrics
+  - PostgreSQL Exporter
+  - Node Exporter
+  - Prometheus self-metrics
 ```
 
----
+## Database Schema
 
-## Bonnes pratiques
+The database schema is defined in `src/prisma/schema.prisma`.
 
-- **Modifier le schéma dans `prisma/schema.prisma` puis lancer une migration** :
-  Cela garantit que la structure de la base reste synchronisée avec le code et que toutes les modifications sont traçables et reproductibles.
+### Main tables and relations
 
-- **Ne jamais modifier la base directement sans passer par Prisma** :
-  Passer par Prisma permet d’éviter les incohérences, les erreurs manuelles et assure que le client Prisma reste à jour avec la structure réelle de la base.
+| Table | Purpose | Key fields / notes |
+|---|---|---|
+| `User` | Main user account entity | `id`, `email`, `username`, `password`, `avatarUrl`, `isOnline`, `lastSeenAt` |
+| `Friendship` | Friend requests and relations | `senderId`, `receiverId`, `status` (`PENDING`, `ACCEPTED`, `DECLINED`) |
+| `GlobalMessage` | Global chat messages | `content`, `senderUsername`, `createdAt` |
 
-- **Toujours versionner les migrations** :
-  Versionner les migrations permet de garder un historique des évolutions de la base, de collaborer à plusieurs sans conflit et de revenir en arrière facilement en cas de problème.
+### Relationship summary
 
----
+- One user can send and receive many friendships.
+- A user can author many global chat messages.
 
-## Ressources utiles
+## Features List
 
-- [Documentation Prisma](https://www.prisma.io/docs/)
-- [Prisma ORM sur GitHub](https://github.com/prisma/prisma)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+| Feature | Main contributor(s) | Description |
+|---|---|---|
+| Authentication | nbacconn, dbhujoo | Sign-up, login, logout, and token-based session handling |
+| User profile management | nbacconn, dbhujoo | Profile viewing, updates, avatar upload, and account data |
+| Friends system | nbacconn | Send, accept, reject, and remove friend relationships |
+| Chat | nbacconn, ebenoist | Global chat history and real-time message exchange |
+| Realtime gameplay | tcros, nbacconn | Match session handling and WebSocket-based game interactions |
+| Frontend UI / SSR | ocgraf, nbacconn | Application layout, component structure, and server-side rendering |
+| Security layer | ebenoist | WAF / ModSecurity and Vault-backed secret handling |
+| Monitoring | dbhujoo | Prometheus, Grafana, exporters, and alerting stack |
+| Dockerization & orchestration | dbhujoo | Container setup (Dockerfile/compose compatibility), service wiring, secrets/env integration, and runtime tooling for the full stack |
 
----
+## Modules
 
-## Sources
+Points are calculated as required: **Major = 2 pts**, **Minor = 1 pt**.
 
-- [Documentation Prisma](https://www.prisma.io/docs/)
-- [Prisma ORM sur GitHub](https://github.com/prisma/prisma)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-- [Wikipedia — Base de données](https://fr.wikipedia.org/wiki/Base_de_donn%C3%A9es)
+### Core Modules
 
----
+| # | Type | Module | Owner(s) | Pts | Why it was chosen / implementation |
+|---|---|---|---|---|---|
+| 1 | Major | Framework frontend & backend | ocgraf, nbacconn | 2 | Nuxt 3 provides the frontend and server-side API surface used by the project |
+| 2 | Major | Real-time features (WebSockets) | nbacconn, tcros | 2 | Needed for live chat and gameplay synchronization |
+| 3 | Major | User interaction | nbacconn, ebenoist, dbhujoo | 2 | Covers the social interactions of the app: auth, profile, friends, chat |
+| 4 | Minor | ORM for database | dbhujoo | 1 | Prisma is used for type-safe database access and migrations |
+| 5 | Minor | Server-Side Rendering (SSR) | ocgraf, nbacconn | 1 | SSR improves initial rendering and matches the Nuxt architecture |
+| 8 | Major | User management & authentication | nbacconn, dbhujoo | 2 | Accounts, login, logout, auth checks, and protected routes |
+| 9 | Major | WAF/ModSecurity + HashiCorp Vault | ebenoist | 2 | Security layer for request inspection and secret management |
+| 10 | Major | Web-based game (PvP) | tcros | 2 | Core gameplay loop and real-time match behavior |
 
-## Auteur
-Dilan BHUJOO
-Projet 42 — ft_transcendance
-# Nuxt Minimal Starter
+### Bonus Modules
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+| # | Type | Module | Owner(s) | Pts | Why it was chosen / implementation |
+|---|---|---|---|---|---|
+| 6 | Minor | Design system (10+ components) | ocgraf | 1 | Custom component library and reusable UI structure |
+| 7 | Minor | Additional browser support | ocgraf | 1 | Ensures the app remains usable across browsers |
+| 11 | Major | Remote players (real-time) | tcros, nbacconn | 2 | Multiplayer synchronization across clients |
+| 12 | Major | Multiplayer (3+ players) | tcros | 2 | Extends the game model to more than two players |
+| 13 | Major | Advanced 3D graphics (Three.js / Babylon.js) | ocgraf | 2 | Visual/game rendering layer with 3D-oriented architecture |
+| 14 | Major | Prometheus & Grafana monitoring | dbhujoo | 2 | Observability stack for metrics, dashboards, and alerts |
 
-## Setup
+### Module Totals
 
-Make sure to install dependencies:
+| Category | Count | Pts each | Subtotal |
+|---|---|---|---|
+| Major | 11 | 2 | 22 |
+| Minor | 4 | 1 | 4 |
+| **Total** | **15** |  | **26** |
 
-```bash
-# npm
-npm install
+## Individual Contributions
 
-# pnpm
-pnpm install
+### dbhujoo
 
-# yarn
-yarn install
+- Designed the Prisma schema and PostgreSQL integration
+- Set up the monitoring stack and metrics endpoints
+- Worked on deployment-related scripts and documentation
+- Helped with authentication and user-management flows
+- Performed technical watch and reviewed merge requests to keep implementation quality consistent
 
-# bun
-bun install
-```
+### ocgraf
 
-## Development Server
+- Built the Nuxt 3 frontend structure
+- Worked on SSR and browser-facing rendering
+- Created and maintained reusable UI components
+- Covered design system and cross-browser support
 
-Start the development server on `http://localhost:3000`:
+### nbacconn
 
-```bash
-# npm
-npm run dev
+- Implemented realtime application flows
+- Contributed to authentication, user interaction, and social features
+- Worked on WebSocket-driven behavior for chat and gameplay
 
-# pnpm
-pnpm dev
+### ebenoist
 
-# yarn
-yarn dev
+- Implemented the security layer around the stack
+- Set up ModSecurity / WAF behavior and Vault-oriented secret handling
+- Contributed to hardening and access-control related work
 
-# bun
-bun run dev
-```
+### tcros
 
-## Production
+- Implemented the game logic and multiplayer behavior
+- Worked on real-time gameplay synchronization
+- Contributed to player-session and match-related features
 
-Build the application for production:
+## Instructions
 
-```bash
-# npm
-npm run build
+### Prerequisites
 
-# pnpm
-pnpm build
+Install the following tools before running the project:
 
-# yarn
-yarn build
+- **Podman**
+- **podman-compose** or a Podman setup compatible with `docker compose`
+- **Node.js** and **npm**
+- **Make**
+- **Git**
+- **jq**
+- **curl**
 
-# bun
-bun run build
-```
+Recommended versions:
 
-Locally preview production build:
+- Node.js 20+ is a safe baseline
+- A recent Podman release with rootless support
 
-```bash
-# npm
-npm run preview
+### Configuration
 
-# pnpm
-pnpm preview
+Make sure these files exist and are filled in:
 
-# yarn
-yarn preview
+- `./.env` for Prisma / database access
+- `./secrets/postgres.env` for PostgreSQL credentials
+- `./secrets/monitoring.env` for Grafana and monitoring credentials
 
-# bun
-bun run preview
-```
+### Run the project
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
-=======
+1. Clone the repository.
+2. Install the frontend dependencies if needed:
+	```bash
+	cd src
+	npm install
+	```
+3. Start the stack with Podman:
+	```bash
+	make up-goinfre
+	```
+	If your Podman setup already works with the regular compose flow, `make up` also works.
+4. Open the application:
+	- App: `https://localhost:8443`
+	- Grafana: `https://localhost:9443`
 
+### Useful commands
 
-# web-training
+- `make down` to stop the stack
+- `make logs` to follow all containers
+- `make logs-monitoring` to inspect Prometheus / Grafana / exporters
+- `make health` to check the app health endpoint
+- `make migrate` to apply Prisma migrations
+- `make migrate-dev` to create a new migration
 
-First project in Nuxt.js. Training in web dev
+## Resources
+
+### Classic references
+
+- [Nuxt 3 documentation](https://nuxt.com/docs)
+- [Prisma documentation](https://www.prisma.io/docs/)
+- [PostgreSQL documentation](https://www.postgresql.org/docs/)
+- [Podman documentation](https://podman.io/docs)
+- [Nginx documentation](https://nginx.org/en/docs/)
+- [ModSecurity documentation](https://github.com/owasp-modsecurity/ModSecurity)
+- [Prometheus documentation](https://prometheus.io/docs/introduction/overview/)
+- [Grafana documentation](https://grafana.com/docs/grafana/latest/)
+- [Vault documentation](https://developer.hashicorp.com/vault/docs)
+
+### AI usage
+
+AI was used to help restructure the README, rewrite the architecture section, consolidate the requirements into a cleaner project document, and format the module and contribution summaries. The technical details were cross-checked against the repository files such as `docker-compose.yml`, `src/prisma/schema.prisma`, `doc/modules.md`, and the monitoring documentation.
+
+## Additional notes
+
+- More detailed database and monitoring notes are available in `doc/README.md` and `doc/monitoring.md`.
+- The module breakdown and points are documented in `doc/modules.md`.
+- The project is intended to run with Podman rather than Docker.

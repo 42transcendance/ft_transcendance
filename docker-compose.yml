@@ -1,4 +1,5 @@
 services:
+
   postgres:
     image: docker.io/postgres:15-alpine
     container_name: transcendence_db
@@ -12,6 +13,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - backend
+      - monitoring
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U transcendence -d transcendence_db"]
       interval: 10s
@@ -34,8 +36,85 @@ services:
     networks:
       - frontend
       - backend
+      - monitoring
     volumes:
       - ./uploads_storage:/app/storage/uploads
+
+
+  prometheus:
+    image: docker.io/prom/prometheus:v2.54.1
+    container_name: transcendence_prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    depends_on:
+      - alertmanager
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - monitoring
+      - backend
+
+  alertmanager:
+    image: docker.io/prom/alertmanager:v0.27.0
+    container_name: transcendence_alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    networks:
+      - monitoring
+
+  grafana:
+    image: docker.io/grafana/grafana:11.2.2
+    container_name: transcendence_grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    env_file:
+      - ./secrets/monitoring.env
+    environment:
+      GF_SERVER_DOMAIN: localhost
+      GF_SERVER_ROOT_URL: https://localhost:9443/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "false"
+      GF_SECURITY_ALLOW_EMBEDDING: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - monitoring
+      - frontend
+
+  node-exporter:
+    image: docker.io/prom/node-exporter:v1.8.2
+    container_name: transcendence_node_exporter
+    restart: unless-stopped
+    command:
+      - "--path.rootfs=/host"
+    pid: host
+    volumes:
+      - /:/host:ro
+    networks:
+      - monitoring
+
+  postgres-exporter:
+    image: docker.io/prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: transcendence_postgres_exporter
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://transcendence:transcendence@postgres:5432/transcendence_db?sslmode=disable
+    networks:
+      - monitoring
+      - backend
 
 
   nginx:
@@ -49,6 +128,10 @@ services:
     ports:
       - "8080:80"
       - "8443:443"
+      - "9443:9443"
+      - "9444:9444"
+    env_file:
+      - ./secrets/monitoring.env
     networks:
       - frontend
     healthcheck:
@@ -80,9 +163,13 @@ volumes:
   postgres_data:
   uploads_storage:
   vault_data:
+  prometheus_data:
+  grafana_data:
 
 networks:
   frontend:
     driver: bridge
   backend:
+    driver: bridge
+  monitoring:
     driver: bridge
