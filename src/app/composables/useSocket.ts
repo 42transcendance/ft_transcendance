@@ -92,6 +92,7 @@ export const useSocket = () => {
         socket?.close()
         socket = null
 		isConnected.value = false
+		window.location.reload()
     }
 
     return {
