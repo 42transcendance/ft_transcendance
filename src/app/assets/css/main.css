@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+html,
+body {
+	height: 100% !important;
+	width: 100% !important;
+	@apply bg-blue-800;
+	@apply bg-[size:16px_16px] bg-[image:linear-gradient(to_right,rgb(255_255_255_/_0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255_/_0.1)_1px,transparent_1px)];
+	--main-font: "Gasoek One";
+	font-family: "Stack Sans Notch";
+}
+
+#__nuxt,
+#__layout {
+	height: 100% !important;
+	width: 100% !important;
+}
+
+@font-face {
+	font-family: "Gasoek One";
+	src: url("./GasoekOne-Regular.ttf") format("truetype");
+}
+
+@font-face {
+	font-family: "Stack Sans Notch";
+	src: url("./StackSansNotch-VariableFont_wght.ttf") format("truetype");
+}
+
+.font-gasoek {
+	font-family: "Gasoek One", sans-serif;
+}

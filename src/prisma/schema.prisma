@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  username        String    @unique
+  password        String
+  avatarUrl       String?
+  isOnline        Int   @default(0)
+  lastSeenAt      DateTime?
+
+  sentFriendships     Friendship[]  @relation("FriendshipSender")
+  receivedFriendships Friendship[]  @relation("FriendshipReceiver")
+  globalMessages      GlobalMessage[]
+}
+
+model Friendship {
+  id         String           @id @default(uuid())
+  sender     User             @relation("FriendshipSender", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User             @relation("FriendshipReceiver", fields: [receiverId], references: [id])
+  receiverId String
+  status     FriendshipStatus @default(PENDING)
+
+  @@unique([senderId, receiverId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model GlobalMessage {
+  id        String   @id @default(uuid())
+  content   String
+  senderId  String?  // permettre la suppression de l'user
+  senderUsername  String
+  sender    User?    @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  
+  @@index([createdAt])
+}

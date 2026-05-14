@@ -1,1 +1,37 @@
+# Created by Nuxt
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+#.env.*
 *.env
+#!.env.example
+!.env.template
+
+# Secrets
+secrets/**
+!secrets/.gitkeep
+*.pem
+*.key
+*.p12
+*.pfx
+node_modules
+uploads_storage
