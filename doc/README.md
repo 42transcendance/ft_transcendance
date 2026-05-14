@@ -262,12 +262,48 @@ Make sure these files exist and are filled in:
 
 ### Useful commands
 
+#### General
+
 - `make down` to stop the stack
 - `make logs` to follow all containers
 - `make logs-monitoring` to inspect Prometheus / Grafana / exporters
 - `make health` to check the app health endpoint
+
+#### Database
+
 - `make migrate` to apply Prisma migrations
 - `make migrate-dev` to create a new migration
+- `make db-shell` to access the PostgreSQL shell
+- `make db-reset` to reset the database to initial state
+- `make db-reset-and-migrate` to reset and run migrations
+- `make studio` to open Prisma Studio (visual database explorer)
+- `make generate` to regenerate the Prisma client
+
+**SQL queries for exploration** (run inside `make db-shell`):
+
+```sql
+-- List all tables
+\dt
+
+-- Show table schema (replace TABLE_NAME with actual name)
+\d TABLE_NAME
+
+-- Count records in each table
+SELECT schemaname, tablename, n_live_tup FROM pg_stat_user_tables;
+
+-- View all users
+SELECT id, username, email, "isOnline", "lastSeenAt" FROM "User";
+
+-- View all friendships
+SELECT * FROM "Friendship";
+
+-- View global messages
+SELECT * FROM "GlobalMessage" ORDER BY "createdAt" DESC LIMIT 10;
+
+-- View game sessions
+SELECT * FROM "GameSession" ORDER BY "createdAt" DESC LIMIT 5;
+```
+
 
 ## Resources
 
