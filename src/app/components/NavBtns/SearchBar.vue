@@ -10,7 +10,7 @@
 
 		try {
 			//Get the id and navigate to the dedicated page
-			const user = await $fetch(`/api/users/search?name=${searchQuery.value}`)
+			const user = await $fetch(`/api/users/search?name=${encodeURIComponent(searchQuery.value)}`)
 			if (!user)
 			{
 				searchQuery.value = ''
