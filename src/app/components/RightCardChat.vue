@@ -33,10 +33,10 @@ watch(pendingChatMessage, (payload) => {
                 .filter(m => m.isDeleted)
                 .map(m => m.username)
         )
-        let label = 'USER DELETED'
+        let label = 'deleted user'
         let counter = 1
         while (existingDeletedLabels.has(label)) {
-            label = `USER DELETED ${counter}`
+            label = `deleted user ${counter}`
             counter++
         }
         messages.value = messages.value.map(m => {
