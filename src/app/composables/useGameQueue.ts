@@ -75,7 +75,7 @@ function setWinnerUsername(value: string | null) {
 
 const gameQueueState = ref<'syncing' | 'idle' | 'waiting' | 'starting' | 'playing' | 'finished'>(
     import.meta.client && sessionStorage.getItem('winner') !== null
-        ? 'finished'
+        ? 'idle'
         : 'syncing'
 )
 
