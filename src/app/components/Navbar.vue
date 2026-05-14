@@ -7,7 +7,7 @@ const { toggleChat } = useChat()
   <nav class="fixed w-full bg-white/90 shrink-1 p-2 pl-8 pr-8 z-2 flex flex-col">
     <div class="flex flex-row sm:justify-between justify-center items-center gap-2 flex-wrap sm:flex-nowrap order-3 sm:order-none">
       <div class="flex flex-row gap-8 items-center order-1 sm:order-1">
-        <NuxtLink class="w-12 h-12 flex items-center justify-center" to="/">
+        <NuxtLink aria-label="Homepage" class="w-12 h-12 flex items-center justify-center" to="/">
           <svg alt="Logo" class="w-full h-full fill-blue-800 hover:fill-blue-900" viewBox="0 0 56 27"
             xmlns="http://www.w3.org/2000/svg">
             <g transform="matrix(1,0,0,1,-399.87985,-646.740975)">
