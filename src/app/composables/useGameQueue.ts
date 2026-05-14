@@ -26,7 +26,7 @@ const painted = ref<number | null>(
 const is_eq = ref<boolean | null>(
 	import.meta.client
 		? (sessionStorage.getItem('is_eq') !== null
-			? Boolean(sessionStorage.getItem('is_eq'))
+			? Boolean(sessionStorage.getItem('is_eq') === 'true')
 			: null)
 		: null
 )
@@ -58,7 +58,7 @@ function setClicked(value: number | null) {
 }
 
 function setIsEq(value: boolean | null) {
-	clicked.value = value
+	is_eq.value = value
 	if (import.meta.client)
 		value !== null
 			? sessionStorage.setItem('is_eq', String(value))
@@ -267,6 +267,7 @@ export const useGameQueue = () => {
 		winnerUsername,
         painted,
         clicked,
+		is_eq,
         gameQueueState,
         launchingTimer,
         gameTimer,

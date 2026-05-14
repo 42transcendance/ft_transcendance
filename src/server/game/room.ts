@@ -192,9 +192,10 @@ export class Room {
 			const	winnerUserId = this.userIds[winner_id]
             const	winnerUsername = this.usernames.get(winnerUserId) ?? 'Unknown'
 			let		is_eq = false;
+
 			if (winner_id === -1)
 				is_eq = true;
-{
+
 			for (const userId of this.userIds) {
 				const stats = this.get_stats_by_userId(userId);
 				const end_msg: ServerMessage = {
@@ -206,7 +207,7 @@ export class Room {
 					clicked: stats.clicked,
 				};
 
-				sendToUser(userId, end_msg))
+				sendToUser(userId, end_msg);
 			}
 		}
 	}

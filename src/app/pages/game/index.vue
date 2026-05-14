@@ -86,7 +86,7 @@ function handleFindMatch() {
     </div>
     <div v-else-if="gameState === 'finished'">
         Result !
-        <p v-if="is_eq === false">The winner is {{ winnerUsername }} !</p>
+        <p v-if="!is_eq">The winner is {{ winnerUsername }} !</p>
         <p v-else>This game is a tie !</p>
         Stats:
         <p>Painted tiles : {{ painted }}</p>
