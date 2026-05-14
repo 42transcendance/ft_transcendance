@@ -14,17 +14,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Unauthorized' })
   }
   
-  try {
-	const messages = await prisma.globalMessage.findMany({
-		take: 50,
-		orderBy: { createdAt: 'desc' },
-		include: {
-		sender: { select: { id: true, username: true } }
-		}
-	})
-  } catch (e) {
-	throw createError({ statusCode: 500, message: 'Database error' })
-  }
+  const messages = await prisma.globalMessage.findMany({
+	take: 50,
+	orderBy: { createdAt: 'desc' },
+  	include: {
+  	sender: { select: { id: true, username: true } }
+  	}
+  })
 
   // Tri chronologique
   const sortedMessages = [...messages].reverse()
