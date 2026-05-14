@@ -16,14 +16,21 @@ export default defineEventHandler(async (event) => {
 	if (body.username.length < 3) {
         throw createError({
             statusCode: 400,
-            message: "Username must a least be 3 characters long",
+            message: "Username must at least be 3 characters long",
+        })
+    }
+
+	if (body.username.length > 20) {
+        throw createError({
+            statusCode: 400,
+            message: "Username must be maximum 20 characters long",
         })
     }
 
 	if (body.password.length < 3) {
         throw createError({
             statusCode: 400,
-            message: "Password must a least be 3 characters long",
+            message: "Password must at least be 3 characters long",
         })
     }
 
