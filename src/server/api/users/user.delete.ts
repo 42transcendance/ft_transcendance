@@ -13,7 +13,13 @@ export default defineEventHandler(async (event) => {
 	if (!body.password)
         throw createError({ statusCode: 400, message: 'Password required' })
 
-    const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+	let decoded : {userId: string}
+	try {
+		decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+	} catch {
+		throw createError({ statusCode: 401, message: 'Invalid token' })
+	}
+
 	const user = await prisma.user.findUnique({
 		where: { id: decoded.userId }
 	})
@@ -36,7 +42,7 @@ export default defineEventHandler(async (event) => {
 				unlinkSync(oldFilePath);
 				console.log(`Old avatar deleted : ${oldFileName}`);
 			} catch (err) {
-				throw createError({ statusCode: 400, message: err })
+				console.error("Error deleting avatar:", err)
 			}
 		}
 	}
@@ -60,15 +66,10 @@ export default defineEventHandler(async (event) => {
 		data: { oldUsername }
 	})
 
-	for (const [key, peer] of connectedPeers.entries()) {
-		if (key.startsWith('chat:')) {
-			try {
-				peer.send(broadcast)
-			} catch (e) {
-				console.error('Erreur broadcast user_deleted:', e)
-			}
-		}
-	}
+	broadcastAll({
+		type: 'user_deleted',
+		data: { oldUsername }
+	})
 
     deleteCookie(event, 'auth_token')
     return { success: true }
