@@ -69,7 +69,7 @@ function handleFindMatch() {
 <template>
   <div>
     <div v-if="gameState === 'idle'">
-        <button @click="handleFindMatch">Find a match !</button>
+        <button class="bg-green-600 rounded-md mt-4 p-2 hover:bg-green-900 hover:cursor-pointer" @click="handleFindMatch">Find a match !</button>
     </div>
     <div v-if="gameState === 'waiting'">
         Waiting for an opponent...

@@ -215,7 +215,7 @@
 				<FormError v-if="deleteError" :label="deleteError" />
 				<div class="flex justify-between gap-3">
 					<button type="button" @click="showDeletePopup = false" class="bg-blue-600 rounded-md mt-4 p-2 hover:bg-blue-900 hover:cursor-pointer">Cancel</button>
-					<button type="submit" class="bg-red-700 rounded-md p-2 hover:bg-red-800 hover:cursor-pointer">Delete</button>
+					<button type="submit" class="bg-red-600 rounded-md mt-4 p-2 hover:bg-red-900 hover:cursor-pointer">Delete</button>
 				</div>
 			</form>
 		</div>
