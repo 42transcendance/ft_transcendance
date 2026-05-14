@@ -315,7 +315,7 @@ SELECT * FROM "GlobalMessage" ORDER BY "createdAt" DESC LIMIT 10;
 - [Grafana documentation](https://grafana.com/docs/grafana/latest/)
 - [Vault documentation](https://developer.hashicorp.com/vault/docs)
 
-### AI usage
+### AI usage :
 
 AI was used to help restructure the README, rewrite the architecture section, consolidate the requirements into a cleaner project document, and format the module and contribution summaries. The technical details were cross-checked against the repository files such as `docker-compose.yml`, `src/prisma/schema.prisma`, `doc/modules.md`, and the monitoring documentation.
 
