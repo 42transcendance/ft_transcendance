@@ -10,8 +10,8 @@ export const PLAYER = {
 
 export const GAME = {
     PLAYERS: 2,
-    CELLS_W: 10,
-    CELLS_H: 10,
+    CELLS_W: 15,
+    CELLS_H: 15,
 }
 
 const BORDER = 5
@@ -23,6 +23,6 @@ export const CANVAS = {
 }
 
 export const TIMER = {
-    GAME: 10,
-    LAUNCHING: 7,
+    GAME: 20,
+    LAUNCHING: 10,
 }
