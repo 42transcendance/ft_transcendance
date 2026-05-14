@@ -108,6 +108,24 @@ function clearAllIntervals() {
     gamingInterval = null
 }
 
+export function clearGameStorage() {
+	if (!import.meta.client)
+		return
+	sessionStorage.removeItem('winner')
+	sessionStorage.removeItem('winnerUsername')
+	sessionStorage.removeItem('painted')
+	sessionStorage.removeItem('clicked')
+	sessionStorage.removeItem('waitStartedAt')
+	winner.value = null
+	winnerUsername.value = null
+	painted.value = null
+	clicked.value = null
+	gameQueueState.value = 'syncing'
+	launchingTimer.value = TIMER.LAUNCHING
+	gameTimer.value = TIMER.GAME
+	clearAllIntervals()
+}
+
 export const useGameQueue = () => {
     const { send, whenReady, pendingGameMessage } = useSocket()
 

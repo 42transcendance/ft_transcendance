@@ -67,14 +67,22 @@ build:
 rebuild: down build up
 
 # ==============================================================
+# VAULT
+# ==============================================================
+
+vault-init:
+	@echo "$(GREEN)Re-initializing Vault secrets...$(RESET)"
+	@docker exec transcendence_vault sh /vault/tools/init.sh > /dev/null 2>&1 || true
+
+# ==============================================================
 # PRISMA
 # ==============================================================
 
 # Variable qui récupère DATABASE_URL depuis Vault
-migrate-dev:
+migrate-dev: vault-init
 	docker compose exec app sh -c 'export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/data/transcendence/postgres | jq -r ".data.data.database_url") && ./node_modules/.bin/prisma migrate dev --name init'
 
-migrate:
+migrate: vault-init
 	@echo "$(GREEN)Running migrations...$(RESET)"
 	docker compose exec app sh -c 'export DATABASE_URL=$$(curl -s -H "X-Vault-Token: myroot" http://vault:8200/v1/secret/data/transcendence/postgres | jq -r ".data.data.database_url") && ./node_modules/.bin/prisma migrate deploy'
 
@@ -162,5 +170,5 @@ help:
 	@echo ""
 
 .PHONY: all up up-goinfre docker-goinfre down restart logs logs-app logs-db logs-monitoring build rebuild \
-        migrate migrate-dev generate studio db-shell db-reset \
+        migrate migrate-dev generate studio db-shell db-reset vault-init \
         status health clean fclean re help

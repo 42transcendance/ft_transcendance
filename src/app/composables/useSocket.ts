@@ -1,3 +1,4 @@
+import { clearGameStorage } from './useGameQueue'
 const pendingGameMessage = ref<any>(null)
 const pendingChatMessage = ref<any>(null)
 
@@ -16,6 +17,7 @@ function notifyReady() {
 }
 
 export const useSocket = () => {
+
     function send(message: object) {
         if (socket && socket.readyState === WebSocket.OPEN) {
             socket.send(JSON.stringify(message))
@@ -92,6 +94,7 @@ export const useSocket = () => {
         socket?.close()
         socket = null
 		isConnected.value = false
+		clearGameStorage()
 		window.location.reload()
     }
 

@@ -33,11 +33,13 @@
 		if (file.size > 2 * 1024 * 1024) {
 			uploadSuccess.value = false
 			uploadError.value = 'File is too big (max 2MB)!'
+			target.value = '';
 			return
 		}
 		if (!file.type.startsWith('image/')) {
 			uploadSuccess.value = false
 			uploadError.value = 'File must be an image!'
+			target.value = '';
 			return
 		}
 		uploadError.value = ''
