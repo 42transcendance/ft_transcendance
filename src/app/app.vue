@@ -25,7 +25,7 @@
 		if (message.type === 'AVATAR_UPDATE')
 			notifyAvatarUpdate(message.userId, message.avatarUrl)
 
-		if (['waiting', 'starting', 'playing', 'finished', 'stats',
+		if (['waiting', 'starting', 'playing', 'finished', 'finished_eq', 'stats',
 				'cell_init', 'cell_update', 'sync_state', 'no_game'].includes(message.type)) {
 			pendingGameMessage.value = message
 		}
@@ -37,7 +37,7 @@
 
 	//check if there is a change in currentUser
 	watch(currentUser, (newUser) => {
-		if (newUser && !isConnected.value) {
+		if (newUser) {
 			connect(handleMessage)
 			fetchFriends()
 		} else if (!newUser && isConnected.value) {

@@ -1,4 +1,4 @@
-import { GAME, GRID_INFO, PLAYER_INFO, CELL_INFO } from "~shared/game/constants"
+import { GAME, PLAYER, CELL } from "~shared/game/constants"
 import { Player } from "./player"
 import { Cell } from "~shared/game/cell"
 import { Grid } from "~shared/game/grid"
@@ -26,7 +26,7 @@ export class Game {
 
 		for (let i = 0; i < nb_players; i++) {
 			const startCell = this.board.grid[startPositions[i].x][startPositions[i].y]
-    		const new_p = new Player(startCell, PLAYER_INFO.COLOR[i], i)
+    		const new_p = new Player(startCell, PLAYER.COLOR[i], i)
 			this.players.push(new_p);
 			this.p_painted_cell[i] = [];
 		}
@@ -69,9 +69,12 @@ export class Game {
 		let winner_id: number = 0;
 		this.players.forEach((player, index) => {
 			let curr_painted: number = this.p_painted_cell[index].length;
-			if (curr_painted >= max_painted) {
+			if (curr_painted > max_painted) {
 				max_painted = curr_painted;
 				winner_id = player.id;
+			}
+			else if (curr_painted === max_painted) { //gere l'égalité
+				winner_id = -1;
 			}
 		});
 		return (winner_id);
@@ -91,7 +94,7 @@ export class Game {
 	*/
 	kill_player(id: number) {
 		this.p_painted_cell[id].forEach((cell) => {
-			cell.color = CELL_INFO.COLOR;
+			cell.color = CELL.COLOR;
 		});
 	}
 }

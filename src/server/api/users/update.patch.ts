@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
         const { email, password, ...safeUser } = updatedUser
 
 		if (body.username) {
-			broadcast({
+			broadcastAll({
 				type: 'USERNAME_UPDATE',
 				userId: userId,
 				username: safeUser.username,

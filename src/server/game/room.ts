@@ -2,6 +2,8 @@ import { Game } from "./game"
 import { TIMER } from "~shared/game/constants"
 import type { Peer } from "crossws"
 import { ServerMessage } from '~shared/game/type'
+import { rooms, peerRoom } from '../utils/gameState'
+import { sendToUser, getPeers } from '../utils/peers'
 
 /**
  * Représente une salle de jeu (room).
@@ -14,8 +16,10 @@ export class Room {
 	readonly maxPlayer: number;
 	public startedAt: number | null = null;
     public gameStartedAt: number | null = null;
+	public waitStartedAt: number | null = null;
+	public usernames = new Map<string, string>();
 
-	playerPeers = new Map<string, Peer>();
+
 	userIds: string[] = [];
 	currPlayer: number = 0;
 	states: "waiting" | "starting" |  "playing" | "finished";
@@ -30,6 +34,10 @@ export class Room {
 		this.game = null;
 	}
 
+
+	get_id_by_userId(userId: string): number {
+        return this.userIds.indexOf(userId)
+    }
     /**
      * Retourne l'index d'un joueur dans la liste des sockets.
      * Cet index sert également d'identifiant interne au joueur.
@@ -41,19 +49,25 @@ export class Room {
 		return this.userIds.indexOf(peer.ctx.userId);
 	}
 
+
+	get_stats_by_userId(userId: string): { painted: number, clicked: number } {
+        const id = this.get_id_by_userId(userId)
+        return {
+            painted: this.game?.get_painted(id) ?? 0,
+            clicked: this.game?.get_clicked(id) ?? 0,
+        }
+    }
 	/**
 	 *
 	 */
 	get_stats(peer: Peer): ServerMessage {
-		const	cell_painted: number = this.game.get_painted(this.get_id(peer));
-		const	nbr_clicked: number = this.game.get_clicked(this.get_id(peer));
-
-		const stats: ServerMessage = {
+		const	stats = this.get_stats_by_userId(peer.ctx.userId)
+		const statsMsg: ServerMessage = {
 			type: 'stats',
-			painted: cell_painted,
-			clicked: nbr_clicked,
+			painted: stats.cell_painted,
+			clicked: stats.nbr_clicked,
 		}
-		return (stats);
+		return (statsMsg);
 	}
 
     /**
@@ -66,9 +80,12 @@ export class Room {
         const userId = peer.ctx.userId;
         if (!this.userIds.includes(userId) && this.currPlayer < this.maxPlayer) {
             this.userIds.push(userId);
+			this.usernames.set(userId, peer.ctx.username)
             this.currPlayer++;
         }
-        this.playerPeers.set(userId, peer);
+		if (this.currPlayer === 1 && !this.waitStartedAt) {
+            this.waitStartedAt = Date.now()
+        }
         this.update_room_state();
     }
 
@@ -79,46 +96,22 @@ export class Room {
      *
      * @param player - Socket du joueur à retirer
      */
-	remove_player(player: Peer) {
-		const id = this.get_id(player);
-
+	remove_player(userId: string) {
+		const id = this.userIds.indexOf(userId)
 		if (id >= 0) {
-			if (this.game) {
-				this.game.kill_player(id);
-			}
+			if (this.game)
+				this.game.kill_player(id)
 			if (this.states === "starting" && this.startTimer) {
-				clearTimeout(this.startTimer);
-				this.startTimer = null;
-				this.broadcast({ type: 'waiting' });
+				clearTimeout(this.startTimer)
+				this.startTimer = null
+				this.broadcast({ type: 'waiting' })
 			}
-			this.playerSockets.splice(id, 1);
-			this.currPlayer--;
+			this.userIds.splice(id, 1)
+			this.currPlayer--
 		}
-		this.update_room_state();
+		this.update_room_state()
 	}
-
-	remove_player(player: Peer) {
-    const userId = player.ctx.userId
-    const id = this.userIds.indexOf(userId)
-    if (id >= 0) {
-        if (this.game)
-            this.game.kill_player(id)
-        if (this.states === "starting" && this.startTimer) {
-            clearTimeout(this.startTimer)
-            this.startTimer = null
-            this.broadcast({ type: 'waiting' })
-        }
-        this.userIds.splice(id, 1)
-        this.playerPeers.delete(userId)
-        this.currPlayer--
-    }
-    this.update_room_state()
-}
 	
-	handle_disconnect(userId: string) {
-        this.playerPeers.delete(userId);
-    }
-
     /**
      * Met à jour l'état de la room en fonction du nombre de joueurs présents.
      * Passe en "waiting" si la room n'est pas pleine,
@@ -139,14 +132,10 @@ export class Room {
      * @param message - Objet à envoyer (sera sérialisé en JSON)
      */
 	broadcast(message: any) {
-		const payload = JSON.stringify(message);
-		for (const userId of this.userIds) {
-			const peer = connectedPeers.get(userId);
-			if (peer) {
-				peer.send(payload);
-			}
-		}
-	}
+        for (const userId of this.userIds)
+            sendToUser(userId, message)
+    }
+
     /**
      * Démarre le compte à rebours de 10 secondes avant le lancement de la partie.
      * À la fin du timer, crée l'instance Game, l'initialise, et notifie les joueurs.
@@ -158,6 +147,7 @@ export class Room {
 		}
 		console.log("starting game in few secs !")
 
+		this.waitStartedAt = null
 		this.startedAt = Date.now();
 		this.startTimer = setTimeout(() => {
 			console.log("starting game !");
@@ -196,18 +186,29 @@ export class Room {
      * Vérifie si la partie est terminée et notifie les joueurs si c'est le cas.
      */
 	end_game() {
-    if (this.game && this.game.state === "over") {
-        this.states = "finished"
-        const winner_id = this.game.get_winner()
-        const end_msg: ServerMessage = {
-            type: 'finished',
-            winner: winner_id,
-        }
-        this.broadcast(end_msg)
+		if (this.game && this.game.state === "over") {
+			this.states = "finished"
+			const	winner_id = this.game.get_winner()
+			const	winnerUserId = this.userIds[winner_id]
+            const	winnerUsername = this.usernames.get(winnerUserId) ?? 'Unknown'
+			let		is_eq = false;
 
-        for (const [userId, peer] of this.playerPeers) {
-            peer.send(JSON.stringify(this.get_stats(peer)))
-        }
-    }
-}
+			if (winner_id === -1)
+				is_eq = true;
+
+			for (const userId of this.userIds) {
+				const stats = this.get_stats_by_userId(userId);
+				const end_msg: ServerMessage = {
+					type: 'finished',
+					winner: winner_id,
+					winnerUsername: winnerUsername,
+					is_eq: is_eq,
+					painted: stats.painted,
+					clicked: stats.clicked,
+				};
+
+				sendToUser(userId, end_msg);
+			}
+		}
+	}
 }

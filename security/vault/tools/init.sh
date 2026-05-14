@@ -18,4 +18,10 @@ vault kv put secret/transcendence/app \
     jwt_secret="$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')" \
     api_key="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
 
+. /secrets/monitoring.env
+vault kv put secret/transcendence/monitoring \
+    GF_SECURITY_ADMIN_USER="$GF_SECURITY_ADMIN_USER" \
+    GF_SECURITY_ADMIN_PASSWORD="$GF_SECURITY_ADMIN_PASSWORD" \
+    DISCORD_WEBHOOK_URL="$DISCORD_WEBHOOK_URL"
+
 echo "Secrets stored in Vault"

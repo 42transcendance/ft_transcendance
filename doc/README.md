@@ -140,7 +140,7 @@ The database schema is defined in `src/prisma/schema.prisma`.
 | Friends system | nbacconn | Send, accept, reject, and remove friend relationships |
 | Chat | nbacconn, ebenoist | Global chat history and real-time message exchange |
 | Realtime gameplay | tcros, nbacconn | Match session handling and WebSocket-based game interactions |
-| Frontend UI / SSR | ocgraf | Application layout, component structure, and server-side rendering |
+| Frontend UI / SSR | ocgraf, nbacconn | Application layout, component structure, and server-side rendering |
 | Security layer | ebenoist | WAF / ModSecurity and Vault-backed secret handling |
 | Monitoring | dbhujoo | Prometheus, Grafana, exporters, and alerting stack |
 | Dockerization & orchestration | dbhujoo | Container setup (Dockerfile/compose compatibility), service wiring, secrets/env integration, and runtime tooling for the full stack |
@@ -153,11 +153,11 @@ Points are calculated as required: **Major = 2 pts**, **Minor = 1 pt**.
 
 | # | Type | Module | Owner(s) | Pts | Why it was chosen / implementation |
 |---|---|---|---|---|---|
-| 1 | Major | Framework frontend & backend | ocgraf | 2 | Nuxt 3 provides the frontend and server-side API surface used by the project |
+| 1 | Major | Framework frontend & backend | ocgraf, nbacconn | 2 | Nuxt 3 provides the frontend and server-side API surface used by the project |
 | 2 | Major | Real-time features (WebSockets) | nbacconn, tcros | 2 | Needed for live chat and gameplay synchronization |
 | 3 | Major | User interaction | nbacconn, ebenoist, dbhujoo | 2 | Covers the social interactions of the app: auth, profile, friends, chat |
 | 4 | Minor | ORM for database | dbhujoo | 1 | Prisma is used for type-safe database access and migrations |
-| 5 | Minor | Server-Side Rendering (SSR) | ocgraf | 1 | SSR improves initial rendering and matches the Nuxt architecture |
+| 5 | Minor | Server-Side Rendering (SSR) | ocgraf, nbacconn | 1 | SSR improves initial rendering and matches the Nuxt architecture |
 | 8 | Major | User management & authentication | nbacconn, dbhujoo | 2 | Accounts, login, logout, auth checks, and protected routes |
 | 9 | Major | WAF/ModSecurity + HashiCorp Vault | ebenoist | 2 | Security layer for request inspection and secret management |
 | 10 | Major | Web-based game (PvP) | tcros | 2 | Core gameplay loop and real-time match behavior |

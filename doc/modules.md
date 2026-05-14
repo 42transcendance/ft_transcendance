@@ -13,7 +13,7 @@ _3 Major · 2 Minor_
 | 2 | 🔴 Major | Real-time features (WebSockets) | nbacconn, tcros | 2 |
 | 3 | 🔴 Major | User interaction | nbacconn, dbhujoo, ebenoist | 2 |
 | 4 | 🟡 Minor | ORM for database | dbhujoo | 1 |
-| 5 | 🟡 Minor | Server-Side Rendering (SSR) | ocgraf | 1 |
+| 5 | 🟡 Minor | Server-Side Rendering (SSR) | ocgraf, nbacconn | 1 |
 
 ### 👤 User Management  
 _1 Major_
