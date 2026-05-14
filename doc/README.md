@@ -300,10 +300,6 @@ SELECT * FROM "Friendship";
 -- View global messages
 SELECT * FROM "GlobalMessage" ORDER BY "createdAt" DESC LIMIT 10;
 
--- View game sessions
-SELECT * FROM "GameSession" ORDER BY "createdAt" DESC LIMIT 5;
-```
-
 
 ## Resources
 
