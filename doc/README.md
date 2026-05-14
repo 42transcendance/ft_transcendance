@@ -292,3 +292,38 @@ AI was used to help restructure the README, rewrite the architecture section, co
 - More detailed database and monitoring notes are available in `doc/README.md` and `doc/monitoring.md`.
 - The module breakdown and points are documented in `doc/modules.md`.
 - The project is intended to run with Podman rather than Docker.
+
+## Attack tests (should return HTTP 403)
+
+### SQL Injection
+
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q=admin' OR '1'='1"
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q=1' UNION SELECT password FROM users--"
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q='; DROP TABLE users--"
+
+### XSS (Cross-Site Scripting)
+
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q=<script>alert('XSS')</script>"
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q=<img src=x onerror=alert(1)>"
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q=javascript:alert(document.cookie)"
+
+### Command Injection (RCE)
+
+curl -k -i -G "https://localhost:8443/" --data-urlencode "cmd=;cat /etc/passwd"
+curl -k -i -G "https://localhost:8443/" --data-urlencode "cmd=| ls -la"
+
+### Path Traversal
+
+curl -k -i "https://localhost:8443/?file=..%2F..%2F..%2Fetc%2Fpasswd"
+
+### Scanner Detection
+
+curl -k -i -A "sqlmap/1.6.12" https://localhost:8443/
+curl -k -i -A "Nikto/2.1.6" https://localhost:8443/
+
+
+## Legitimate traffic tests (should return HTTP 200)
+
+curl -k -i https://localhost:8443/
+curl -k -i https://localhost:8443/login
+curl -k -i https://localhost:8443/health
