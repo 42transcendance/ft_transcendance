@@ -99,7 +99,7 @@ function handleFindMatch() {
                 <div class="">
                     <h2 class="font-semibold text-lg mb-2">Stats:</h2>
                     <p class="text-sm">Current tiles: <span class="font-bold">{{ painted }}</span></p>
-                    <p class="text-sm">Total tiles: <span class="font-bold">{{ clicked }}</span></p>
+                    <p class="text-sm">Total clicks: <span class="font-bold">{{ clicked }}</span></p>
                 </div>
                 <div class="flex gap-2 justify-center pt-2">
                     <button @click="resetToIdle" class="bg-green-700 rounded-md p-2 hover:bg-green-800 hover:cursor-pointer text-white text-center">

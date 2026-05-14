@@ -1,4 +1,17 @@
+import jwt from 'jsonwebtoken'
+
 export default defineEventHandler(async (event) => {
+	const token = getCookie(event, 'auth_token')
+    const config = useRuntimeConfig(event)
+    if (!token)
+        throw createError({ statusCode: 401, message: 'Unauthorized' })
+
+    try {
+        jwt.verify(token, config.jwtSecret)
+    } catch {
+        throw createError({ statusCode: 401, message: 'Invalid token' })
+    }
+
 	// Get params in after the '?' in the url
 	const query = getQuery(event);
 	const nameToSearch = query.name as string;

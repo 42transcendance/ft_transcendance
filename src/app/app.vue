@@ -3,6 +3,7 @@
 	const { currentUser } = useAuth()
 	const { notifyStatusUpdate, notifyUsernameUpdate, notifyAvatarUpdate } = useOnlineStatus()
 	const { fetchFriends, updateFriendStatus, updateFriendProfile, friends, pendingSent, pendingReceived } = useFriends()
+	const { cancelQueue } = useGameQueue()
 
 	// try to see if the user is already connected
 	const { data } = await useFetch('/api/users/auth')
@@ -18,8 +19,9 @@
 			if (currentUser.value)
 				updateFriendStatus(message.userId, message.isOnline)
 		}
-		if (message.type === 'FRIEND_UPDATE')
+		if (message.type === 'FRIEND_UPDATE') {
 			fetchFriends()
+		}
 		if (message.type === 'USERNAME_UPDATE')
 			notifyUsernameUpdate(message.userId, message.username)
 		if (message.type === 'AVATAR_UPDATE')
@@ -41,12 +43,13 @@
 			connect(handleMessage)
 			fetchFriends()
 		} else if (!newUser && isConnected.value) {
+			cancelQueue()
 			disconnect()
 			friends.value = []
 			pendingSent.value = []
 			pendingReceived.value = []
 		}
-	}, { immediate: true })  //check at first render
+	}, { immediate: true })
 
 	onUnmounted(() => disconnect())
 </script>

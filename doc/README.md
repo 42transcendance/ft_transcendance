@@ -169,17 +169,16 @@ Points are calculated as required: **Major = 2 pts**, **Minor = 1 pt**.
 | 6 | Minor | Design system (10+ components) | ocgraf | 1 | Custom component library and reusable UI structure |
 | 7 | Minor | Additional browser support | ocgraf | 1 | Ensures the app remains usable across browsers |
 | 11 | Major | Remote players (real-time) | tcros, nbacconn | 2 | Multiplayer synchronization across clients |
-| 12 | Major | Multiplayer (3+ players) | tcros | 2 | Extends the game model to more than two players |
-| 13 | Major | Advanced 3D graphics (Three.js / Babylon.js) | ocgraf | 2 | Visual/game rendering layer with 3D-oriented architecture |
-| 14 | Major | Prometheus & Grafana monitoring | dbhujoo | 2 | Observability stack for metrics, dashboards, and alerts |
+| 12 | Major | Advanced 3D graphics (Three.js / Babylon.js) | ocgraf | 2 | Visual/game rendering layer with 3D-oriented architecture |
+| 13 | Major | Prometheus & Grafana monitoring | dbhujoo | 2 | Observability stack for metrics, dashboards, and alerts |
 
 ### Module Totals
 
 | Category | Count | Pts each | Subtotal |
 |---|---|---|---|
-| Major | 11 | 2 | 22 |
+| Major | 9 | 2 | 18 |
 | Minor | 4 | 1 | 4 |
-| **Total** | **15** |  | **26** |
+| **Total** | **13** |  | **22** |
 
 ## Individual Contributions
 
@@ -215,6 +214,7 @@ Points are calculated as required: **Major = 2 pts**, **Minor = 1 pt**.
 - Implemented the game logic and multiplayer behavior
 - Worked on real-time gameplay synchronization
 - Contributed to player-session and match-related features
+- Implemented client-side rendering
 
 ## Instructions
 
@@ -262,12 +262,44 @@ Make sure these files exist and are filled in:
 
 ### Useful commands
 
+#### General
+
 - `make down` to stop the stack
 - `make logs` to follow all containers
 - `make logs-monitoring` to inspect Prometheus / Grafana / exporters
 - `make health` to check the app health endpoint
+
+#### Database
+
 - `make migrate` to apply Prisma migrations
 - `make migrate-dev` to create a new migration
+- `make db-shell` to access the PostgreSQL shell
+- `make db-reset` to reset the database to initial state
+- `make db-reset-and-migrate` to reset and run migrations
+- `make studio` to open Prisma Studio (visual database explorer)
+- `make generate` to regenerate the Prisma client
+
+**SQL queries for exploration** (run inside `make db-shell`):
+
+```sql
+-- List all tables
+\dt
+
+-- Show table schema (replace TABLE_NAME with actual name)
+\d TABLE_NAME
+
+-- Count records in each table
+SELECT schemaname, tablename, n_live_tup FROM pg_stat_user_tables;
+
+-- View all users
+SELECT id, username, email, "isOnline", "lastSeenAt" FROM "User";
+
+-- View all friendships
+SELECT * FROM "Friendship";
+
+-- View global messages
+SELECT * FROM "GlobalMessage" ORDER BY "createdAt" DESC LIMIT 10;
+
 
 ## Resources
 
@@ -292,3 +324,49 @@ AI was used to help restructure the README, rewrite the architecture section, co
 - More detailed database and monitoring notes are available in `doc/README.md` and `doc/monitoring.md`.
 - The module breakdown and points are documented in `doc/modules.md`.
 - The project is intended to run with Podman rather than Docker.
+
+## Attack tests (should return HTTP 403)
+
+### SQL Injection
+
+```bash
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q=admin' OR '1'='1"
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q=1' UNION SELECT password FROM users--"
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q='; DROP TABLE users--"
+```
+
+### XSS (Cross-Site Scripting)
+
+```bash
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q=<script>alert('XSS')</script>"
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q=<img src=x onerror=alert(1)>"
+curl -k -i -G "https://localhost:8443/" --data-urlencode "q=javascript:alert(document.cookie)"
+```
+
+### Command Injection (RCE)
+
+```bash
+curl -k -i -G "https://localhost:8443/" --data-urlencode "cmd=;cat /etc/passwd"
+curl -k -i -G "https://localhost:8443/" --data-urlencode "cmd=| ls -la"
+```
+
+### Path Traversal
+
+```bash
+curl -k -i "https://localhost:8443/?file=..%2F..%2F..%2Fetc%2Fpasswd"
+```
+
+### Scanner Detection
+
+```bash
+curl -k -i -A "sqlmap/1.6.12" https://localhost:8443/
+curl -k -i -A "Nikto/2.1.6" https://localhost:8443/
+```
+
+## Legitimate traffic tests (should return HTTP 200)
+
+```bash
+curl -k -i https://localhost:8443/
+curl -k -i https://localhost:8443/login
+curl -k -i https://localhost:8443/health
+```

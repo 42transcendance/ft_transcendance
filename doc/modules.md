@@ -62,23 +62,22 @@ _3 Major_
 | # | Type | Module | Owner(s) | Pts |
 |---|------|--------|----------|-----|
 | 11 | 🔴 Major | Remote players (real-time) | tcros, nbacconn | 2 |
-| 12 | 🔴 Major | Multiplayer (3+ players) | tcros | 2 |
-| 13 | 🔴 Major | Advanced 3D graphics (Three.js / Babylon.js) | ocgraf | 2 |
+| 12 | 🔴 Major | Advanced 3D graphics (Three.js / Babylon.js) | ocgraf | 2 |
 
 ### ⚙️ DevOps  
 _1 Major_
 
 | # | Type | Module | Owner(s) | Pts |
 |---|------|--------|----------|-----|
-| 14 | 🔴 Major | Prometheus & Grafana monitoring | dbhujoo | 2 |
+| 13 | 🔴 Major | Prometheus & Grafana monitoring | dbhujoo | 2 |
 
 ### Bonus Subtotal
 
 | | Count | Pts each | Subtotal |
 |-|-------|----------|----------|
-| 🔴 Major | 5 | 2 | 10 |
+| 🔴 Major | 3 | 2 | 6 |
 | 🟡 Minor | 2 | 1 | 2 |
-| **Total** | **7** | | **12** |
+| **Total** | **5** | | **8** |
 
 ---
 
@@ -86,6 +85,6 @@ _1 Major_
 
 | | Count | Pts each | Subtotal |
 |-|-------|----------|----------|
-| 🔴 Major | 11 | 2 | 22 |
+| 🔴 Major | 9 | 2 | 18 |
 | 🟡 Minor | 4 | 1 | 4 |
-| **Total** | **15** | | **26** |
+| **Total** | **14** | | **22** |

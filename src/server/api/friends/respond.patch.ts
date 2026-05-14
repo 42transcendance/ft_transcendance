@@ -9,7 +9,12 @@ export default defineEventHandler(async (event) => {
     if (!token)
         throw createError({ statusCode: 401, message: 'Unauthorized' })
 
-    const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+	let decoded : {userId: string}
+	try {
+		decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+	} catch {
+		throw createError({ statusCode: 401, message: 'Invalid token' })
+	}
 
     if (!body.friendshipId || !body.action)
         throw createError({ statusCode: 400, message: 'friendshipId and action required' })
@@ -37,6 +42,7 @@ export default defineEventHandler(async (event) => {
 		})
 
 		sendToUser(friendship.senderId, { type: 'FRIEND_UPDATE' })
+		sendToUser(decoded.userId, { type: 'FRIEND_UPDATE' })
 
         return { success: true, action: 'DECLINED' }
     } else {
@@ -46,6 +52,7 @@ export default defineEventHandler(async (event) => {
 		})
 
 		sendToUser(friendship.senderId, { type: 'FRIEND_UPDATE' })
+		sendToUser(decoded.userId, { type: 'FRIEND_UPDATE' })
 
 		return { success: true, action: 'ACCEPTED', friendship: updated }
 	}

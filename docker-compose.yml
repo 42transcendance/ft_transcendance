@@ -63,10 +63,21 @@ services:
     image: docker.io/prom/alertmanager:v0.27.0
     container_name: transcendence_alertmanager
     restart: unless-stopped
+    depends_on:
+      - discord-alertmanager
     volumes:
       - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     networks:
       - monitoring
+
+  discord-alertmanager:
+    image: docker.io/benjojo/alertmanager-discord
+    container_name: discord-alertmanager
+    networks:
+      - monitoring
+    restart: on-failure
+    env_file:
+      - ./secrets/monitoring.env
 
   grafana:
     image: docker.io/grafana/grafana:11.2.2

@@ -14,7 +14,13 @@ export default defineEventHandler(async (event) => {
     if (!token) {
         throw createError({ statusCode: 401, message: "Unauthorized" })
     }
-    const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+
+	let decoded : {userId: string}
+	try {
+		decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+	} catch {
+		throw createError({ statusCode: 401, message: 'Invalid token' })
+	}
 
     const userId = decoded.userId
 
@@ -96,6 +102,6 @@ export default defineEventHandler(async (event) => {
 		return { avatarUrl }
 
 	} catch (error) {
-		throw createError({ statusCode: 500, message: error })
+		throw createError({ statusCode: 500, message: 'Failed to save file' })
 	}
 })

@@ -127,7 +127,11 @@ export default defineWebSocketHandler({
         // Quitter la file
         if (data.type === 'leave_queue') {
             const currRoom = peerRoom.get(userId)
-            if (!currRoom || currRoom.states !== 'waiting') return
+            if (!currRoom || currRoom.states !== 'waiting')
+				return
+
+			if (getPeers(userId).length == 1)
+				peer.send(JSON.stringify({ type: 'no_game' }))
             currRoom.remove_player(userId)
             peerRoom.delete(userId)
             if (currRoom.currPlayer === 0) {
@@ -142,7 +146,9 @@ export default defineWebSocketHandler({
         // Quitter après fin de partie
         if (data.type === 'leave_game') {
             const currRoom = peerRoom.get(userId)
-            if (!currRoom || currRoom.states !== 'finished') return
+            if (!currRoom || currRoom.states !== 'finished')
+				return
+
             peerRoom.delete(userId)
             const anyoneLeft = currRoom.userIds.some(id => peerRoom.get(id) === currRoom)
             if (!anyoneLeft) {
@@ -156,11 +162,13 @@ export default defineWebSocketHandler({
         // Ready et paint
         if (data.type === 'ready' || data.type === 'paint') {
             const currRoom = peerRoom.get(userId)
-            if (!currRoom) return
+            if (!currRoom)
+				return
             const playerId = currRoom.get_id_by_userId(userId)
 
             if (data.type === 'ready') {
-                if (!currRoom.game) return
+                if (!currRoom.game)
+					return
                 // Envoie le board à tous les onglets de ce joueur
                 sendToUser(userId, {
                     type: 'cell_init',
@@ -170,7 +178,8 @@ export default defineWebSocketHandler({
             }
 
             if (data.type === 'paint') {
-                if (!currRoom.game) return
+                if (!currRoom.game)
+					return
                 if (playerId >= 0 && playerId < currRoom.maxPlayer && currRoom.game.state === 'on-going') {
                     const cell = currRoom.game.players[playerId].paint(currRoom.game.board, currRoom.game)
                     currRoom.broadcast({ type: 'cell_update', cell })

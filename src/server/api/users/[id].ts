@@ -11,7 +11,12 @@ export default defineEventHandler(async (event) => {
 
     // ✅ Pour toute modification, vérifier que c'est bien son profil
     if (method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
-        const decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+		let decoded : {userId: string}
+		try {
+			decoded = jwt.verify(token, config.jwtSecret) as { userId: string }
+		} catch {
+			throw createError({ statusCode: 401, message: 'Invalid token' })
+		}
 
         if (String(decoded.userId) !== String(id)) {
             throw createError({ statusCode: 403, message: 'Forbidden' })
