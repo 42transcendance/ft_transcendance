@@ -6,8 +6,13 @@ import { CANVAS } from '~shared/game/constants'
 
 definePageMeta({ middleware: 'auth' })
 
+<<<<<<< Updated upstream
 const { send, whenReady, pendingGameMessage, isConnected } = useSocket()
 const { gameQueueState, launchingTimer, gameTimerFormatted, resetToIdle, winner, painted, clicked, winnerUsername, requestSync } = useGameQueue()
+=======
+const { send, isConnected, pendingGameMessage } = useSocket()
+const { gameQueueState, launchingTimer, gameTimerFormatted, resetToIdle, winner, win_color, painted, clicked } = useGameQueue()
+>>>>>>> Stashed changes
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let ctx: CanvasRenderingContext2D | null = null
@@ -23,7 +28,7 @@ watch(pendingGameMessage, async (state) => {
 		return
 
     if (state.type === 'sync_state') {
-        if (state.gameState === 'playing' || state.gameState === 'finished') {
+        if (state.gameState === 'playing' || state.gameState === 'finished' || state.gameState === 'finished_eq') {
             await nextTick()
             if (canvas.value) {
                 ctx = canvas.value.getContext('2d')!
@@ -35,8 +40,22 @@ watch(pendingGameMessage, async (state) => {
         return
     }
 
+<<<<<<< Updated upstream
     if (ctx)
 		render(ctx, state)
+=======
+    if (state.type === 'finished') {
+        winner.value = state.winner
+		win_color.value = state.win_color;
+    }
+
+    if (state.type === 'stats') {
+        painted.value = state.painted
+        clicked.value = state.clicked
+    }
+
+    if (ctx) render(ctx, state)
+>>>>>>> Stashed changes
 })
 
 watch(gameState, async (newState) => {
@@ -46,7 +65,7 @@ watch(gameState, async (newState) => {
         fillBackground(ctx)
         send({ type: 'ready' })
     }
-    if (newState === 'finished' || newState === 'idle') {
+    if (newState === 'finished_eq' || newState === 'finished' || newState === 'idle') {
         ctx = null
     }
 })
@@ -84,9 +103,16 @@ function handleFindMatch() {
 		</button>
         <p>{{ gameTimerFormatted }}</p>
     </div>
+<<<<<<< Updated upstream
     <div v-else-if="gameState === 'finished'">
         Result !
         <p>The winner is {{ winnerUsername }} !</p>
+=======
+    <div v-if="gameState === 'finished' || gameState ==='finished_eq'">
+        Result !
+        <p v-if="gameState === 'finished'">The winner is {{ win_color }} !</p>
+        <p v-else>This game is a tie !</p>
+>>>>>>> Stashed changes
         Stats:
         <p>Painted tiles : {{ painted }}</p>
         <p>Click number : {{ clicked }}</p>

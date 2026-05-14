@@ -1,5 +1,6 @@
 import { TIMER } from '~shared/game/constants'
 
+<<<<<<< Updated upstream
 const winner = ref<number | null>(
     import.meta.client
         ? (sessionStorage.getItem('winner') !== null
@@ -62,6 +63,23 @@ const gameQueueState = ref<'syncing' | 'idle' | 'waiting' | 'starting' | 'playin
         : 'syncing'
 )
 
+=======
+const winner = ref<number | null>(null)
+const win_color = ref<string | null>(null)
+const painted = ref<number | null>(null)
+const clicked = ref<number | null>(null)
+
+function getInitialState(): 'idle' | 'waiting' | 'starting' | 'playing' | 'finished' | 'finished_eq' {
+    if (import.meta.client) {
+        const saved = sessionStorage.getItem('gameState')
+        if (saved && ['waiting', 'starting', 'playing', 'finished', 'finished_eq'].includes(saved))
+            return saved as any
+    }
+    return 'idle'
+}
+
+const gameQueueState = ref<'idle' | 'waiting' | 'starting' | 'playing' | 'finished' | 'finished_eq'>(getInitialState())
+>>>>>>> Stashed changes
 const launchingTimer = ref(TIMER.LAUNCHING)
 const gameTimer = ref(TIMER.GAME)
 
@@ -134,6 +152,7 @@ export const useGameQueue = () => {
 
             if (state.gameState === 'playing' && state.gameTimer !== undefined) {
                 gameTimer.value = state.gameTimer
+<<<<<<< Updated upstream
                 if (state.gameTimer > 0) {
                     gamingInterval = setInterval(() => {
                         gameTimer.value--
@@ -154,6 +173,12 @@ export const useGameQueue = () => {
 			if (state.winnerUsername !== undefined)
 				setWinnerUsername(state.winnerUsername)
 
+=======
+			if (state.winner !== undefined) {
+				win_color.value = state.win_color
+				winner.value = state.winner
+			}
+>>>>>>> Stashed changes
             gameQueueState.value = state.gameState
             return
         }
@@ -175,6 +200,7 @@ export const useGameQueue = () => {
             gameQueueState.value = 'playing'
         }
         if (state.type === 'finished') {
+<<<<<<< Updated upstream
             clearAllIntervals()
             setWinner(state.winner)
 			setWinnerUsername(state.winnerUsername ?? null)
@@ -187,6 +213,18 @@ export const useGameQueue = () => {
         if (state.type === 'error') {
             console.warn('Game error:', state.message)
         }
+=======
+			winner.value = state.winner
+			win_color.value = state.win_color
+			gameQueueState.value = 'finished'
+		}
+		if (state.type === 'finished_eq')
+			gameQueueState.value = 'finished_eq'
+		if (state.type === 'stats') {
+			painted.value = state.painted
+			clicked.value = state.clicked
+		}
+>>>>>>> Stashed changes
     })
 
     watch(gameQueueState, (newState) => {
@@ -213,6 +251,13 @@ export const useGameQueue = () => {
             gameTimer.value = TIMER.GAME
             launchingTimer.value = TIMER.LAUNCHING
         }
+<<<<<<< Updated upstream
+=======
+		if (newState === 'finished' || newState === 'finished_eq') {
+			clearInterval(gamingInterval ?? undefined)
+			gamingInterval = null
+		}
+>>>>>>> Stashed changes
     })
 
     function resetToIdle() {
@@ -242,8 +287,13 @@ export const useGameQueue = () => {
     })
 
     return {
+<<<<<<< Updated upstream
         winner,
 		winnerUsername,
+=======
+		winner,
+		win_color,
+>>>>>>> Stashed changes
         painted,
         clicked,
         gameQueueState,

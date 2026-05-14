@@ -11,7 +11,8 @@ export type ServerMessage =
 	| { type: "waiting" }
 	| { type: "starting" }
 	| { type: "playing" }
-	| { type: "finished", winner: number }
+	| { type: "finished", winner: number, win_color: string }
+	| { type: "finished_eq" }
 	| { type: "stats"; painted: number; clicked: number }
 
 export type ClientMessage =

@@ -186,11 +186,30 @@ export class Room {
      * Vérifie si la partie est terminée et notifie les joueurs si c'est le cas.
      */
 	end_game() {
+<<<<<<< Updated upstream
 		if (this.game && this.game.state === "over") {
 			this.states = "finished"
 			const winner_id = this.game.get_winner()
 			const winnerUserId = this.userIds[winner_id]
             const winnerUsername = this.usernames.get(winnerUserId) ?? 'Unknown'
+=======
+    if (this.game && this.game.state === "over") {
+        this.states = "finished"
+        const winner_id = this.game.get_winner();
+		let end_msg: ServerMessage;
+		if (winner_id === -1) {
+			end_msg = {
+				type: 'finished_eq',
+			};
+		} else {
+			end_msg = {
+				type: 'finished',
+				winner: winner_id,
+				win_color: this.game.players[winner_id].color,
+			};
+		}
+        this.broadcast(end_msg)
+>>>>>>> Stashed changes
 
 			for (const userId of this.userIds) {
 				const stats = this.get_stats_by_userId(userId)

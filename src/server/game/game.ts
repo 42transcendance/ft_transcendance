@@ -69,9 +69,12 @@ export class Game {
 		let winner_id: number = 0;
 		this.players.forEach((player, index) => {
 			let curr_painted: number = this.p_painted_cell[index].length;
-			if (curr_painted >= max_painted) {
+			if (curr_painted > max_painted) {
 				max_painted = curr_painted;
 				winner_id = player.id;
+			}
+			else if (curr_painted === max_painted) { //gere l'égalité
+				winner_id = -1;
 			}
 		});
 		return (winner_id);
