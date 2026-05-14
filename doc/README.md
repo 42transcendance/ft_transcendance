@@ -297,33 +297,44 @@ AI was used to help restructure the README, rewrite the architecture section, co
 
 ### SQL Injection
 
+```bash
 curl -k -i -G "https://localhost:8443/" --data-urlencode "q=admin' OR '1'='1"
 curl -k -i -G "https://localhost:8443/" --data-urlencode "q=1' UNION SELECT password FROM users--"
 curl -k -i -G "https://localhost:8443/" --data-urlencode "q='; DROP TABLE users--"
+```
 
 ### XSS (Cross-Site Scripting)
 
+```bash
 curl -k -i -G "https://localhost:8443/" --data-urlencode "q=<script>alert('XSS')</script>"
 curl -k -i -G "https://localhost:8443/" --data-urlencode "q=<img src=x onerror=alert(1)>"
 curl -k -i -G "https://localhost:8443/" --data-urlencode "q=javascript:alert(document.cookie)"
+```
 
 ### Command Injection (RCE)
 
+```bash
 curl -k -i -G "https://localhost:8443/" --data-urlencode "cmd=;cat /etc/passwd"
 curl -k -i -G "https://localhost:8443/" --data-urlencode "cmd=| ls -la"
+```
 
 ### Path Traversal
 
+```bash
 curl -k -i "https://localhost:8443/?file=..%2F..%2F..%2Fetc%2Fpasswd"
+```
 
 ### Scanner Detection
 
+```bash
 curl -k -i -A "sqlmap/1.6.12" https://localhost:8443/
 curl -k -i -A "Nikto/2.1.6" https://localhost:8443/
-
+```
 
 ## Legitimate traffic tests (should return HTTP 200)
 
+```bash
 curl -k -i https://localhost:8443/
 curl -k -i https://localhost:8443/login
 curl -k -i https://localhost:8443/health
+```
